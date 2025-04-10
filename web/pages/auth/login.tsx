@@ -47,11 +47,12 @@ export default function LoginPage() {
       <div className="min-h-screen flex flex-col sm:flex-row">
         <div className="bg-secondary w-full sm:w-1/2 p-8 sm:py-12 sm:px-10 flex flex-col relative">
           <div className="absolute top-4 left-4">
-            <Link href="/auth/signUp" legacyBehavior>
-              <a className="border border-black px-4 py-1 rounded text-sm font-medium hover:text-white hover:bg-accent transition cursor-pointer">
-                Create Account
-              </a>
-            </Link>
+            <Link
+  href="/auth/signUp"
+  className="border border-black px-4 py-1 rounded text-sm font-medium hover:text-white hover:bg-accent transition cursor-pointer"
+>
+  Create Account
+</Link>
           </div>
           <div className="flex flex-col justify-center flex-1 max-w-md w-full mx-auto mt-12 sm:mt-0">
             <h2 className="text-2xl sm:text-3xl font-bold mb-6">Log In</h2>

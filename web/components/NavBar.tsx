@@ -59,7 +59,8 @@ export default function NavBar({
   setIsExpanded,
 }: NavBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn,setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -89,6 +90,7 @@ export default function NavBar({
   const handleLogout = async () => {
     try {
       await signOut();
+      router.push("/auth/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }

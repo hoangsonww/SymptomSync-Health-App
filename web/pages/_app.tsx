@@ -7,9 +7,10 @@ import { Toaster } from "sonner";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  // Wanna hide the nav on auth pages and landing page
-  const authPaths = ["/", "/auth/signUp", "/auth/login"];
+  // Hide the nav on the landing, auth pages, and the 404 page.
+  const authPaths = ["/", "/auth/signUp", "/auth/login", "/404"];
   const hideNav = authPaths.includes(router.pathname);
+
   const [navExpanded, setNavExpanded] = useState<boolean>(true);
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
@@ -35,9 +36,8 @@ export default function App({ Component, pageProps }: AppProps) {
     localStorage.setItem("navExpanded", String(navExpanded));
   }, [navExpanded]);
 
-  // Pushing the nav to the left when it's collapsed & on desktops
-  // This is a bit of a hack to ensure the content is not covered by the nav
-  // when it's expanded
+  // Pushing the nav to the left when it's expanded on desktop.
+  // This is kinda a hacky way to do it, but it works for now
   const marginLeft = isMobile ? "0" : navExpanded ? "16rem" : "5rem";
 
   if (hideNav) {
