@@ -27,6 +27,7 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  ArrowDown,
 } from "lucide-react";
 
 // Dynamically import react-slick to avoid SSR issues
@@ -138,14 +139,25 @@ export default function Home() {
           </p>
         </AnimatedInView>
         <AnimatedInView delay={0.4}>
-          <a href="/auth/login" className="inline-block">
+          <Link href="/auth/login" className="inline-block">
             <Button
               variant="default"
               className="bg-white text-foreground rounded-full px-8 py-4 text-lg hover:scale-105 hover:shadow-2xl hover:text-white cursor-pointer"
             >
               Get Started
             </Button>
-          </a>
+          </Link>
+        </AnimatedInView>
+        <AnimatedInView delay={0.6}>
+          <Link href="#features" className="inline-block mt-4">
+            <Button
+              variant="ghost"
+              className="text-white rounded-full px-8 py-4 text-lg hover:bg-white/10 cursor-pointer"
+            >
+              Learn More
+              <ArrowDown className="w-5 h-5 ml-2 inline-block" />
+            </Button>
+          </Link>
         </AnimatedInView>
       </section>
 
@@ -603,13 +615,13 @@ export default function Home() {
           </p>
           <motion.a
             href="#"
-            className="inline-block"
+            className="inline-block shadow-2xl rounded-full"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <Button
               variant="default"
-              className="rounded-full px-10 py-4 text-lg hover:shadow-2xl hover:bg-white hover:text-foreground cursor-pointer"
+              className="rounded-full px-10 py-4 text-lg shadow-3xl hover:shadow-3xl hover:bg-white hover:text-foreground cursor-pointer"
             >
               Sign Up for Free!
             </Button>

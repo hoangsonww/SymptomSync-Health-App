@@ -98,7 +98,7 @@ export default function NavBar({
     <>
       {!staticNav && (
         <button
-          className="fixed top-4 left-4 z-50 md:hidden p-2 bg-primary text-white rounded-full shadow hover:bg-white/10 cursor-pointer"
+          className="fixed top-2 right-2 z-50 md:hidden p-2 bg-primary text-white rounded-full shadow hover:bg-white/10 hover:text-primary cursor-pointer"
           onClick={() => setMobileOpen((prev) => !prev)}
         >
           <Menu className="w-5 h-5" />
@@ -109,15 +109,15 @@ export default function NavBar({
           <div className="flex items-center justify-center p-4 border-b border-white/20">
             {isExpanded ? (
               <span className="text-xl font-bold tracking-wide cursor-pointer">
-                <a href="/home" className="flex items-center">
+                <Link href="/home" className="flex items-center">
                   SymptomSync
-                </a>
+                </Link>
               </span>
             ) : (
               <span className="text-xl font-extrabold cursor-pointer">
-                <a href="/home" className="flex items-center">
+                <Link href="/home" className="flex items-center">
                   SS
-                </a>
+                </Link>
               </span>
             )}
           </div>

@@ -11,12 +11,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg("");
     if (!email || !password) {
       toast.error("Please fill in all fields.");
       return;
@@ -30,7 +28,6 @@ export default function LoginPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const message = error.message || "Login failed. Please try again.";
-      setErrorMsg(message);
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -49,10 +46,6 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-col justify-center flex-1 max-w-md w-full mx-auto mt-12 sm:mt-0">
           <h2 className="text-2xl sm:text-3xl font-bold mb-6">Log In</h2>
-
-          {errorMsg && (
-            <p className="mb-4 text-red-600 text-center text-sm">{errorMsg}</p>
-          )}
 
           <form onSubmit={handleSubmit}>
             <input
