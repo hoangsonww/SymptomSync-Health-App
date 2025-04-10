@@ -29,6 +29,7 @@ import {
   ChevronRight,
   ArrowDown,
 } from "lucide-react";
+import Head from "next/head";
 
 // Dynamically import react-slick to avoid SSR issues
 // This is intentional - we want to load this only on the client side since
@@ -118,540 +119,553 @@ const sliderSettings = {
 
 export default function Home() {
   return (
-    <div className={`${inter.className} font-sans overflow-x-hidden`}>
-      <style jsx global>{`
-        html {
-          scroll-behavior: smooth;
-        }
-      `}</style>
+    <>
+      <Head>
+        <title>Welcome | SymptomSync</title>
+        <meta
+          name="description"
+          content="Your health companion to track, understand, and manage your daily health seamlessly."
+        />
+      </Head>
+      <div className={`${inter.className} font-sans overflow-x-hidden`}>
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+        `}</style>
 
-      <section className="bg-primary text-primary-foreground min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-          <div className="absolute animate-spin-slow rounded-full border-8 border-solid border-primary border-t-transparent w-96 h-96 -top-20 -left-20"></div>
-        </div>
-        <AnimatedInView delay={0}>
-          <h1 className="text-5xl md:text-7xl font-bold mb-4">SymptomSync</h1>
-        </AnimatedInView>
-        <AnimatedInView delay={0.2}>
-          <p className="text-lg md:text-2xl mb-8">
-            Your Health Companion – Track, understand, and manage your daily
-            health with ease.
-          </p>
-        </AnimatedInView>
-        <AnimatedInView delay={0.4}>
-          <Link href="/auth/login" className="inline-block">
-            <Button
-              variant="default"
-              className="bg-white text-foreground rounded-full px-8 py-4 text-lg hover:scale-105 hover:shadow-2xl hover:text-white cursor-pointer"
-            >
-              Get Started
-            </Button>
-          </Link>
-        </AnimatedInView>
-        <AnimatedInView delay={0.6}>
-          <Link href="#features" className="inline-block mt-4">
-            <Button
-              variant="ghost"
-              className="text-white rounded-full px-8 py-4 text-lg hover:bg-white/10 cursor-pointer"
-            >
-              Learn More
-              <ArrowDown className="w-5 h-5 ml-2 inline-block" />
-            </Button>
-          </Link>
-        </AnimatedInView>
-      </section>
-
-      <section
-        id="features"
-        className="bg-background text-foreground py-20 px-4"
-      >
-        <AnimatedInView
-          delay={0}
-          className="max-w-6xl mx-auto text-center mb-12"
-        >
-          <h2 className="text-4xl font-bold mb-4">Features</h2>
-          <p className="text-lg text-muted-foreground">
-            Our advanced tools for comprehensive health tracking.
-          </p>
-        </AnimatedInView>
-        <AnimatedInView
-          delay={0.1}
-          className="max-w-6xl mx-auto overflow-hidden"
-        >
-          <Slider {...sliderSettings}>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <CalendarDays className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Daily Tracking
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1 text-center text-muted-foreground">
-                    Log your daily health metrics seamlessly.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <BarChart2 className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Insights
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1 text-center text-muted-foreground">
-                    Visualize trends in your health data.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <Pill className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Med Reminders
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1 text-center text-muted-foreground">
-                    Get timely medication reminders.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <Activity className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Activity Log
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1 text-center text-muted-foreground">
-                    Record workouts and sleep patterns.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <FileText className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Reports
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1 text-center text-muted-foreground">
-                    Generate detailed health reports.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <Bell className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Custom Alerts
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1 text-center text-muted-foreground">
-                    Set alerts for your health milestones.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-          </Slider>
-        </AnimatedInView>
-      </section>
-
-      <section className="bg-background text-foreground py-20 px-4">
-        <AnimatedInView
-          delay={0}
-          className="max-w-6xl mx-auto text-center mb-12"
-        >
-          <h2 className="text-4xl font-bold mb-4">Testimonials</h2>
-          <p className="text-lg text-muted-foreground">
-            Hear what our users have to say.
-          </p>
-        </AnimatedInView>
-        <AnimatedInView
-          delay={0.1}
-          className="max-w-6xl mx-auto overflow-hidden"
-        >
-          <Slider {...sliderSettings}>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardContent className="flex flex-col justify-evenly text-center">
-                    <p className="italic">
-                      &quot;SymptomSync transformed my health journey. I can
-                      finally track my progress!&quot;
-                    </p>
-                    <div className="flex items-center justify-center space-x-2">
-                      <Smile className="w-6 h-6 text-primary" />
-                      <span className="font-bold">— Alex</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardContent className="flex flex-col justify-evenly text-center">
-                    <p className="italic">
-                      &quot;The medication reminders keep me on track – life
-                      changing!&quot;
-                    </p>
-                    <div className="flex items-center justify-center space-x-2">
-                      <HeartPulse className="w-6 h-6 text-primary" />
-                      <span className="font-bold">— Jamie</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardContent className="flex flex-col justify-evenly text-center">
-                    <p className="italic">
-                      &quot;The detailed reports pinpoint exactly where I need
-                      to improve.&quot;
-                    </p>
-                    <div className="flex items-center justify-center space-x-2">
-                      <Star className="w-6 h-6 text-primary" />
-                      <span className="font-bold">— Pat</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardContent className="flex flex-col justify-evenly text-center">
-                    <p className="italic">
-                      &quot;The custom alerts and insights truly set SymptomSync
-                      apart.&quot;
-                    </p>
-                    <div className="flex items-center justify-center space-x-2">
-                      <CheckSquare className="w-6 h-6 text-primary" />
-                      <span className="font-bold">— Morgan</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-          </Slider>
-        </AnimatedInView>
-      </section>
-
-      <section className="bg-background text-foreground py-20 px-4">
-        <AnimatedInView
-          delay={0}
-          className="max-w-6xl mx-auto text-center mb-12"
-        >
-          <h2 className="text-4xl font-bold mb-4">How It Works</h2>
-          <p className="text-lg text-muted-foreground">
-            A simple process to boost your health.
-          </p>
-        </AnimatedInView>
-        <AnimatedInView
-          delay={0.1}
-          className="max-w-6xl mx-auto overflow-hidden"
-        >
-          <Slider {...sliderSettings}>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <User className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Sign Up
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    Create your account in minutes.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <CalendarDays className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Log Health
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    Track your daily metrics effortlessly.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <BarChart2 className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Analyze Data
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    Uncover insights to improve your wellness.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <Bell className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Get Alerts
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    Receive timely notifications.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-          </Slider>
-        </AnimatedInView>
-      </section>
-
-      <section className="bg-background text-foreground py-20 px-4">
-        <AnimatedInView
-          delay={0}
-          className="max-w-6xl mx-auto text-center mb-12"
-        >
-          <h2 className="text-4xl font-bold mb-4">Why Choose SymptomSync</h2>
-          <p className="text-lg text-muted-foreground">
-            Discover the benefits that set us apart.
-          </p>
-        </AnimatedInView>
-        <AnimatedInView
-          delay={0.1}
-          className="max-w-6xl mx-auto overflow-hidden"
-        >
-          <Slider {...sliderSettings}>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <ThumbsUp className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      User-Friendly
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    Intuitive design that&apos;s easy for everyone.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <Lock className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Data Privacy
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    Your information is secure and confidential.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <Zap className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Reliable Performance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    Optimized for speed and consistency.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <Clock className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      24/7 Support
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    We&apos;re here for you around the clock.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <Shield className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Secure Tracking
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    State-of-the-art security for your data.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-            <div className="px-4">
-              <AnimatedInView>
-                <Card className="h-64 shadow-lg">
-                  <CardHeader className="flex flex-col items-center">
-                    <TrendingUp className="w-16 h-16 text-primary" />
-                    <CardTitle className="text-2xl font-bold">
-                      Innovative Insights
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center text-muted-foreground">
-                    Cutting-edge analytics to elevate your wellness.
-                  </CardContent>
-                </Card>
-              </AnimatedInView>
-            </div>
-          </Slider>
-        </AnimatedInView>
-      </section>
-
-      <section className="bg-background text-foreground py-20 px-4">
-        <AnimatedInView
-          delay={0}
-          className="max-w-6xl mx-auto text-center mb-12"
-        >
-          <h2 className="text-4xl font-bold mb-4">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            Find answers to our most common queries.
-          </p>
-        </AnimatedInView>
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-          <AnimatedInView delay={0.1}>
-            <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-              <h3 className="text-2xl font-bold mb-2">
-                How secure is my data?
-              </h3>
-              <p className="text-muted-foreground">
-                Your data is encrypted and stored securely. We prioritize your
-                privacy.
-              </p>
-            </Card>
+        <section className="bg-primary text-primary-foreground min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+            <div className="absolute animate-spin-slow rounded-full border-8 border-solid border-primary border-t-transparent w-96 h-96 -top-20 -left-20"></div>
+          </div>
+          <AnimatedInView delay={0}>
+            <h1 className="text-5xl md:text-7xl font-bold mb-4">SymptomSync</h1>
           </AnimatedInView>
-          <AnimatedInView delay={0.1}>
-            <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-              <h3 className="text-2xl font-bold mb-2">
-                Can I access detailed reports?
-              </h3>
-              <p className="text-muted-foreground">
-                Yes. Our dashboard offers in-depth, downloadable health reports.
-              </p>
-            </Card>
+          <AnimatedInView delay={0.2}>
+            <p className="text-lg md:text-2xl mb-8">
+              Your Health Companion – Track, understand, and manage your daily
+              health with ease.
+            </p>
           </AnimatedInView>
-          <AnimatedInView delay={0.1}>
-            <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-              <h3 className="text-2xl font-bold mb-2">
-                How do I set reminders?
-              </h3>
-              <p className="text-muted-foreground">
-                Configure custom reminders easily within your account settings.
-              </p>
-            </Card>
+          <AnimatedInView delay={0.4}>
+            <Link href="/auth/login" className="inline-block">
+              <Button
+                variant="default"
+                className="bg-white text-primary rounded-full px-8 py-4 text-lg hover:scale-105 hover:shadow-2xl hover:text-white cursor-pointer"
+              >
+                Get Started
+              </Button>
+            </Link>
           </AnimatedInView>
-          <AnimatedInView delay={0.1}>
-            <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-              <h3 className="text-2xl font-bold mb-2">
-                Is customer support available 24/7?
-              </h3>
-              <p className="text-muted-foreground">
-                Absolutely. Our support team is here around the clock.
-              </p>
-            </Card>
+          <AnimatedInView delay={0.6}>
+            <Link href="#features" className="inline-block mt-4">
+              <Button
+                variant="ghost"
+                className="text-white rounded-full px-8 py-4 text-lg hover:bg-white/10 cursor-pointer"
+              >
+                Learn More
+                <ArrowDown className="w-5 h-5 ml-2 inline-block" />
+              </Button>
+            </Link>
           </AnimatedInView>
-        </div>
-      </section>
+        </section>
 
-      <section className="bg-primary text-primary-foreground py-20 px-4 text-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute animate-spin-slow rounded-full border-8 border-solid border-primary border-t-transparent w-72 h-72 -bottom-16 -right-16"></div>
-        </div>
-        <AnimatedInView delay={0.2} className="max-w-4xl mx-auto relative">
-          <h2 className="text-4xl font-bold mb-4">
-            Take Control of Your Health Today
-          </h2>
-          <p className="text-lg mb-8">
-            Join thousands of users transforming their health journey with
-            SymptomSync.
-          </p>
-          <motion.a
-            href="#"
-            className="inline-block shadow-2xl rounded-full"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+        <section
+          id="features"
+          className="bg-background text-foreground py-20 px-4"
+        >
+          <AnimatedInView
+            delay={0}
+            className="max-w-6xl mx-auto text-center mb-12"
           >
-            <Button
-              variant="default"
-              className="rounded-full px-10 py-4 text-lg shadow-3xl hover:shadow-3xl hover:bg-white hover:text-foreground cursor-pointer"
-            >
-              Sign Up for Free!
-            </Button>
-          </motion.a>
-        </AnimatedInView>
-      </section>
+            <h2 className="text-4xl font-bold mb-4">Features</h2>
+            <p className="text-lg text-muted-foreground">
+              Our advanced tools for comprehensive health tracking.
+            </p>
+          </AnimatedInView>
+          <AnimatedInView
+            delay={0.1}
+            className="max-w-6xl mx-auto overflow-hidden"
+          >
+            <Slider {...sliderSettings}>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <CalendarDays className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Daily Tracking
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 text-center text-muted-foreground">
+                      Log your daily health metrics seamlessly.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <BarChart2 className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Insights
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 text-center text-muted-foreground">
+                      Visualize trends in your health data.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Pill className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Med Reminders
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 text-center text-muted-foreground">
+                      Get timely medication reminders.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Activity className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Activity Log
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 text-center text-muted-foreground">
+                      Record workouts and sleep patterns.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <FileText className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Reports
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 text-center text-muted-foreground">
+                      Generate detailed health reports.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Bell className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Custom Alerts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 text-center text-muted-foreground">
+                      Set alerts for your health milestones.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+            </Slider>
+          </AnimatedInView>
+        </section>
 
-      <footer className="bg-background text-muted-foreground py-8 px-4 text-center shadow-lg">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between">
-          <p className="text-sm">
-            © {new Date().getFullYear()}{" "}
-            <strong className="font-bold">SymptomSync</strong>. All rights
-            reserved.
-          </p>
-          <div className="mt-4 md:mt-0 flex items-center space-x-4">
-            <Link href="/privacy" legacyBehavior>
-              <a className="flex items-center hover:text-primary transition-colors">
+        <section className="bg-background text-foreground py-20 px-4">
+          <AnimatedInView
+            delay={0}
+            className="max-w-6xl mx-auto text-center mb-12"
+          >
+            <h2 className="text-4xl font-bold mb-4">Testimonials</h2>
+            <p className="text-lg text-muted-foreground">
+              Hear what our users have to say.
+            </p>
+          </AnimatedInView>
+          <AnimatedInView
+            delay={0.1}
+            className="max-w-6xl mx-auto overflow-hidden"
+          >
+            <Slider {...sliderSettings}>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardContent className="flex flex-col justify-evenly text-center">
+                      <p className="italic">
+                        &quot;SymptomSync transformed my health journey. I can
+                        finally track my progress!&quot;
+                      </p>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Smile className="w-6 h-6 text-primary" />
+                        <span className="font-bold">— Alex</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardContent className="flex flex-col justify-evenly text-center">
+                      <p className="italic">
+                        &quot;The medication reminders keep me on track – life
+                        changing!&quot;
+                      </p>
+                      <div className="flex items-center justify-center space-x-2">
+                        <HeartPulse className="w-6 h-6 text-primary" />
+                        <span className="font-bold">— Jamie</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardContent className="flex flex-col justify-evenly text-center">
+                      <p className="italic">
+                        &quot;The detailed reports pinpoint exactly where I need
+                        to improve.&quot;
+                      </p>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Star className="w-6 h-6 text-primary" />
+                        <span className="font-bold">— Pat</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardContent className="flex flex-col justify-evenly text-center">
+                      <p className="italic">
+                        &quot;The custom alerts and insights truly set
+                        SymptomSync apart.&quot;
+                      </p>
+                      <div className="flex items-center justify-center space-x-2">
+                        <CheckSquare className="w-6 h-6 text-primary" />
+                        <span className="font-bold">— Morgan</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+            </Slider>
+          </AnimatedInView>
+        </section>
+
+        <section className="bg-background text-foreground py-20 px-4">
+          <AnimatedInView
+            delay={0}
+            className="max-w-6xl mx-auto text-center mb-12"
+          >
+            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
+            <p className="text-lg text-muted-foreground">
+              A simple process to boost your health.
+            </p>
+          </AnimatedInView>
+          <AnimatedInView
+            delay={0.1}
+            className="max-w-6xl mx-auto overflow-hidden"
+          >
+            <Slider {...sliderSettings}>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <User className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Sign Up
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Create your account in minutes.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <CalendarDays className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Log Health
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Track your daily metrics effortlessly.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <BarChart2 className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Analyze Data
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Uncover insights to improve your wellness.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Bell className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Get Alerts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Receive timely notifications.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+            </Slider>
+          </AnimatedInView>
+        </section>
+
+        <section className="bg-background text-foreground py-20 px-4">
+          <AnimatedInView
+            delay={0}
+            className="max-w-6xl mx-auto text-center mb-12"
+          >
+            <h2 className="text-4xl font-bold mb-4">Why Choose SymptomSync</h2>
+            <p className="text-lg text-muted-foreground">
+              Discover the benefits that set us apart.
+            </p>
+          </AnimatedInView>
+          <AnimatedInView
+            delay={0.1}
+            className="max-w-6xl mx-auto overflow-hidden"
+          >
+            <Slider {...sliderSettings}>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <ThumbsUp className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        User-Friendly
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Intuitive design that&apos;s easy for everyone.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Lock className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Data Privacy
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Your information is secure and confidential.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Zap className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Reliable Performance
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Optimized for speed and consistency.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Clock className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        24/7 Support
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      We&apos;re here for you around the clock.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Shield className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Secure Tracking
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      State-of-the-art security for your data.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <TrendingUp className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Innovative Insights
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Cutting-edge analytics to elevate your wellness.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+            </Slider>
+          </AnimatedInView>
+        </section>
+
+        <section className="bg-background text-foreground py-20 px-4">
+          <AnimatedInView
+            delay={0}
+            className="max-w-6xl mx-auto text-center mb-12"
+          >
+            <h2 className="text-4xl font-bold mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Find answers to our most common queries.
+            </p>
+          </AnimatedInView>
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <AnimatedInView delay={0.1}>
+              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
+                <h3 className="text-2xl font-bold mb-2">
+                  How secure is my data?
+                </h3>
+                <p className="text-muted-foreground">
+                  Your data is encrypted and stored securely. We prioritize your
+                  privacy.
+                </p>
+              </Card>
+            </AnimatedInView>
+            <AnimatedInView delay={0.1}>
+              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
+                <h3 className="text-2xl font-bold mb-2">
+                  Can I access detailed reports?
+                </h3>
+                <p className="text-muted-foreground">
+                  Yes. Our dashboard offers in-depth, downloadable health
+                  reports.
+                </p>
+              </Card>
+            </AnimatedInView>
+            <AnimatedInView delay={0.1}>
+              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
+                <h3 className="text-2xl font-bold mb-2">
+                  How do I set reminders?
+                </h3>
+                <p className="text-muted-foreground">
+                  Configure custom reminders easily within your account
+                  settings.
+                </p>
+              </Card>
+            </AnimatedInView>
+            <AnimatedInView delay={0.1}>
+              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
+                <h3 className="text-2xl font-bold mb-2">
+                  Is customer support available 24/7?
+                </h3>
+                <p className="text-muted-foreground">
+                  Absolutely. Our support team is here around the clock.
+                </p>
+              </Card>
+            </AnimatedInView>
+          </div>
+        </section>
+
+        <section className="bg-primary text-primary-foreground py-20 px-4 text-center relative overflow-hidden">
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <div className="absolute animate-spin-slow rounded-full border-8 border-solid border-primary border-t-transparent w-72 h-72 -bottom-16 -right-16"></div>
+          </div>
+          <AnimatedInView delay={0.2} className="max-w-4xl mx-auto relative">
+            <h2 className="text-4xl font-bold mb-4">
+              Take Control of Your Health Today
+            </h2>
+            <p className="text-lg mb-8">
+              Join thousands of users transforming their health journey with
+              SymptomSync.
+            </p>
+            <motion.a
+              href="#"
+              className="inline-block shadow-2xl rounded-full"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                variant="default"
+                className="rounded-full px-10 py-4 text-lg shadow-3xl hover:shadow-3xl hover:bg-white hover:text-foreground cursor-pointer"
+              >
+                Sign Up for Free!
+              </Button>
+            </motion.a>
+          </AnimatedInView>
+        </section>
+
+        <footer className="bg-background text-muted-foreground py-8 px-4 text-center shadow-lg">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <p className="text-sm">
+              © {new Date().getFullYear()}{" "}
+              <strong className="font-bold">SymptomSync</strong>. All rights
+              reserved.
+            </p>
+            <div className="mt-4 md:mt-0 flex items-center space-x-4">
+              <Link
+                href="/privacy"
+                className="flex items-center hover:text-primary transition-colors"
+              >
                 <Shield className="w-4 h-4 mr-1" />
                 <span className="text-sm">Privacy Policy</span>
-              </a>
-            </Link>
-            <Link href="/terms" legacyBehavior>
-              <a className="flex items-center hover:text-primary transition-colors">
+              </Link>
+              <Link
+                href="/terms"
+                className="flex items-center hover:text-primary transition-colors"
+              >
                 <FileText className="w-4 h-4 mr-1" />
                 <span className="text-sm">Terms of Service</span>
-              </a>
-            </Link>
+              </Link>
+            </div>
           </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </>
   );
 }
