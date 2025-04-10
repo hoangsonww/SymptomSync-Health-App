@@ -1,6 +1,6 @@
-# << APP NAME >>
+# SymptomSync
 
-> Developed by [YOUR NAMES]() for COMP 426: Modern Web Programming at UNC-Chapel Hill.
+> Developed by Caroline Bryan, Kathryn Brown, David Nguyen, and Erica Ocbu for COMP 426: Modern Web Programming at UNC-Chapel Hill.
 
 ![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript)
 ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs)
@@ -12,7 +12,7 @@
 
 ## DEVELOPMENT NOTES: (TO BE REMOVED BEFORE SUBMISSION)
 
-To nstall the dependencies:
+To install the dependencies:
 
 ```bash
 npm install --legacy-peer-deps
