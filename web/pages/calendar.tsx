@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/router";
 import {
   MedicationReminder,
   getMedicationRemindersByUser,
@@ -161,6 +162,19 @@ export default function CalendarPage() {
   const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(
     new Set(),
   );
+  const router = useRouter();
+
+  useEffect(() => {
+    async function checkUserAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/auth/login");
+      }
+    }
+    checkUserAuth();
+  }, [router]);
 
   /**
    * Supabase Realtime: Subscribe to changes in medication and appointment reminders

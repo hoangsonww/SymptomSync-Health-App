@@ -187,16 +187,16 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-      async function checkUserAuth() {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) {
-          router.push("/auth/login");
-        }
+    async function checkUserAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/auth/login");
       }
-      checkUserAuth();
-    }, [router]);
+    }
+    checkUserAuth();
+  }, [router]);
 
   /**
    * This function fetches all data for the user, including medications, appointments, and health logs
