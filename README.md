@@ -31,6 +31,13 @@ npm install --legacy-peer-deps
 
 This is of utmost importance because the `@shadcn/ui` package has a peer dependency on `react@^18.0.0`, and the latest version of `react` is `18.2.0`. If you do not use the `--legacy-peer-deps` flag, you will get an error.
 
+Also, remember to create a `.env.local` file in the `web` directory of the project and add your Supabase URL and Anon Key. You can find these in our Supabase project settings.
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
 ### Next Issues
 
 If you run into some issues during development, e.g. reloading and it is showing a blank page, try running the following command:

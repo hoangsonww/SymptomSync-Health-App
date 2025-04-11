@@ -222,8 +222,8 @@ export default function ProfilePage() {
           <motion.header variants={slideInLeft} className="text-left">
             <h1 className="text-4xl font-bold">
               {profileToDisplay?.id === profile?.id
-                ? "Your Profile"
-                : `Viewing ${profileToDisplay?.full_name || profileToDisplay?.email}'s Profile`}
+                ? "Your Profile 🙋‍♂️"
+                : `Viewing ${profileToDisplay?.full_name || profileToDisplay?.email}'s Profile 🧐`}
             </h1>
             <p className="text-lg text-gray-600 mt-1">
               {profileToDisplay?.email}

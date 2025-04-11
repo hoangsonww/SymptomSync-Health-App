@@ -12,6 +12,7 @@ import {
   LogIn,
   LogOut,
   File,
+  X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { signOut } from "@/lib/auth";
@@ -104,7 +105,11 @@ export default function NavBar({
           className="fixed top-2 right-2 z-50 md:hidden p-2 bg-primary text-white rounded-full shadow hover:bg-white/10 hover:text-primary cursor-pointer"
           onClick={() => setMobileOpen((prev) => !prev)}
         >
-          <Menu className="w-5 h-5" />
+          {mobileOpen ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <Menu className="w-5 h-5" />
+          )}
         </button>
       )}
       <nav className={containerClasses}>
