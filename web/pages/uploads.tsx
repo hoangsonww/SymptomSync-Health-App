@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Trash2, Upload, Eye, Plus } from "lucide-react";
 import { format } from "date-fns";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface FileRow {
   id: string;
@@ -153,7 +154,12 @@ export default function DocumentsPage() {
                       <td className="p-3">{file.filename}</td>
                       <td className="p-3 capitalize">{file.file_type}</td>
                       <td>{format(new Date(file.uploaded_at), "MMM d, yyyy")}</td>
+                      
+                      <TooltipProvider>
                       <td className="p-3 flex gap-2">
+                        {/* View */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -161,9 +167,23 @@ export default function DocumentsPage() {
                         >
                           <Eye size={16} />
                         </Button>
-                        <Button variant="ghost" size="icon">
-                          <Upload size={16} />
-                        </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>View</TooltipContent>
+                      </Tooltip>
+
+                        {/* Download */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Upload size={16} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Download</TooltipContent>
+                        </Tooltip>
+                        
+                        {/* Delete */}
+                        <Tooltip>
+                        <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -171,11 +191,14 @@ export default function DocumentsPage() {
                           onClick={async () => {
                             await supabase.from("files").delete().eq("id", file.id);
                             fetchFiles();
-                          }}
-                        >
+                          }}>
                           <Trash2 size={16} />
                         </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Delete</TooltipContent>
+                        </Tooltip>
                       </td>
+                      </TooltipProvider>
                     </tr>
                   ))}
                 </tbody>
