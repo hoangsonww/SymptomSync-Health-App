@@ -20,19 +20,19 @@ export default function Document() {
         <link
           rel="apple-touch-icon"
           sizes="180x180"
-          href="/apple-touch-icon.png"
+          href="https://symptomsync.vercel.app/apple-touch-icon.png"
         />
         <link
           rel="icon"
           type="image/png"
           sizes="32x32"
-          href="/favicon-32x32.png"
+          href="https://symptomsync.vercel.app/favicon-32x32.png"
         />
         <link
           rel="icon"
           type="image/png"
           sizes="16x16"
-          href="/favicon-16x16.png"
+          href="https://symptomsync.vercel.app/favicon-16x16.png"
         />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#344966" />
@@ -43,9 +43,13 @@ export default function Document() {
           property="og:description"
           content="Your health companion to track, understand, and manage your daily health seamlessly."
         />
-        <meta property="og:image" content="/og-image.png" />
-        <meta property="og:url" content="https://www.yoursite.com" />
+        <meta
+          property="og:image"
+          content="https://symptomsync.vercel.app/android-chrome-512x512.png"
+        />
+        <meta property="og:url" content="https://symptomsync.vercel.app" />
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="SymptomSync" />
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
@@ -54,7 +58,10 @@ export default function Document() {
           name="twitter:description"
           content="Your health companion to track, understand, and manage your daily health seamlessly."
         />
-        <meta name="twitter:image" content="/og-image.png" />
+        <meta
+          name="twitter:image"
+          content="https://symptomsync.vercel.app/android-chrome-512x512.png"
+        />
 
         {/* Additional Meta Tags */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
