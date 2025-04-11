@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Trash2,
@@ -77,6 +78,8 @@ export default function DocumentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [fileToDelete, setFileToDelete] = useState<string | null>(null);
+  const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchFiles();
@@ -207,7 +210,6 @@ export default function DocumentsPage() {
       <div className="flex flex-col min-h-screen">
         <main className="flex-1 p-6">
           <div className="max-w-6xl mx-auto">
-            {/* Top heading and search bar */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-6">
               <motion.div
                 variants={containerVariants}
@@ -216,12 +218,10 @@ export default function DocumentsPage() {
                 className="flex flex-col md:flex-row justify-between items-center mb-6"
               >
                 <motion.div variants={slideInLeft}>
-                  <h1 className="text-3xl font-extrabold text-gray-800">
-                    Your Documents 📝
-                  </h1>
+                  <h1 className="text-3xl font-extrabold">Your Documents 📝</h1>
                   <motion.p
                     variants={fadeInUp}
-                    className="text-gray-600 mt-2 text-center md:text-left"
+                    className="text-muted-foreground mt-2 text-center md:text-left"
                   >
                     All Your Health Files, In One Place!
                   </motion.p>
@@ -304,11 +304,59 @@ export default function DocumentsPage() {
                       </div>
                     </DialogContent>
                   </Dialog>
+
+                  <Dialog
+                    open={confirmDeleteDialogOpen}
+                    onOpenChange={setConfirmDeleteDialogOpen}
+                  >
+                    <DialogContent className="max-w-sm w-full">
+                      <DialogHeader>
+                        <DialogTitle>Confirm Deletion</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to delete this file?
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex justify-end gap-4 mt-4">
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            setConfirmDeleteDialogOpen(false);
+                            setFileToDelete(null);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={async () => {
+                            if (fileToDelete) {
+                              try {
+                                await supabase
+                                  .from("files")
+                                  .delete()
+                                  .eq("id", fileToDelete);
+                                toast.success("File deleted successfully");
+                                fetchFiles(); // Refresh the files list
+                              } catch (error) {
+                                console.error("Error deleting file:", error);
+                                toast.error("Failed to delete file");
+                              }
+                            }
+                            setConfirmDeleteDialogOpen(false);
+                            setFileToDelete(null);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          Yes, Delete
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </motion.div>
               </div>
             </div>
 
-            {/* Table + Card container with animation */}
             <motion.div variants={fadeInUp} initial="hidden" animate="visible">
               <Card className="shadow-lg m-0">
                 <CardContent className="p-0 m-0">
@@ -428,12 +476,9 @@ export default function DocumentsPage() {
                                           variant="ghost"
                                           size="icon"
                                           className="text-red-500 transition-transform transform hover:scale-105 cursor-pointer"
-                                          onClick={async () => {
-                                            await supabase
-                                              .from("files")
-                                              .delete()
-                                              .eq("id", file.id);
-                                            fetchFiles();
+                                          onClick={() => {
+                                            setFileToDelete(file.id);
+                                            setConfirmDeleteDialogOpen(true);
                                           }}
                                         >
                                           <Trash2 size={18} />
@@ -454,7 +499,6 @@ export default function DocumentsPage() {
               </Card>
             </motion.div>
 
-            {/* Pagination Controls */}
             <div className="mt-4 flex items-center justify-end gap-4">
               <motion.div
                 variants={fadeInUp}

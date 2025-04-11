@@ -340,12 +340,12 @@ export default function AIChatPage() {
                 className="flex flex-col md:flex-row justify-between items-center"
               >
                 <motion.div variants={slideInLeft}>
-                  <h1 className="text-3xl font-extrabold text-gray-800 text-center md:text-left">
+                  <h1 className="text-3xl font-extrabold text-center md:text-left">
                     Your Health Assistant 👨‍⚕️
                   </h1>
                   <motion.p
                     variants={cardVariants}
-                    className="text-gray-600 mt-2 text-center md:text-left"
+                    className="text-muted-foreground mt-2 text-center md:text-left"
                   >
                     Ask our AI anything about your health. It’s like having a
                     doctor in your pocket!

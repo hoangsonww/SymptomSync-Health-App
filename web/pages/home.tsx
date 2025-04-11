@@ -93,6 +93,15 @@ const fadeInUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
+const cardContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
 /**
  * Returns a friendly greeting based on the current hour of the day.
  * @returns A greeting string, e.g., "Good Morning", "Good Afternoon", or "Good Evening".
@@ -899,9 +908,11 @@ export default function HomePage() {
           </Button>
         </div>
 
-        <div
+        <motion.div
+          variants={cardContainerVariants}
+          initial="hidden"
+          animate="visible"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          style={{ animationDelay: "0.5s" }}
         >
           {[
             { label: "Total Medications", value: totalMeds },
@@ -925,7 +936,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </motion.div>
 
         <div style={{ animationDelay: "0.7s" }}>
           <Card className="bg-card border border-border rounded-lg min-w-[280px] w-full pt-4 transition-all hover:shadow-xl h-auto min-h-[450px] hover:-translate-y-1 hover:scale-101">

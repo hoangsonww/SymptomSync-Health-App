@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Tag } from "lucide-react";
+import { Loader2, Tag, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 
 type FileRow = {
@@ -53,7 +53,8 @@ export default function FileViewPage() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
-          <Button onClick={() => router.back()} className="mb-6">
+          <Button onClick={() => router.back()} className="mb-6 cursor-pointer">
+            <ChevronLeft />
             Back
           </Button>
           {loading ? (
@@ -86,7 +87,7 @@ export default function FileViewPage() {
                     <img
                       src={file.url}
                       alt={file.filename}
-                      className="w-full h-auto rounded-none transition-transform duration-300 hover:shadow-lg"
+                      className="w-full h-auto rounded-none transition-transform duration-300"
                     />
                   ) : file.file_type === "application/pdf" ? (
                     <iframe

@@ -536,15 +536,12 @@ export default function CalendarPage() {
         animate="visible"
         className="w-full h-screen p-4 md:p-6 space-y-4"
       >
-        {/* Combined header and action buttons container */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <motion.div variants={slideInLeft} className="flex flex-col">
-            <h1 className="text-3xl font-extrabold text-gray-800">
-              Calendar 📆
-            </h1>
+            <h1 className="text-3xl font-extrabold">Calendar 📆</h1>
             <motion.p
               variants={fadeInUp}
-              className="text-gray-600 mt-2 text-center md:text-left"
+              className="text-muted-foreground mt-2 text-center md:text-left"
             >
               Manage your appointments & medications easily
             </motion.p>
@@ -604,7 +601,10 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        <div
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
           className="bg-popover p-2 rounded-lg shadow-md"
           style={{ height: "calc(100vh - 12rem)" }}
         >
@@ -621,7 +621,7 @@ export default function CalendarPage() {
             eventPropGetter={eventPropGetter}
             dayPropGetter={dayPropGetter}
           />
-        </div>
+        </motion.div>
 
         <Dialog
           open={showSelectTypeDialog}
