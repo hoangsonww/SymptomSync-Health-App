@@ -12,6 +12,7 @@ import {
   LogIn,
   LogOut,
   File,
+  List,
   X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
@@ -152,6 +153,12 @@ export default function NavBar({
               href="/uploads"
               icon={<File className="w-5 h-5" />}
               label="Documents"
+              isExpanded={isExpanded}
+            />
+            <NavItem
+              href="/reminder"
+              icon={<List className="w-5 h-5" />}
+              label="Med Schedule"
               isExpanded={isExpanded}
             />
             <NavItem
