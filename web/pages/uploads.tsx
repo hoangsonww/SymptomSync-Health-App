@@ -3,10 +3,21 @@ import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Trash2, Upload, Eye, Plus } from "lucide-react";
 import { format } from "date-fns";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface FileRow {
   id: string;
@@ -27,9 +38,16 @@ export default function DocumentsPage() {
   }, []);
 
   async function fetchFiles() {
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user) {
+      console.error("User not authenticated");
+      return;
+    }
+
     const { data, error } = await supabase
       .from("files")
       .select("*")
+      .eq("user_profile_id", user.id)
       .order("uploaded_at", { ascending: false });
 
     if (error) console.error("Error fetching files:", error);
@@ -39,36 +57,36 @@ export default function DocumentsPage() {
   async function handleUpload() {
     if (!fileToUpload) return;
     setUploading(true);
-  
+
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) {
       alert("User not logged in");
       return;
     }
-  
+
     const fileExt = fileToUpload.name.split(".").pop();
     const fileName = `${Date.now()}-${fileToUpload.name}`;
     const filePath = `documents/${fileName}`;
-  
+
     console.log("Uploading file to storage...");
-  
+
     const { error: uploadError } = await supabase.storage
       .from("documents")
       .upload(filePath, fileToUpload);
-  
+
     if (uploadError) {
       console.error("Storage upload error:", uploadError);
       setUploading(false);
       return;
     }
-  
+
     const { data: urlData } = supabase.storage
       .from("documents")
       .getPublicUrl(filePath);
     const publicUrl = urlData.publicUrl;
-  
+
     console.log("Public URL:", publicUrl);
-  
+
     const { error: insertError } = await supabase.from("files").insert({
       user_profile_id: user.id,
       filename: fileToUpload.name,
@@ -76,20 +94,20 @@ export default function DocumentsPage() {
       file_type: fileExt,
       uploaded_at: new Date(),
     });
-  
+
     if (insertError) {
       console.error("Insert error:", insertError);
     } else {
       console.log("Inserted successfully into files table");
       setFileToUpload(null);
-      fetchFiles(); // refreshing view
+      fetchFiles();
     }
-  
+
     setUploading(false);
   }
-  
-  const filteredFiles = files.filter(file =>
-    file.filename.toLowerCase().includes(search.toLowerCase())
+
+  const filteredFiles = files.filter((file) =>
+    file.filename.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -153,51 +171,57 @@ export default function DocumentsPage() {
                     <tr key={file.id} className="border-b hover:bg-gray-50">
                       <td className="p-3">{file.filename}</td>
                       <td className="p-3 capitalize">{file.file_type}</td>
-                      <td>{format(new Date(file.uploaded_at), "MMM d, yyyy")}</td>
-                      
-                      <TooltipProvider>
-                      <td className="p-3 flex gap-2">
-                        {/* View */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => window.open(file.url, "_blank")}
-                        >
-                          <Eye size={16} />
-                        </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>View</TooltipContent>
-                      </Tooltip>
-
-                        {/* Download */}
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <Upload size={16} />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Download</TooltipContent>
-                        </Tooltip>
-                        
-                        {/* Delete */}
-                        <Tooltip>
-                        <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500"
-                          onClick={async () => {
-                            await supabase.from("files").delete().eq("id", file.id);
-                            fetchFiles();
-                          }}>
-                          <Trash2 size={16} />
-                        </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Delete</TooltipContent>
-                        </Tooltip>
+                      <td>
+                        {format(new Date(file.uploaded_at), "MMM d, yyyy")}
                       </td>
+
+                      <TooltipProvider>
+                        <td className="p-3 flex gap-2">
+                          {/* View */}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => window.open(file.url, "_blank")}
+                              >
+                                <Eye size={16} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>View</TooltipContent>
+                          </Tooltip>
+
+                          {/* Download */}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <Upload size={16} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Download</TooltipContent>
+                          </Tooltip>
+
+                          {/* Delete */}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-red-500"
+                                onClick={async () => {
+                                  await supabase
+                                    .from("files")
+                                    .delete()
+                                    .eq("id", file.id);
+                                  fetchFiles();
+                                }}
+                              >
+                                <Trash2 size={16} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete</TooltipContent>
+                          </Tooltip>
+                        </td>
                       </TooltipProvider>
                     </tr>
                   ))}
