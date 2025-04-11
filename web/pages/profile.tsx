@@ -215,8 +215,11 @@ export default function ProfilePage() {
           animate="visible"
           className="max-w-4xl mx-auto space-y-8"
         >
-          <motion.header variants={slideInLeft} className="text-left">
-            <h1 className="text-4xl font-bold">
+          <motion.header
+            variants={slideInLeft}
+            className="text-center md:text-left"
+          >
+            <h1 className="text-3xl font-bold">
               {profileToDisplay?.id === profile?.id
                 ? "Your Profile 🙋‍♂️"
                 : `Viewing ${profileToDisplay?.full_name || profileToDisplay?.email}'s Profile 🧐`}

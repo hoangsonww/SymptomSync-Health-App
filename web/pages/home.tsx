@@ -52,6 +52,9 @@ import {
 import { Line, Bar, Doughnut, Radar, PolarArea } from "react-chartjs-2";
 import Head from "next/head";
 
+// Import Framer Motion for animations
+import { motion } from "framer-motion";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -65,6 +68,30 @@ ChartJS.register(
   Tooltip,
   Legend,
 );
+
+// Framer Motion variants
+const containerVariants = {
+  hidden: { opacity: 0, pointerEvents: "none" },
+  visible: {
+    opacity: 1,
+    pointerEvents: "auto",
+    transition: { when: "beforeChildren", staggerChildren: 0.1 },
+  },
+};
+
+const slideInLeft = {
+  hidden: { opacity: 0, x: -50 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
 
 /**
  * Returns a friendly greeting based on the current hour of the day.
@@ -220,8 +247,6 @@ export default function HomePage() {
   /**
    * Supabase Realtime: Listens for changes in the database (in terms of medication,
    * appointments, and health logs) and updates the state accordingly.
-   * This is so that all charts, and numbers and info are immediately updated as the user
-   * interacts with the app.
    */
   useEffect(() => {
     let isMounted = true;
@@ -310,7 +335,6 @@ export default function HomePage() {
 
   /**
    * Adds a new medication reminder for the user.
-   * @returns void
    */
   async function handleAddMedication() {
     if (!userId || !newMedName || !newMedTime) return;
@@ -347,7 +371,6 @@ export default function HomePage() {
 
   /**
    * Adds a new appointment reminder for the user.
-   * @returns void
    */
   async function handleAddAppointment() {
     if (!userId || !newApptName || !newApptDate) return;
@@ -377,7 +400,6 @@ export default function HomePage() {
 
   /**
    * Adds a new health log for the user.
-   * @returns void
    */
   async function handleAddHealthLog() {
     if (!userId) return;
@@ -434,8 +456,7 @@ export default function HomePage() {
   }
 
   /**
-   * This function opens the edit dialog for a medication reminder.
-   * @param med - The medication reminder to edit.
+   * Opens the edit dialog for a medication reminder.
    */
   function openEditMedDialog(med: MedicationReminder) {
     setEditingMed(med);
@@ -456,8 +477,7 @@ export default function HomePage() {
   }
 
   /**
-   * This function handles the update of a medication reminder.
-   * @returns void
+   * Handles the update of a medication reminder.
    */
   async function handleUpdateMed() {
     if (!editingMed || !userId) return;
@@ -485,8 +505,7 @@ export default function HomePage() {
   }
 
   /**
-   * A function to open the edit dialog for an appointment reminder.
-   * @param appt - The appointment reminder to edit.
+   * Opens the edit dialog for an appointment reminder.
    */
   function openEditApptDialog(appt: AppointmentReminder) {
     setEditingAppt(appt);
@@ -500,8 +519,7 @@ export default function HomePage() {
   }
 
   /**
-   * A function to handle the update of an appointment reminder.
-   * @returns void
+   * Handles the update of an appointment reminder.
    */
   async function handleUpdateAppt() {
     if (!editingAppt || !userId) return;
@@ -525,8 +543,7 @@ export default function HomePage() {
   }
 
   /**
-   * A function to open the edit dialog for a health log.
-   * @param log - The health log to edit.
+   * Opens the edit dialog for a health log.
    */
   function openEditLogDialog(log: HealthLog) {
     setEditingLog(log);
@@ -538,7 +555,6 @@ export default function HomePage() {
     setEditEndDate(log.end_date ?? "");
 
     let heartRateStr = "";
-    let bpStr = "";
     if (log.vitals) {
       try {
         const v =
@@ -552,8 +568,6 @@ export default function HomePage() {
           const [sysDia, _unit] = v.bloodPressure.split(" ");
           if (sysDia) {
             const [sys, dia] = sysDia.split("/");
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            bpStr = sysDia;
             setEditBloodPressureSys(sys || "");
             setEditBloodPressureDia(dia || "");
           }
@@ -579,7 +593,6 @@ export default function HomePage() {
 
   /**
    * Handles updating a health log in the database.
-   * @returns void
    */
   async function handleUpdateLog() {
     if (!editingLog || !userId) return;
@@ -622,10 +635,7 @@ export default function HomePage() {
   }
 
   /**
-   * A function to delete a medication reminder.
-   *
-   * @param id - The ID of the medication reminder to delete.
-   * @returns void
+   * Deletes a medication reminder.
    */
   async function handleDeleteMedication(id: string) {
     if (!userId) return;
@@ -638,10 +648,7 @@ export default function HomePage() {
   }
 
   /**
-   * A function to delete an appointment reminder.
-   *
-   * @param id - The ID of the appointment reminder to delete.
-   * @returns void
+   * Deletes an appointment reminder.
    */
   async function handleDeleteAppointment(id: string) {
     if (!userId) return;
@@ -654,10 +661,7 @@ export default function HomePage() {
   }
 
   /**
-   * A function to delete a health log.
-   *
-   * @param id - The ID of the health log to delete.
-   * @returns void
+   * Deletes a health log.
    */
   async function handleDeleteLog(id: string) {
     if (!userId) return;
@@ -845,15 +849,28 @@ export default function HomePage() {
         <title>SymptomSync | Home</title>
         <meta name="description" content="Your personal health dashboard." />
       </Head>
-      <div className="p-6 md:p-8 flex-1 overflow-y-auto space-y-8">
-        <div style={{ animationDelay: "0.1s" }}>
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">
+
+      {/* Wrap the entire page in a motion.div with containerVariants */}
+      <motion.div
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="p-6 md:p-8 flex-1 overflow-y-auto space-y-8"
+      >
+        {/* Top heading, subheading */}
+        <motion.div variants={slideInLeft}>
+          <h1 className="text-3xl font-bold mb-2">
             {greeting}, {userName} {emoji}!
           </h1>
-          <p className="text-sm md:text-base text-muted-foreground">
+          <motion.p
+            variants={fadeInUp}
+            className="text-sm md:text-base text-muted-foreground"
+          >
             Let&apos;s make today a little healther ~
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         <div
           className="flex flex-wrap gap-4"
@@ -1081,7 +1098,7 @@ export default function HomePage() {
                       <br />
                       Recurrence: {safeDisplay(med.recurrence)}
                       <br />
-                      Calendar Sync: {safeDisplay(med.calendar_sync_token)}
+                      {/* Calendar Sync: {safeDisplay(med.calendar_sync_token)} */}
                       <br />
                       Created: {new Date(med.created_at).toLocaleString()}
                     </div>
@@ -1285,14 +1302,14 @@ export default function HomePage() {
                 </select>
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label>Calendar Sync Token (Optional)</Label>
                 <Input
                   value={newMedCalendarSync}
                   onChange={(e) => setNewMedCalendarSync(e.target.value)}
                   placeholder="If applicable"
                 />
-              </div>
+              </div> */}
             </div>
             <DialogFooter>
               <Button
@@ -1580,13 +1597,13 @@ export default function HomePage() {
                   </select>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label>Calendar Sync Token</Label>
                   <Input
                     value={editMedCalendarSync}
                     onChange={(e) => setEditMedCalendarSync(e.target.value)}
                   />
-                </div>
+                </div> */}
               </div>
               <DialogFooter>
                 <Button
@@ -1814,7 +1831,7 @@ export default function HomePage() {
             </DialogContent>
           </Dialog>
         )}
-      </div>
+      </motion.div>
     </>
   );
 }

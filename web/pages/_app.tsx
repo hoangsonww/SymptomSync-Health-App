@@ -9,7 +9,7 @@ import { fetchUserReminders, Reminder } from "@/lib/reminders";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  // Wanna hide the nav bar on auth pages and landing page and 404
+  // Hide the nav bar on auth pages and landing page and 404
   const authPaths = ["/", "/auth/signUp", "/auth/login", "/404"];
   const hideNav = authPaths.includes(router.pathname);
 
@@ -34,14 +34,13 @@ export default function App({ Component, pageProps }: AppProps) {
     localStorage.setItem("navExpanded", String(navExpanded));
   }, [navExpanded]);
 
-  // Push content to the right when nav is expanded - this is kinda
-  // a hacky way to do it, but it works for now
+  // Push content to the right when nav is expanded
   const marginLeft = isMobile ? "0" : navExpanded ? "16rem" : "5rem";
 
   const [userId, setUserId] = useState<string | null>(null);
   const toastedReminderIds = useRef<Set<string>>(new Set());
 
-  // Get user ID from Supabase auth on initial load to set up polling
+  // Get user ID from Supabase auth on initial load
   useEffect(() => {
     let isMounted = true;
     async function init() {
@@ -58,14 +57,12 @@ export default function App({ Component, pageProps }: AppProps) {
     };
   }, []);
 
-  // Simple polling function to check for reminders every second
-  // and toast if any are due. We're trying with cron but hasn't
-  // worked yet due to timezone issues.
-  // This is a temporary solution until we can get the cron job working
-  // and will be removed once we have a better solution.
+  // Poll for reminders only if a user is authenticated
   useEffect(() => {
     if (!userId) return;
     const interval = setInterval(async () => {
+      // Extra check: only run if userId is still present
+      if (!userId) return;
       try {
         const reminders: Reminder[] = await fetchUserReminders(userId);
         const now = new Date();

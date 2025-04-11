@@ -10,6 +10,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\""
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-accordion": "^1.2.4",
     "@radix-ui/react-alert-dialog": "^1.1.7",
@@ -42,6 +43,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
+    "dotenv": "^16.5.0",
     "framer-motion": "^12.6.3",
     "lucide-react": "^0.487.0",
     "next": "15.3.0",
@@ -53,8 +55,10 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.55.0",
+    "react-markdown": "^10.1.0",
     "react-slick": "^0.30.3",
     "recharts": "^2.15.2",
+    "remark-gfm": "^4.0.1",
     "slick-carousel": "^1.8.1",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.2.0",

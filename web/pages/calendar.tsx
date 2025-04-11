@@ -40,6 +40,34 @@ import { enUS } from "date-fns/locale/en-US";
 import { toast } from "sonner";
 import { Trash2, Edit3, CheckSquare, XSquare } from "lucide-react";
 import Head from "next/head";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0, pointerEvents: "none" },
+  visible: {
+    opacity: 1,
+    pointerEvents: "auto",
+    transition: { when: "beforeChildren", staggerChildren: 0.1 },
+  },
+};
+
+const slideInLeft = {
+  hidden: { opacity: 0, x: -50 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
 
 const locales = {
   "en-US": enUS,
@@ -94,7 +122,7 @@ function expandMedication(
   } else if (med.recurrence.toLowerCase() === "biweekly") {
     deltaDays = 14;
   } else if (med.recurrence.toLowerCase() === "monthly") {
-    // no need to change deltaDays
+    // no need to change deltaDays for monthly – handled below
   }
 
   let index = 0;
@@ -377,16 +405,22 @@ export default function CalendarPage() {
     setShowEventDialog(true);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function dayPropGetter(date: Date): React.HTMLAttributes<HTMLDivElement> {
+    return {
+      style: {
+        cursor: "pointer",
+      },
+    };
+  }
+
   function eventPropGetter(event: CalendarEvent) {
+    const style: React.CSSProperties = { cursor: "pointer" };
     if (selectedEventIds.has(event.id)) {
-      return {
-        style: {
-          backgroundColor: "#FFAEBC",
-          border: "2px solid #FF577F",
-        },
-      };
+      style.backgroundColor = "#FFAEBC";
+      style.border = "2px solid #FF577F";
     }
-    return {};
+    return { style };
   }
 
   /**
@@ -398,8 +432,7 @@ export default function CalendarPage() {
     const newStart = new Date(dateTime);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [type, realId, _maybeIndex] = dialogEvent.id.split("-");
+      const [type, realId] = dialogEvent.id.split("-");
       if (type === "appt") {
         const updated = await updateAppointmentReminder(realId, {
           appointment_name: editTitle,
@@ -494,16 +527,50 @@ export default function CalendarPage() {
           content="Manage your appointments & medications easily"
         />
       </Head>
-      <div className="w-full h-screen p-4 md:p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div style={{ animationDelay: "0.1s" }}>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Calendar 📆</h1>
-            <p className="text-sm md:text-base text-muted-foreground">
-              Manage your appointments & medications easily
-            </p>
-          </div>
 
-          <div className="flex items-center gap-2">
+      <motion.div
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full h-screen p-4 md:p-6 space-y-4"
+      >
+        {/* Combined header and action buttons container */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <motion.div variants={slideInLeft} className="flex flex-col">
+            <h1 className="text-3xl font-extrabold text-gray-800">
+              Calendar 📆
+            </h1>
+            <motion.p
+              variants={fadeInUp}
+              className="text-gray-600 mt-2 text-center md:text-left"
+            >
+              Manage your appointments & medications easily
+            </motion.p>
+          </motion.div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="default"
+              onClick={() => {
+                setAddType("appointment");
+                setShowAddDialog(true);
+              }}
+              className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+            >
+              Add Appointment
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => {
+                setAddType("medication");
+                setShowAddDialog(true);
+              }}
+              className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+            >
+              Add Medication
+            </Button>
             <Button
               variant="secondary"
               className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
@@ -524,7 +591,6 @@ export default function CalendarPage() {
                 </>
               )}
             </Button>
-
             {selectMode && selectedEventIds.size > 0 && (
               <Button
                 variant="destructive"
@@ -538,29 +604,6 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant="default"
-            onClick={() => {
-              setAddType("appointment");
-              setShowAddDialog(true);
-            }}
-            className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-          >
-            Add Appointment
-          </Button>
-          <Button
-            variant="default"
-            onClick={() => {
-              setAddType("medication");
-              setShowAddDialog(true);
-            }}
-            className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-          >
-            Add Medication
-          </Button>
-        </div>
-
         <div
           className="bg-popover p-2 rounded-lg shadow-md"
           style={{ height: "calc(100vh - 12rem)" }}
@@ -571,11 +614,12 @@ export default function CalendarPage() {
             startAccessor="start"
             endAccessor="end"
             views={["month", "week", "day", "agenda"]}
-            style={{ height: "100%", width: "100%" }}
+            style={{ height: "100%", width: "100%", pointerEvents: "auto" }}
             selectable
             onSelectEvent={handleSelectEvent}
             onSelectSlot={handleSelectSlot}
             eventPropGetter={eventPropGetter}
+            dayPropGetter={dayPropGetter}
           />
         </div>
 
@@ -826,7 +870,7 @@ export default function CalendarPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+      </motion.div>
     </>
   );
 }

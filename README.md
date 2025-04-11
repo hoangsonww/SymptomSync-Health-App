@@ -36,7 +36,12 @@ Also, remember to create a `.env.local` file in the `web` directory of the proje
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_GOOGLE_AI_API_KEY=your_google_ai_api_key
 ```
+
+> Note: Get the Google AI API key from [https://aistudio.google.com/prompts/new_chat](https://aistudio.google.com/prompts/new_chat) and create a new project. You can find the API key in the project settings.
+
+> For now, instead of the regular chat feature, I'm just introducing a simple chatbot for users to ask about their health.
 
 ### Next Issues
 

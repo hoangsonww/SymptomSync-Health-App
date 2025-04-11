@@ -1,12 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trash2, Upload, Eye, Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Trash2,
+  Loader2,
+  Download,
+  Eye,
+  Plus,
+  Tag,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { format } from "date-fns";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
+import { fetchUserFiles, uploadUserFile } from "@/lib/files";
+import { motion } from "framer-motion";
+import Head from "next/head";
 
 type FileRow = {
   id: string;
@@ -14,199 +40,459 @@ type FileRow = {
   url: string;
   file_type: string;
   uploaded_at: string;
-}
+  tags?: string[];
+};
+
+// Framer Motion variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+  },
+};
+
+const slideInLeft = {
+  hidden: { opacity: 0, x: -50 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+const ITEMS_PER_PAGE = 50;
 
 export default function DocumentsPage() {
   const [files, setFiles] = useState<FileRow[]>([]);
+  const [totalDocuments, setTotalDocuments] = useState(0);
   const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState(false);
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [customFilename, setCustomFilename] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+  const [loadingFiles, setLoadingFiles] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchFiles();
-  }, []);
+  }, [currentPage]);
+
+  useEffect(() => {
+    async function checkUserAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/auth/login");
+      }
+    }
+    checkUserAuth();
+  }, [router]);
 
   async function fetchFiles() {
-    const { data, error } = await supabase
-      .from("files")
-      .select("*")
-      .order("uploaded_at", { ascending: false });
+    setLoadingFiles(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("User not logged in");
+      setLoadingFiles(false);
+      return;
+    }
+    try {
+      const docs = await fetchUserFiles(user.id, currentPage);
+      setFiles(docs);
 
-    if (error) console.error("Error fetching files:", error);
-    else setFiles(data || []);
+      const { count, error: countError } = await supabase
+        .from("files")
+        .select("id", { count: "exact", head: true })
+        .eq("user_profile_id", user.id);
+      if (countError) {
+        console.error("Error fetching documents count:", countError);
+      } else {
+        setTotalDocuments(count || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching files:", error);
+      toast.error("Failed to fetch files");
+    }
+    setLoadingFiles(false);
   }
 
   async function handleUpload() {
     if (!fileToUpload) return;
-    setUploading(true);
-  
-    const user = (await supabase.auth.getUser()).data.user;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
-      alert("User not logged in");
+      toast.error("User not logged in");
       return;
     }
-  
-    const fileExt = fileToUpload.name.split(".").pop();
-    const fileName = `${Date.now()}-${fileToUpload.name}`;
-    const filePath = `documents/${fileName}`;
-  
-    console.log("Uploading file to storage...");
-  
-    const { error: uploadError } = await supabase.storage
-      .from("documents")
-      .upload(filePath, fileToUpload);
-  
-    if (uploadError) {
-      console.error("Storage upload error:", uploadError);
-      setUploading(false);
-      return;
-    }
-  
-    const { data: urlData } = supabase.storage
-      .from("documents")
-      .getPublicUrl(filePath);
-    const publicUrl = urlData.publicUrl;
-  
-    console.log("Public URL:", publicUrl);
-  
-    const { error: insertError } = await supabase.from("files").insert({
-      user_profile_id: user.id,
-      filename: fileToUpload.name,
-      url: publicUrl,
-      file_type: fileExt,
-      uploaded_at: new Date(),
-    });
-  
-    if (insertError) {
-      console.error("Insert error:", insertError);
-    } else {
-      console.log("Inserted successfully into files table");
+    setUploading(true);
+    try {
+      let fileToProcess = fileToUpload;
+      if (customFilename.trim()) {
+        fileToProcess = new File([fileToUpload], customFilename.trim(), {
+          type: fileToUpload.type,
+        });
+      }
+
+      const tags = tagsInput
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== "");
+      const newFile = await uploadUserFile(fileToProcess, user.id, tags);
+      setFiles((prev) => [newFile, ...prev]);
+      toast.success("File uploaded successfully");
+
       setFileToUpload(null);
-      fetchFiles(); // refreshing view
+      setCustomFilename("");
+      setTagsInput("");
+      setDialogOpen(false);
+      fetchFiles();
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Failed to upload file");
+    } finally {
+      setUploading(false);
     }
-  
-    setUploading(false);
   }
-  
-  const filteredFiles = files.filter(file =>
-    file.filename.toLowerCase().includes(search.toLowerCase())
+
+  async function handleDownload(url: string, filename: string) {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download file");
+    }
+  }
+
+  function handleDownloadAll() {
+    files.forEach((file) => {
+      handleDownload(file.url, file.filename);
+    });
+  }
+
+  const filteredFiles = files.filter((file) =>
+    file.filename.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const startIndex =
+    filteredFiles.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+  const endIndex = (currentPage - 1) * ITEMS_PER_PAGE + filteredFiles.length;
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <main className="flex-1 p-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <h1 className="text-3xl font-bold">Your Documents</h1>
-          <p className="text-muted-foreground mb-6">
-            All Your Health Files, In One Place!
-          </p>
-
-          {/* Search & Upload */}
-          <div className="flex items-center gap-4 mb-4">
-            <Input
-              placeholder="Search a Document..."
-              className="w-full max-w-md"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {/* Upload Dialog */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" /> New Document
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Upload Document</DialogTitle>
-                </DialogHeader>
-                <Input
-                  type="file"
-                  onChange={(e) => setFileToUpload(e.target.files?.[0] || null)}
-                />
-                <Button
-                  onClick={handleUpload}
-                  disabled={!fileToUpload || uploading}
-                  className="mt-4 w-full"
+    <>
+      <Head>
+        <title>SymptomSync | Your Documents</title>
+        <meta
+          name="description"
+          content="View and manage your health documents."
+        />
+      </Head>
+      <div className="flex flex-col min-h-screen">
+        <main className="flex-1 p-6">
+          <div className="max-w-6xl mx-auto">
+            {/* Top heading and search bar */}
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="flex flex-col md:flex-row justify-between items-center mb-6"
+              >
+                <motion.div variants={slideInLeft}>
+                  <h1 className="text-3xl font-extrabold text-gray-800">
+                    Your Documents 📝
+                  </h1>
+                  <motion.p
+                    variants={fadeInUp}
+                    className="text-gray-600 mt-2 text-center md:text-left"
+                  >
+                    All Your Health Files, In One Place!
+                  </motion.p>
+                </motion.div>
+              </motion.div>
+              <div className="flex gap-4 mt-4 md:mt-0 items-center">
+                <div className="relative w-full max-w-md">
+                  <Search
+                    size={18}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  />
+                  <Input
+                    ref={searchInputRef}
+                    placeholder="Search a Document..."
+                    className="w-full pl-10"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <motion.div
+                  variants={fadeInUp}
+                  initial="hidden"
+                  animate="visible"
                 >
-                  {uploading ? "Uploading..." : "Upload"}
-                </Button>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {/* Table */}
-          <Card>
-            <CardContent className="p-0">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 border-b">
-                  <tr>
-                    <th className="text-left p-3">Document Name</th>
-                    <th className="text-left p-3">File Type</th>
-                    <th className="text-left p-3">Uploaded</th>
-                    <th className="text-left p-3">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredFiles.map((file) => (
-                    <tr key={file.id} className="border-b hover:bg-gray-50">
-                      <td className="p-3">{file.filename}</td>
-                      <td className="p-3 capitalize">{file.file_type}</td>
-                      <td>{format(new Date(file.uploaded_at), "MMM d, yyyy")}</td>
-                      
-                      <TooltipProvider>
-                      <td className="p-3 flex gap-2">
-                        {/* View */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleDownloadAll}
+                    className="whitespace-nowrap flex items-center gap-2 cursor-pointer"
+                    variant="secondary"
+                  >
+                    <Download size={18} />
+                    Export All
+                  </Button>
+                </motion.div>
+                <motion.div
+                  variants={fadeInUp}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="whitespace-nowrap flex items-center gap-2 cursor-pointer">
+                        <Plus className="mr-2 h-4 w-4" /> New Document
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Upload Document</DialogTitle>
+                      </DialogHeader>
+                      <div className="flex flex-col gap-4 mt-4">
+                        <Input
+                          type="file"
+                          onChange={(e) =>
+                            setFileToUpload(e.target.files?.[0] || null)
+                          }
+                          className="py-2"
+                        />
+                        <Input
+                          placeholder="Custom Filename (optional)"
+                          value={customFilename}
+                          onChange={(e) => setCustomFilename(e.target.value)}
+                          className="py-2"
+                        />
+                        <Input
+                          placeholder="Enter tags, separated by commas (optional)"
+                          value={tagsInput}
+                          onChange={(e) => setTagsInput(e.target.value)}
+                          className="py-2"
+                        />
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => window.open(file.url, "_blank")}
+                          onClick={handleUpload}
+                          disabled={!fileToUpload || uploading}
+                          className="mt-2 cursor-pointer"
                         >
-                          <Eye size={16} />
+                          {uploading ? (
+                            <Loader2 className="animate-spin h-4 w-4" />
+                          ) : (
+                            "Upload"
+                          )}
                         </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>View</TooltipContent>
-                      </Tooltip>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </motion.div>
+              </div>
+            </div>
 
-                        {/* Download */}
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <Upload size={16} />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Download</TooltipContent>
-                        </Tooltip>
-                        
-                        {/* Delete */}
-                        <Tooltip>
-                        <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500"
-                          onClick={async () => {
-                            await supabase.from("files").delete().eq("id", file.id);
-                            fetchFiles();
-                          }}>
-                          <Trash2 size={16} />
-                        </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Delete</TooltipContent>
-                        </Tooltip>
-                      </td>
-                      </TooltipProvider>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-    </div>
+            {/* Table + Card container with animation */}
+            <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+              <Card className="shadow-lg m-0">
+                <CardContent className="p-0 m-0">
+                  <div className="overflow-x-auto p-0 m-0">
+                    <table className="min-w-full text-sm table-auto m-0">
+                      <thead className="bg-primary text-white sticky top-0 z-10 m-0">
+                        <tr className="m-0">
+                          <th className="text-left p-4 m-0">Document Name</th>
+                          <th className="text-left p-4 m-0">File Type</th>
+                          <th className="text-left p-4 m-0">Uploaded</th>
+                          <th className="text-left p-4 m-0">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="m-0">
+                        {loadingFiles ? (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-center">
+                              <Loader2 className="animate-spin inline h-6 w-6" />
+                            </td>
+                          </tr>
+                        ) : filteredFiles.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="p-4 text-center text-gray-500"
+                            >
+                              No documents found.
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredFiles.map((file) => (
+                            <tr
+                              key={file.id}
+                              className="border-b hover:bg-gray-100 transition-all duration-150 ease-in-out m-0"
+                            >
+                              <td className="p-4 whitespace-nowrap">
+                                <div className="font-medium">
+                                  {file.filename}
+                                </div>
+                                {file.tags && file.tags.length > 0 && (
+                                  <div className="mt-1 flex flex-wrap gap-1">
+                                    {file.tags.map((tag, index) => (
+                                      <span
+                                        key={index}
+                                        className="flex items-center gap-1 bg-gray-200 text-gray-800 text-xs px-2 py-0.5 rounded"
+                                      >
+                                        <Tag size={12} /> {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-4 whitespace-nowrap capitalize">
+                                {file.file_type}
+                              </td>
+                              <td className="p-4 whitespace-nowrap">
+                                {format(
+                                  new Date(file.uploaded_at),
+                                  "MMM d, yyyy",
+                                )}
+                              </td>
+                              <TooltipProvider>
+                                <td className="p-4 flex gap-3 m-0">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <motion.div
+                                        variants={fadeInUp}
+                                        initial="hidden"
+                                        animate="visible"
+                                      >
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() =>
+                                            router.push(`/files/${file.id}`)
+                                          }
+                                          className="transition-transform transform hover:scale-105 cursor-pointer"
+                                        >
+                                          <Eye size={18} />
+                                        </Button>
+                                      </motion.div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>View</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <motion.div
+                                        variants={fadeInUp}
+                                        initial="hidden"
+                                        animate="visible"
+                                      >
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() =>
+                                            handleDownload(
+                                              file.url,
+                                              file.filename,
+                                            )
+                                          }
+                                          className="transition-transform transform hover:scale-105 cursor-pointer"
+                                        >
+                                          <Download size={18} />
+                                        </Button>
+                                      </motion.div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Export</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <motion.div
+                                        variants={fadeInUp}
+                                        initial="hidden"
+                                        animate="visible"
+                                      >
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="text-red-500 transition-transform transform hover:scale-105 cursor-pointer"
+                                          onClick={async () => {
+                                            await supabase
+                                              .from("files")
+                                              .delete()
+                                              .eq("id", file.id);
+                                            fetchFiles();
+                                          }}
+                                        >
+                                          <Trash2 size={18} />
+                                        </Button>
+                                      </motion.div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Delete</TooltipContent>
+                                  </Tooltip>
+                                </td>
+                              </TooltipProvider>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Pagination Controls */}
+            <div className="mt-4 flex items-center justify-end gap-4">
+              <motion.div
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <Button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  variant="outline"
+                  className="cursor-pointer"
+                >
+                  <ChevronLeft size={18} />
+                  <span>Previous</span>
+                </Button>
+              </motion.div>
+              <div className="text-gray-700">
+                {startIndex} - {endIndex} of {totalDocuments}
+              </div>
+              <motion.div
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <Button
+                  disabled={endIndex >= totalDocuments}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  variant="outline"
+                  className="cursor-pointer"
+                >
+                  <span>Next</span>
+                  <ChevronRight size={18} />
+                </Button>
+              </motion.div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
   );
 }
