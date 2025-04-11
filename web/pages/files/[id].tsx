@@ -20,7 +20,7 @@ export default function FileViewPage() {
   const router = useRouter();
   const { id } = router.query;
   const [file, setFile] = useState<FileRow | null>(null);
-  const [loading,setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;

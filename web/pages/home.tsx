@@ -30,6 +30,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1273,15 +1281,19 @@ export default function HomePage() {
                     onChange={(e) => setNewMedDosage(e.target.value)}
                     placeholder="e.g. 200"
                   />
-                  <select
-                    className="border border-input rounded px-2 py-1"
+                  <Select
                     value={newMedDosageUnit}
-                    onChange={(e) => setNewMedDosageUnit(e.target.value)}
+                    onValueChange={setNewMedDosageUnit}
                   >
-                    <option value="mg">mg</option>
-                    <option value="ml">ml</option>
-                    <option value="g">g</option>
-                  </select>
+                    <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mg">mg</SelectItem>
+                      <SelectItem value="ml">ml</SelectItem>
+                      <SelectItem value="g">g</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -1296,17 +1308,21 @@ export default function HomePage() {
 
               <div className="space-y-2">
                 <Label>Recurrence</Label>
-                <select
-                  className="border border-input rounded px-2 py-1"
+                <Select
                   value={newMedRecurrence}
-                  onChange={(e) => setNewMedRecurrence(e.target.value)}
+                  onValueChange={setNewMedRecurrence}
                 >
-                  <option value="Daily">Daily</option>
-                  <option value="Weekly">Weekly</option>
-                  <option value="Biweekly">Biweekly</option>
-                  <option value="Monthly">Monthly</option>
-                  <option value="As Needed">As Needed</option>
-                </select>
+                  <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                    <SelectValue placeholder="Select recurrence" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Daily">Daily</SelectItem>
+                    <SelectItem value="Weekly">Weekly</SelectItem>
+                    <SelectItem value="Biweekly">Biweekly</SelectItem>
+                    <SelectItem value="Monthly">Monthly</SelectItem>
+                    <SelectItem value="As Needed">As Needed</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* <div className="space-y-2">
@@ -1412,31 +1428,31 @@ export default function HomePage() {
 
               <div className="space-y-2">
                 <Label>Severity (0-10)</Label>
-                <input
-                  type="range"
+                <Slider
+                  value={[hlSeverity]}
+                  onValueChange={(value) => setHlSeverity(value[0])}
                   min={0}
                   max={10}
-                  className="w-full text-primary"
-                  value={hlSeverity}
-                  onChange={(e) => setHlSeverity(Number(e.target.value))}
+                  step={1}
+                  className="w-full"
                 />
                 <div className="text-xs">Current: {hlSeverity}</div>
               </div>
 
               <div className="space-y-2">
                 <Label>Mood</Label>
-                <select
-                  className="border border-input rounded px-2 py-1"
-                  value={hlMood}
-                  onChange={(e) => setHlMood(e.target.value)}
-                >
-                  <option value="">Select mood</option>
-                  <option value="Happy">Happy</option>
-                  <option value="Sad">Sad</option>
-                  <option value="Neutral">Neutral</option>
-                  <option value="Stressed">Stressed</option>
-                  <option value="Tired">Tired</option>
-                </select>
+                <Select value={hlMood} onValueChange={setHlMood}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select mood" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Happy">Happy</SelectItem>
+                    <SelectItem value="Sad">Sad</SelectItem>
+                    <SelectItem value="Neutral">Neutral</SelectItem>
+                    <SelectItem value="Stressed">Stressed</SelectItem>
+                    <SelectItem value="Tired">Tired</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -1481,15 +1497,19 @@ export default function HomePage() {
                     onChange={(e) => setHlMedIntakeNumber(e.target.value)}
                     placeholder="e.g. 200"
                   />
-                  <select
-                    className="border border-input rounded px-2 py-1"
+                  <Select
                     value={hlMedIntakeUnit}
-                    onChange={(e) => setHlMedIntakeUnit(e.target.value)}
+                    onValueChange={setHlMedIntakeUnit}
                   >
-                    <option value="mg">mg</option>
-                    <option value="ml">ml</option>
-                    <option value="g">g</option>
-                  </select>
+                    <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mg">mg</SelectItem>
+                      <SelectItem value="ml">ml</SelectItem>
+                      <SelectItem value="g">g</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -1568,15 +1588,19 @@ export default function HomePage() {
                       value={editMedDosage}
                       onChange={(e) => setEditMedDosage(e.target.value)}
                     />
-                    <select
-                      className="border border-input rounded px-2 py-1"
+                    <Select
                       value={editMedDosageUnit}
-                      onChange={(e) => setEditMedDosageUnit(e.target.value)}
+                      onValueChange={setEditMedDosageUnit}
                     >
-                      <option value="mg">mg</option>
-                      <option value="ml">ml</option>
-                      <option value="g">g</option>
-                    </select>
+                      <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mg">mg</SelectItem>
+                        <SelectItem value="ml">ml</SelectItem>
+                        <SelectItem value="g">g</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
@@ -1591,17 +1615,21 @@ export default function HomePage() {
 
                 <div className="space-y-2">
                   <Label>Recurrence</Label>
-                  <select
-                    className="border border-input rounded px-2 py-1"
+                  <Select
                     value={editMedRecurrence}
-                    onChange={(e) => setEditMedRecurrence(e.target.value)}
+                    onValueChange={setEditMedRecurrence}
                   >
-                    <option value="Daily">Daily</option>
-                    <option value="Weekly">Weekly</option>
-                    <option value="Biweekly">Biweekly</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="As Needed">As Needed</option>
-                  </select>
+                    <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                      <SelectValue placeholder="Select recurrence" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Daily">Daily</SelectItem>
+                      <SelectItem value="Weekly">Weekly</SelectItem>
+                      <SelectItem value="Biweekly">Biweekly</SelectItem>
+                      <SelectItem value="Monthly">Monthly</SelectItem>
+                      <SelectItem value="As Needed">As Needed</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* <div className="space-y-2">
@@ -1714,31 +1742,34 @@ export default function HomePage() {
 
                 <div className="space-y-2">
                   <Label>Severity (0-10)</Label>
-                  <input
-                    type="range"
+                  <Slider
+                    value={[editSeverity]}
+                    onValueChange={(value) => setEditSeverity(value[0])}
                     min={0}
                     max={10}
+                    step={1}
                     className="w-full"
-                    value={editSeverity}
-                    onChange={(e) => setEditSeverity(Number(e.target.value))}
                   />
                   <div className="text-xs">Current: {editSeverity}</div>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Mood</Label>
-                  <select
-                    className="border border-input rounded px-2 py-1"
-                    value={editMood}
-                    onChange={(e) => setEditMood(e.target.value)}
+                  <Select
+                    value={editMood ?? undefined}
+                    onValueChange={setEditMood}
                   >
-                    <option value="">Select mood</option>
-                    <option value="Happy">Happy</option>
-                    <option value="Sad">Sad</option>
-                    <option value="Neutral">Neutral</option>
-                    <option value="Stressed">Stressed</option>
-                    <option value="Tired">Tired</option>
-                  </select>
+                    <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                      <SelectValue placeholder="Select mood" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Happy">Happy</SelectItem>
+                      <SelectItem value="Sad">Sad</SelectItem>
+                      <SelectItem value="Neutral">Neutral</SelectItem>
+                      <SelectItem value="Stressed">Stressed</SelectItem>
+                      <SelectItem value="Tired">Tired</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -1781,15 +1812,19 @@ export default function HomePage() {
                       value={editMedIntakeNumber}
                       onChange={(e) => setEditMedIntakeNumber(e.target.value)}
                     />
-                    <select
-                      className="border border-input rounded px-2 py-1"
+                    <Select
                       value={editMedIntakeUnit}
-                      onChange={(e) => setEditMedIntakeUnit(e.target.value)}
+                      onValueChange={setEditMedIntakeUnit}
                     >
-                      <option value="mg">mg</option>
-                      <option value="ml">ml</option>
-                      <option value="g">g</option>
-                    </select>
+                      <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mg">mg</SelectItem>
+                        <SelectItem value="ml">ml</SelectItem>
+                        <SelectItem value="g">g</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

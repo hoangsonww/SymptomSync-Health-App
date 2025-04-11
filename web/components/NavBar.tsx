@@ -74,7 +74,7 @@ export default function NavBar({
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setIsLoggedIn(!!session?.user);
-      }
+      },
     );
     return () => {
       authListener.subscription.unsubscribe();

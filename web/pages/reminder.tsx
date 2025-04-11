@@ -68,7 +68,7 @@ export default function MedicationReminders() {
   useEffect(() => {
     fetchReminders();
   }, []);
-  
+
   useEffect(() => {
     async function checkUserAuth() {
       const {

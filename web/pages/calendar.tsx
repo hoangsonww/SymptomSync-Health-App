@@ -23,6 +23,13 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -722,17 +729,21 @@ export default function CalendarPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Recurrence</Label>
-                  <select
-                    className="border border-input rounded px-2 py-1"
-                    value={newMedRecurrence || ""}
-                    onChange={(e) => setNewMedRecurrence(e.target.value)}
+                  <Select
+                    value={newMedRecurrence ?? undefined}
+                    onValueChange={setNewMedRecurrence}
                   >
-                    <option value="">As Needed</option>
-                    <option value="Daily">Daily</option>
-                    <option value="Weekly">Weekly</option>
-                    <option value="Biweekly">Biweekly</option>
-                    <option value="Monthly">Monthly</option>
-                  </select>
+                    <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                      <SelectValue placeholder="Select recurrence" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="as-needed">As Needed</SelectItem>
+                      <SelectItem value="Daily">Daily</SelectItem>
+                      <SelectItem value="Weekly">Weekly</SelectItem>
+                      <SelectItem value="Biweekly">Biweekly</SelectItem>
+                      <SelectItem value="Monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             )}
