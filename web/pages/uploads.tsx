@@ -227,7 +227,8 @@ export default function DocumentsPage() {
                   </motion.p>
                 </motion.div>
               </motion.div>
-              <div className="flex gap-4 mt-4 md:mt-0 items-center">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mt-4 md:mt-0">
+                {/* Search Bar */}
                 <div className="relative w-full max-w-md">
                   <Search
                     size={18}
@@ -241,119 +242,125 @@ export default function DocumentsPage() {
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-                <motion.div
-                  variants={fadeInUp}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <Button
-                    onClick={handleDownloadAll}
-                    className="whitespace-nowrap flex items-center gap-2 cursor-pointer"
-                    variant="secondary"
-                  >
-                    <Download size={18} />
-                    Export All
-                  </Button>
-                </motion.div>
-                <motion.div
-                  variants={fadeInUp}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="whitespace-nowrap flex items-center gap-2 cursor-pointer">
-                        <Plus className="mr-2 h-4 w-4" /> New Document
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Upload Document</DialogTitle>
-                      </DialogHeader>
-                      <div className="flex flex-col gap-4 mt-4">
-                        <Input
-                          type="file"
-                          onChange={(e) =>
-                            setFileToUpload(e.target.files?.[0] || null)
-                          }
-                          className="py-2"
-                        />
-                        <Input
-                          placeholder="Custom Filename (optional)"
-                          value={customFilename}
-                          onChange={(e) => setCustomFilename(e.target.value)}
-                          className="py-2"
-                        />
-                        <Input
-                          placeholder="Enter tags, separated by commas (optional)"
-                          value={tagsInput}
-                          onChange={(e) => setTagsInput(e.target.value)}
-                          className="py-2"
-                        />
-                        <Button
-                          onClick={handleUpload}
-                          disabled={!fileToUpload || uploading}
-                          className="mt-2 cursor-pointer"
-                        >
-                          {uploading ? (
-                            <Loader2 className="animate-spin h-4 w-4" />
-                          ) : (
-                            "Upload"
-                          )}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
 
-                  <Dialog
-                    open={confirmDeleteDialogOpen}
-                    onOpenChange={setConfirmDeleteDialogOpen}
+                {/* Buttons Container */}
+                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto justify-center">
+                  {/* Export All Button */}
+                  <motion.div
+                    variants={fadeInUp}
+                    initial="hidden"
+                    animate="visible"
                   >
-                    <DialogContent className="max-w-sm w-full">
-                      <DialogHeader>
-                        <DialogTitle>Confirm Deletion</DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to delete this file?
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="flex justify-end gap-4 mt-4">
-                        <Button
-                          variant="secondary"
-                          onClick={() => {
-                            setConfirmDeleteDialogOpen(false);
-                            setFileToDelete(null);
-                          }}
-                          className="cursor-pointer"
-                        >
-                          Cancel
+                    <Button
+                      onClick={handleDownloadAll}
+                      className="whitespace-nowrap flex items-center gap-2 cursor-pointer"
+                      variant="secondary"
+                    >
+                      <Download size={18} />
+                      Export All
+                    </Button>
+                  </motion.div>
+                  {/* New Document & Delete Dialogs */}
+                  <motion.div
+                    variants={fadeInUp}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button className="whitespace-nowrap flex items-center gap-2 cursor-pointer">
+                          <Plus className="mr-2 h-4 w-4" /> New Document
                         </Button>
-                        <Button
-                          variant="destructive"
-                          onClick={async () => {
-                            if (fileToDelete) {
-                              try {
-                                await supabase
-                                  .from("files")
-                                  .delete()
-                                  .eq("id", fileToDelete);
-                                toast.success("File deleted successfully");
-                                fetchFiles();
-                              } catch (error) {
-                                console.error("Error deleting file:", error);
-                                toast.error("Failed to delete file");
-                              }
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Upload Document</DialogTitle>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-4 mt-4">
+                          <Input
+                            type="file"
+                            onChange={(e) =>
+                              setFileToUpload(e.target.files?.[0] || null)
                             }
-                            setConfirmDeleteDialogOpen(false);
-                            setFileToDelete(null);
-                          }}
-                          className="cursor-pointer"
-                        >
-                          Yes, Delete
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </motion.div>
+                            className="py-2"
+                          />
+                          <Input
+                            placeholder="Custom Filename (optional)"
+                            value={customFilename}
+                            onChange={(e) => setCustomFilename(e.target.value)}
+                            className="py-2"
+                          />
+                          <Input
+                            placeholder="Enter tags, separated by commas (optional)"
+                            value={tagsInput}
+                            onChange={(e) => setTagsInput(e.target.value)}
+                            className="py-2"
+                          />
+                          <Button
+                            onClick={handleUpload}
+                            disabled={!fileToUpload || uploading}
+                            className="mt-2 cursor-pointer"
+                          >
+                            {uploading ? (
+                              <Loader2 className="animate-spin h-4 w-4" />
+                            ) : (
+                              "Upload"
+                            )}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog
+                      open={confirmDeleteDialogOpen}
+                      onOpenChange={setConfirmDeleteDialogOpen}
+                    >
+                      <DialogContent className="max-w-sm w-full">
+                        <DialogHeader>
+                          <DialogTitle>Confirm Deletion</DialogTitle>
+                          <DialogDescription>
+                            Are you sure you want to delete this file?
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end gap-4 mt-4">
+                          <Button
+                            variant="secondary"
+                            onClick={() => {
+                              setConfirmDeleteDialogOpen(false);
+                              setFileToDelete(null);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={async () => {
+                              if (fileToDelete) {
+                                try {
+                                  await supabase
+                                    .from("files")
+                                    .delete()
+                                    .eq("id", fileToDelete);
+                                  toast.success("File deleted successfully");
+                                  fetchFiles();
+                                } catch (error) {
+                                  console.error("Error deleting file:", error);
+                                  toast.error("Failed to delete file");
+                                }
+                              }
+                              setConfirmDeleteDialogOpen(false);
+                              setFileToDelete(null);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            Yes, Delete
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </motion.div>
+                </div>
               </div>
             </div>
 
