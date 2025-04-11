@@ -274,7 +274,7 @@ export default function ProfilePage() {
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <span className="font-medium">
+                    <span className="font-medium truncate">
                       {usr.full_name || usr.email}
                     </span>
                   </motion.li>
@@ -284,7 +284,7 @@ export default function ProfilePage() {
           </motion.div>
 
           <motion.div variants={fadeInUp}>
-            <Card className="p-6 flex flex-col sm:flex-row items-center shadow-2xl rounded-xl bg-white gap-0">
+            <Card className="p-6 flex flex-col sm:flex-row items-center shadow-2xl rounded-xl bg-white gap-0 overflow-hidden">
               <Avatar className="ml-2 w-24 h-24">
                 {profileToDisplay?.avatar_url ? (
                   <AvatarImage
@@ -297,16 +297,15 @@ export default function ProfilePage() {
                   </AvatarFallback>
                 )}
               </Avatar>
-              <div className="mt-4 sm:mt-0 sm:ml-6 flex-1">
-                <h2 className="text-3xl font-bold">
+              <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 text-left w-full">
+                <h2 className="text-3xl font-bold truncate">
                   {profileToDisplay?.full_name || "Unnamed User"}
                 </h2>
-                <p className="text-md text-gray-600">
+                <p className="text-md text-gray-600 truncate">
                   {profileToDisplay?.email}
                 </p>
-                <p className="text-sm text-gray-500 flex items-center mt-1">
-                  <CalendarDays className="w-4 h-4 mr-1" />
-                  Joined:{" "}
+                <p className="text-sm text-gray-500 flex items-center mt-1 truncate">
+                  <CalendarDays className="w-4 h-4 mr-1" /> Joined:{" "}
                   {profileToDisplay?.created_at
                     ? new Date(profileToDisplay.created_at).toLocaleDateString()
                     : "N/A"}
@@ -317,7 +316,7 @@ export default function ProfilePage() {
                       (tag, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1 bg-secondary text-background rounded-full text-xs flex items-center"
+                          className="px-3 py-1 bg-secondary text-background rounded-full text-xs flex items-center truncate"
                         >
                           <Tag className="w-4 h-4 mr-1" /> {tag}
                         </span>

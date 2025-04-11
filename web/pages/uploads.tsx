@@ -8,7 +8,7 @@ import { Trash2, Upload, Eye, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface FileRow {
+type FileRow = {
   id: string;
   filename: string;
   url: string;

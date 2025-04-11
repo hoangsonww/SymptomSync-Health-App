@@ -627,7 +627,7 @@ export default function Home() {
               SymptomSync.
             </p>
             <motion.a
-              href="#"
+              href="/auth/signUp"
               className="inline-block shadow-2xl rounded-full"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
