@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/router";
 import {
   MedicationReminder,
   getMedicationRemindersByUser,
@@ -183,6 +184,19 @@ export default function HomePage() {
   const [editEndDate, setEditEndDate] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const channelRefs: any[] = [];
+  const router = useRouter();
+
+  useEffect(() => {
+      async function checkUserAuth() {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          router.push("/auth/login");
+        }
+      }
+      checkUserAuth();
+    }, [router]);
 
   /**
    * This function fetches all data for the user, including medications, appointments, and health logs

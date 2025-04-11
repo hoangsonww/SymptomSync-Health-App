@@ -36,7 +36,7 @@ import {
 } from "@/lib/profile";
 import { supabase } from "@/lib/supabaseClient";
 
-// A simple debounce hook to limit frequent search calls.
+// A simple debounce hook to limit frequent search calls
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -46,7 +46,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-// Framer Motion variants.
+// Framer Motion variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -82,7 +82,6 @@ export default function ProfilePage() {
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const profileToDisplay = selectedProfile || profile;
 
-  // Additional check: if no user is signed in, redirect immediately.
   useEffect(() => {
     async function checkUserAuth() {
       const {
@@ -95,7 +94,6 @@ export default function ProfilePage() {
     checkUserAuth();
   }, [router]);
 
-  // Fetch current profile on mount.
   useEffect(() => {
     async function fetchProfile() {
       try {
@@ -117,7 +115,6 @@ export default function ProfilePage() {
     fetchProfile();
   }, [router]);
 
-  // Run search query when debounced search query changes.
   useEffect(() => {
     async function doSearch() {
       if (debouncedSearchQuery.trim() === "") {
@@ -218,7 +215,6 @@ export default function ProfilePage() {
           animate="visible"
           className="max-w-4xl mx-auto space-y-8"
         >
-          {/* Header */}
           <motion.header variants={slideInLeft} className="text-left">
             <h1 className="text-4xl font-bold">
               {profileToDisplay?.id === profile?.id
@@ -230,7 +226,6 @@ export default function ProfilePage() {
             </p>
           </motion.header>
 
-          {/* Search Bar */}
           <motion.div variants={fadeInUp} className="mb-8">
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -288,7 +283,6 @@ export default function ProfilePage() {
             )}
           </motion.div>
 
-          {/* Profile Card */}
           <motion.div variants={fadeInUp}>
             <Card className="p-6 flex flex-col sm:flex-row items-center shadow-2xl rounded-xl bg-white gap-0">
               <Avatar className="ml-2 w-24 h-24">
@@ -346,7 +340,6 @@ export default function ProfilePage() {
             </Card>
           </motion.div>
 
-          {/* Edit Profile Dialog (only for Own Profile) */}
           {profileToDisplay?.id === profile?.id && (
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
               <DialogContent className="bg-white p-8 rounded-xl shadow-2xl max-w-lg mx-auto">
