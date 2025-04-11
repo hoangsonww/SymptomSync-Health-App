@@ -8,9 +8,20 @@
 ![Tailwind](https://img.shields.io/badge/-Tailwind-05122A?style=flat&logo=tailwindcss)
 ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase)
 
+**Supabase Features Used**
+
+1. Authentication
+2. Database
+3. File Storage
+4. Realtime (primarily `postgres_changes`)
+5. Cron Jobs (to send meds & appts reminders to users)
+6. Triggers
+
 ---
 
 ## DEVELOPMENT NOTES: (TO BE REMOVED BEFORE SUBMISSION)
+
+### Getting Started
 
 To install the dependencies:
 
@@ -19,6 +30,13 @@ npm install --legacy-peer-deps
 ```
 
 This is of utmost importance because the `@shadcn/ui` package has a peer dependency on `react@^18.0.0`, and the latest version of `react` is `18.2.0`. If you do not use the `--legacy-peer-deps` flag, you will get an error.
+
+Also, remember to create a `.env.local` file in the `web` directory of the project and add your Supabase URL and Anon Key. You can find these in our Supabase project settings.
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
 ### Next Issues
 
@@ -35,6 +53,22 @@ Then, run the development server again:
 ```bash
 npm run dev
 ```
+
+### Test User Credentials
+
+Email: newemail@example.com1
+Password: 09112004@
+
+### Code Formatting with Prettier
+
+I also added a `format` script in `package.json` for you to easily run to format the entire
+project according to the Prettier configuration. You can run it with:
+
+```bash
+npm run format
+```
+
+This is recommended to be run before committing your changes to ensure that the code is formatted consistently.
 
 ---
 

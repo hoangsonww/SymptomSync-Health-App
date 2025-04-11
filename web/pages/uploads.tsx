@@ -3,7 +3,13 @@ import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Trash2, Upload, Eye, Plus } from "lucide-react";
 import { format } from "date-fns";
 
@@ -38,36 +44,36 @@ export default function DocumentsPage() {
   async function handleUpload() {
     if (!fileToUpload) return;
     setUploading(true);
-  
+
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) {
       alert("User not logged in");
       return;
     }
-  
+
     const fileExt = fileToUpload.name.split(".").pop();
     const fileName = `${Date.now()}-${fileToUpload.name}`;
     const filePath = `documents/${fileName}`;
-  
+
     console.log("Uploading file to storage...");
-  
+
     const { error: uploadError } = await supabase.storage
       .from("documents")
       .upload(filePath, fileToUpload);
-  
+
     if (uploadError) {
       console.error("Storage upload error:", uploadError);
       setUploading(false);
       return;
     }
-  
+
     const { data: urlData } = supabase.storage
       .from("documents")
       .getPublicUrl(filePath);
     const publicUrl = urlData.publicUrl;
-  
+
     console.log("Public URL:", publicUrl);
-  
+
     const { error: insertError } = await supabase.from("files").insert({
       user_profile_id: user.id,
       filename: fileToUpload.name,
@@ -75,24 +81,24 @@ export default function DocumentsPage() {
       file_type: fileExt,
       uploaded_at: new Date(),
     });
-  
+
     if (insertError) {
       console.error("Insert error:", insertError);
     } else {
       console.log("Inserted successfully into files table");
       setFileToUpload(null);
-      fetchFiles(); // refreshing view
+      fetchFiles();
     }
-  
+
     setUploading(false);
   }
-  
-  const filteredFiles = files.filter(file =>
-    file.filename.toLowerCase().includes(search.toLowerCase())
+
+  const filteredFiles = files.filter((file) =>
+    file.filename.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen">
       <main className="flex-1 p-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -109,7 +115,6 @@ export default function DocumentsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            {/* Upload Dialog */}
             <Dialog>
               <DialogTrigger asChild>
                 <Button>
@@ -152,7 +157,9 @@ export default function DocumentsPage() {
                     <tr key={file.id} className="border-b hover:bg-gray-50">
                       <td className="p-3">{file.filename}</td>
                       <td className="p-3 capitalize">{file.file_type}</td>
-                      <td>{format(new Date(file.uploaded_at), "MMM d, yyyy")}</td>
+                      <td>
+                        {format(new Date(file.uploaded_at), "MMM d, yyyy")}
+                      </td>
                       <td className="p-3 flex gap-2">
                         <Button
                           variant="ghost"
@@ -169,7 +176,10 @@ export default function DocumentsPage() {
                           size="icon"
                           className="text-red-500"
                           onClick={async () => {
-                            await supabase.from("files").delete().eq("id", file.id);
+                            await supabase
+                              .from("files")
+                              .delete()
+                              .eq("id", file.id);
                             fetchFiles();
                           }}
                         >

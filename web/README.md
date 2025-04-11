@@ -8,7 +8,7 @@ Install the dependencies:
 npm install --legacy-peer-deps
 ```
 
-This is of utmost importance because the `@shadcn/ui` package has a peer dependency on `react@^18.0.0`, and the latest version of `react` is `18.2.0`. If you do not use the `--legacy-peer-deps` flag, you will get an error.
+This is of utmost importance because the `@shadcn/ui` package has a peer dependency on `react@^18.0.0`, and the latest version of `react` is `19.0.0`. If you do not use the `--legacy-peer-deps` flag, you will get an error.
 
 Next, run the development server:
 
