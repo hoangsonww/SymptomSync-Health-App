@@ -163,7 +163,7 @@ export default function Home() {
             <Link href="#features" className="inline-block mt-4">
               <Button
                 variant="ghost"
-                className="text-white rounded-full px-8 py-4 text-lg hover:bg-white/10 cursor-pointer"
+                className="text-white rounded-full px-8 py-4 text-lg cursor-pointer transform transition-transform duration-300 hover:translate-y-2"
               >
                 Learn More
                 <ArrowDown className="w-5 h-5 ml-2 inline-block" />
