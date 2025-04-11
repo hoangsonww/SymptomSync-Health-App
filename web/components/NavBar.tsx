@@ -186,7 +186,7 @@ export default function NavBar({
             <NavItem
               href="/reminder"
               icon={<List className="w-5 h-5" />}
-              label="Med Schedule"
+              label="Medication Schedule"
               isExpanded={isExpanded}
             />
             <NavItem
