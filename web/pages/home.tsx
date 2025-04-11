@@ -774,23 +774,22 @@ export default function HomePage() {
     moodCountMap[lower] = (moodCountMap[lower] || 0) + 1;
   });
   const moodLabels = Object.keys(moodCountMap).map(
-  (mood) => mood.charAt(0).toUpperCase() + mood.slice(1)
-);
-const moodValues = moodLabels.map(
-  (label) => moodCountMap[label.toLowerCase()] 
-);
-const moodRadarData = {
-  labels: moodLabels,
-  datasets: [
-    {
-      label: "Mood Distribution",
-      data: moodValues,
-      backgroundColor: colorSet[2],
-      borderColor: colorSet[2],
-    },
-  ],
-};
-
+    (mood) => mood.charAt(0).toUpperCase() + mood.slice(1),
+  );
+  const moodValues = moodLabels.map(
+    (label) => moodCountMap[label.toLowerCase()],
+  );
+  const moodRadarData = {
+    labels: moodLabels,
+    datasets: [
+      {
+        label: "Mood Distribution",
+        data: moodValues,
+        backgroundColor: colorSet[2],
+        borderColor: colorSet[2],
+      },
+    ],
+  };
 
   const severityCountMap: Record<string, number> = {};
   logs.forEach((log) => {
@@ -1193,90 +1192,105 @@ const moodRadarData = {
           </Card>
 
           <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0 hover:-translate-y-1 hover:scale-101">
-  <CardHeader className="mt-8">
-    <CardTitle>Health Logs</CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-2 text-sm">
-    {logs.length === 0 ? (
-      <p className="text-muted-foreground">No health logs yet.</p>
-    ) : (
-      logs.map((log, idx) => {
-        let vitalsData = null;
-        if (log.vitals) {
-          try {
-            vitalsData =
-              typeof log.vitals === "string" ? JSON.parse(log.vitals) : log.vitals;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (error) {
-            vitalsData = null;
-          }
-        }
-        return (
-          <div
-            key={log.id}
-            className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
-            style={getStaggerStyle(idx)}
-          >
-            <div className="font-medium">
-              Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Severity:{" "}
-              {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-              {/* @ts-ignore */}
-              {log.severity !== undefined && log.severity !== null && log.severity !== ""
-                ? log.severity
-                : "N/A"}
-              <br />
-              Mood: {safeDisplay(log.mood) || "N/A"}
-              <br />
-              <div>Vitals:</div>
-              {vitalsData && typeof vitalsData === "object" ? (
-                <ul className="list-disc list-inside">
-                  <li>
-                    <span className="capitalize font-medium">heartRate:</span>{" "}
-                    {vitalsData.heartRate ? vitalsData.heartRate : "N/A"}
-                  </li>
-                  <li>
-                    <span className="capitalize font-medium">bloodPressure:</span>{" "}
-                    {vitalsData.bloodPressure ? vitalsData.bloodPressure : "N/A"}
-                  </li>
-                </ul>
+            <CardHeader className="mt-8">
+              <CardTitle>Health Logs</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              {logs.length === 0 ? (
+                <p className="text-muted-foreground">No health logs yet.</p>
               ) : (
-                <>Vitals: {log.vitals ? log.vitals : "N/A"}</>
+                logs.map((log, idx) => {
+                  let vitalsData = null;
+                  if (log.vitals) {
+                    try {
+                      vitalsData =
+                        typeof log.vitals === "string"
+                          ? JSON.parse(log.vitals)
+                          : log.vitals;
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    } catch (error) {
+                      vitalsData = null;
+                    }
+                  }
+                  return (
+                    <div
+                      key={log.id}
+                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
+                      style={getStaggerStyle(idx)}
+                    >
+                      <div className="font-medium">
+                        Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Severity:{" "}
+                        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+                        {/* @ts-ignore */}
+                        {log.severity !== undefined &&
+                        log.severity !== null &&
+                        log.severity !== ""
+                          ? log.severity
+                          : "N/A"}
+                        <br />
+                        Mood: {safeDisplay(log.mood) || "N/A"}
+                        <br />
+                        <div>Vitals:</div>
+                        {vitalsData && typeof vitalsData === "object" ? (
+                          <ul className="list-disc list-inside">
+                            <li>
+                              <span className="capitalize font-medium">
+                                heartRate:
+                              </span>{" "}
+                              {vitalsData.heartRate
+                                ? vitalsData.heartRate
+                                : "N/A"}
+                            </li>
+                            <li>
+                              <span className="capitalize font-medium">
+                                bloodPressure:
+                              </span>{" "}
+                              {vitalsData.bloodPressure
+                                ? vitalsData.bloodPressure
+                                : "N/A"}
+                            </li>
+                          </ul>
+                        ) : (
+                          <>Vitals: {log.vitals ? log.vitals : "N/A"}</>
+                        )}
+                        Medication Intake:{" "}
+                        {safeDisplay(log.medication_intake) || "N/A"}
+                        <br />
+                        Notes: {safeDisplay(log.notes) || "N/A"}
+                        <br />
+                        Start: {new Date(log.start_date).toLocaleString()}
+                        <br />
+                        End:{" "}
+                        {log.end_date
+                          ? new Date(log.end_date).toLocaleString()
+                          : "N/A"}
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => openEditLogDialog(log)}
+                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                        >
+                          View / Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteLog(log.id)}
+                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })
               )}
-              Medication Intake: {safeDisplay(log.medication_intake) || "N/A"}
-              <br />
-              Notes: {safeDisplay(log.notes) || "N/A"}
-              <br />
-              Start: {new Date(log.start_date).toLocaleString()}
-              <br />
-              End: {log.end_date ? new Date(log.end_date).toLocaleString() : "N/A"}
-            </div>
-            <div className="flex gap-2 mt-2">
-              <Button
-                size="sm"
-                onClick={() => openEditLogDialog(log)}
-                className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-              >
-                View / Edit
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => handleDeleteLog(log.id)}
-                className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        );
-      })
-    )}
-  </CardContent>
-</Card>
-
+            </CardContent>
+          </Card>
         </div>
 
         <Dialog open={addMedOpen} onOpenChange={setAddMedOpen}>

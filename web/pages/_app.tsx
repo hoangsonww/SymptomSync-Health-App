@@ -5,8 +5,8 @@ import { useEffect, useState, useRef } from "react";
 import NavBar from "@/components/NavBar";
 import { Toaster, toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
-import { fetchUserReminders,Reminder } from "@/lib/reminders";
-import { Analytics } from "@vercel/analytics/react"
+import { fetchUserReminders, Reminder } from "@/lib/reminders";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
