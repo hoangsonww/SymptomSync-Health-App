@@ -61,7 +61,6 @@ export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     if (!userId) return;
     const interval = setInterval(async () => {
-      // Extra check: only run if userId is still present
       if (!userId) return;
       try {
         const reminders: Reminder[] = await fetchUserReminders(userId);
