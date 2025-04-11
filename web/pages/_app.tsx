@@ -34,13 +34,13 @@ export default function App({ Component, pageProps }: AppProps) {
     localStorage.setItem("navExpanded", String(navExpanded));
   }, [navExpanded]);
 
-  // Push content to the right when nav is expanded
+  // Push content to the right when nav is expanded. This is kinda a
+  // hacky way to do it, but it works
   const marginLeft = isMobile ? "0" : navExpanded ? "16rem" : "5rem";
 
   const [userId, setUserId] = useState<string | null>(null);
   const toastedReminderIds = useRef<Set<string>>(new Set());
 
-  // Get user ID from Supabase auth on initial load
   useEffect(() => {
     let isMounted = true;
     async function init() {
@@ -52,6 +52,7 @@ export default function App({ Component, pageProps }: AppProps) {
       }
     }
     init();
+
     return () => {
       isMounted = false;
     };
@@ -62,9 +63,11 @@ export default function App({ Component, pageProps }: AppProps) {
     if (!userId) return;
     const interval = setInterval(async () => {
       if (!userId) return;
+
       try {
         const reminders: Reminder[] = await fetchUserReminders(userId);
         const now = new Date();
+
         reminders.forEach((reminder) => {
           if (
             reminder.dueTime.getTime() <= now.getTime() &&
@@ -83,6 +86,7 @@ export default function App({ Component, pageProps }: AppProps) {
         console.error("Error polling reminders:", err);
       }
     }, 1000);
+
     return () => clearInterval(interval);
   }, [userId]);
 
