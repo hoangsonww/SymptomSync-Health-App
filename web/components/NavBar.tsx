@@ -11,6 +11,7 @@ import {
   Menu,
   LogIn,
   LogOut,
+  File,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { signOut } from "@/lib/auth";
@@ -140,6 +141,12 @@ export default function NavBar({
               href="/chat"
               icon={<MessageSquare className="w-5 h-5" />}
               label="Chat"
+              isExpanded={isExpanded}
+            />
+            <NavItem
+              href="/uploads"
+              icon={<File className="w-5 h-5" />}
+              label="Documents"
               isExpanded={isExpanded}
             />
             <NavItem
