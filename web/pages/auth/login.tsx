@@ -38,21 +38,21 @@ export default function LoginPage() {
   return (
     <>
       <Head>
-        <title>Log In | SymptomSync</title>
+        <title>SymptomSync | Log In</title>
         <meta
           name="description"
           content="Log in to your SymptomSync account to track and manage your health."
         />
       </Head>
-      <div className="min-h-screen flex flex-col sm:flex-row">
-        <div className="bg-secondary w-full sm:w-1/2 p-8 sm:py-12 sm:px-10 flex flex-col relative">
+      <div className="h-screen flex flex-col sm:flex-row">
+        <div className="bg-secondary w-full sm:w-1/2 flex-1 p-8 sm:py-12 sm:px-10 flex flex-col relative">
           <div className="absolute top-4 left-4">
             <Link
-  href="/auth/signUp"
-  className="border border-black px-4 py-1 rounded text-sm font-medium hover:text-white hover:bg-accent transition cursor-pointer"
->
-  Create Account
-</Link>
+              href="/auth/signUp"
+              className="border border-black px-4 py-1 rounded text-sm font-medium hover:text-white hover:bg-accent transition cursor-pointer"
+            >
+              Create Account
+            </Link>
           </div>
           <div className="flex flex-col justify-center flex-1 max-w-md w-full mx-auto mt-12 sm:mt-0">
             <h2 className="text-2xl sm:text-3xl font-bold mb-6">Log In</h2>
@@ -118,7 +118,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="bg-primary w-full sm:w-1/2 p-8 sm:py-12 sm:px-10 flex flex-col">
+        <div className="bg-primary w-full sm:w-1/2 flex-1 p-8 sm:py-12 sm:px-10 flex flex-col">
           <div className="flex flex-col justify-between h-full">
             <div className="text-right mb-8">
               <h1 className="text-3xl sm:text-4xl font-bold text-white">

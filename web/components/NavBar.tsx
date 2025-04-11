@@ -12,6 +12,7 @@ import {
   LogIn,
   LogOut,
   File,
+  X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { signOut } from "@/lib/auth";
@@ -60,7 +61,7 @@ export default function NavBar({
   setIsExpanded,
 }: NavBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isLoggedIn,setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -104,7 +105,11 @@ export default function NavBar({
           className="fixed top-2 right-2 z-50 md:hidden p-2 bg-primary text-white rounded-full shadow hover:bg-white/10 hover:text-primary cursor-pointer"
           onClick={() => setMobileOpen((prev) => !prev)}
         >
-          <Menu className="w-5 h-5" />
+          {mobileOpen ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <Menu className="w-5 h-5" />
+          )}
         </button>
       )}
       <nav className={containerClasses}>
@@ -165,10 +170,10 @@ export default function NavBar({
                 }
               >
                 <div className="flex-shrink-0 flex justify-center items-center w-5 h-5">
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-5 h-5 text-red-500" />
                 </div>
                 {isExpanded && (
-                  <span className="whitespace-nowrap transition-opacity duration-200 block text-base font-medium">
+                  <span className="whitespace-nowrap transition-opacity duration-200 block font-medium text-red-500">
                     Log Out
                   </span>
                 )}

@@ -4,7 +4,7 @@ export default function TermsAndConditions() {
   return (
     <>
       <Head>
-        <title>Terms & Conditions | SymptomSync</title>
+        <title>SymptomSync | Terms and Conditions</title>
         <meta
           name="description"
           content="Read the Terms and Conditions for SymptomSync. Understand the rules and guidelines for using our app."

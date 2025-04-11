@@ -40,14 +40,14 @@ export default function SignUp() {
   return (
     <>
       <Head>
-        <title>Sign Up | SymptomSync</title>
+        <title>SymptomSync | Sign Up</title>
         <meta
           name="description"
           content="Create an account to track and manage your health with SymptomSync."
         />
       </Head>
-      <div className="min-h-screen flex flex-col sm:flex-row">
-        <div className="bg-primary text-white w-full sm:w-1/2 flex flex-col p-8 sm:py-12 sm:px-10">
+      <div className="h-screen flex flex-col sm:flex-row">
+        <div className="bg-primary text-white w-full sm:w-1/2 flex-1 flex flex-col p-8 sm:py-12 sm:px-10">
           <div className="flex flex-col justify-between h-full">
             <div className="mb-8">
               <h1 className="text-3xl sm:text-4xl font-bold">SymptomSync</h1>
@@ -62,14 +62,14 @@ export default function SignUp() {
           </div>
         </div>
 
-        <div className="bg-secondary w-full sm:w-1/2 p-8 sm:py-12 sm:px-10 relative flex flex-col">
+        <div className="bg-secondary w-full sm:w-1/2 flex-1 p-8 sm:py-12 sm:px-10 relative flex flex-col">
           <div className="absolute top-4 right-4">
             <Link
-  href="/auth/login"
-  className="border border-black px-4 py-1 rounded text-sm font-medium hover:text-white hover:bg-accent transition"
->
-  Login
-</Link>
+              href="/auth/login"
+              className="border border-black px-4 py-1 rounded text-sm font-medium hover:text-white hover:bg-accent transition"
+            >
+              Login
+            </Link>
           </div>
 
           <div className="flex flex-col justify-center flex-1 max-w-md w-full mx-auto mt-8 sm:mt-0">

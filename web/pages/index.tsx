@@ -99,7 +99,7 @@ const sliderSettings = {
   arrows: true,
   infinite: true,
   autoplay: true,
-  autoplaySpeed: 4000,
+  autoplaySpeed: 2500,
   speed: 500,
   slidesToShow: 3,
   slidesToScroll: 1,
@@ -121,13 +121,15 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Welcome | SymptomSync</title>
+        <title>SymptomSync | Welcome</title>
         <meta
           name="description"
           content="Your health companion to track, understand, and manage your daily health seamlessly."
         />
       </Head>
       <div className={`${inter.className} font-sans overflow-x-hidden`}>
+        {/* Gotta override the default scroll behavior */}
+        {/* This is a workaround for smooth scrolling */}
         <style jsx global>{`
           html {
             scroll-behavior: smooth;
@@ -161,7 +163,7 @@ export default function Home() {
             <Link href="#features" className="inline-block mt-4">
               <Button
                 variant="ghost"
-                className="text-white rounded-full px-8 py-4 text-lg hover:bg-white/10 cursor-pointer"
+                className="text-white rounded-full px-8 py-4 text-lg cursor-pointer transform transition-transform duration-300 hover:translate-y-2"
               >
                 Learn More
                 <ArrowDown className="w-5 h-5 ml-2 inline-block" />
