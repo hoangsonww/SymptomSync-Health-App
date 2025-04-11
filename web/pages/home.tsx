@@ -692,7 +692,7 @@ export default function HomePage() {
 
   // Color palette
   const colorSet = [
-    "#4361EE",
+    "#344966",
     "#F97F51",
     "#EAD637",
     "#4CD137",
