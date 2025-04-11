@@ -10,7 +10,7 @@ import { Analytics } from "@vercel/analytics/react"
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  // Hide the nav bar on auth pages and landing page and 404
+  // Wanna hide the nav bar on auth pages and landing page and 404
   const authPaths = ["/", "/auth/signUp", "/auth/login", "/404"];
   const hideNav = authPaths.includes(router.pathname);
 
