@@ -44,8 +44,8 @@ export default function LoginPage() {
           content="Log in to your SymptomSync account to track and manage your health."
         />
       </Head>
-      <div className="min-h-screen flex flex-col sm:flex-row">
-        <div className="bg-secondary w-full sm:w-1/2 p-8 sm:py-12 sm:px-10 flex flex-col relative">
+      <div className="h-screen flex flex-col sm:flex-row">
+        <div className="bg-secondary w-full sm:w-1/2 flex-1 p-8 sm:py-12 sm:px-10 flex flex-col relative">
           <div className="absolute top-4 left-4">
             <Link
               href="/auth/signUp"
@@ -118,7 +118,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="bg-primary w-full sm:w-1/2 p-8 sm:py-12 sm:px-10 flex flex-col">
+        <div className="bg-primary w-full sm:w-1/2 flex-1 p-8 sm:py-12 sm:px-10 flex flex-col">
           <div className="flex flex-col justify-between h-full">
             <div className="text-right mb-8">
               <h1 className="text-3xl sm:text-4xl font-bold text-white">
