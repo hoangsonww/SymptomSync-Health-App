@@ -165,10 +165,10 @@ export default function NavBar({
                 }
               >
                 <div className="flex-shrink-0 flex justify-center items-center w-5 h-5">
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-5 h-5 text-red-500" />
                 </div>
                 {isExpanded && (
-                  <span className="whitespace-nowrap transition-opacity duration-200 block text-base font-medium">
+                  <span className="whitespace-nowrap transition-opacity duration-200 block font-medium text-red-500">
                     Log Out
                   </span>
                 )}

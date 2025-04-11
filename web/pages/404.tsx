@@ -37,7 +37,7 @@ export default function Custom404() {
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           >
             <Link
-              href="/"
+              href="/home"
               className="px-6 py-3 bg-white text-primary rounded-full font-semibold hover:bg-gray-100 transition-colors duration-300"
             >
               Return Home

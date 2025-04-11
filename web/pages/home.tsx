@@ -837,7 +837,7 @@ export default function HomePage() {
             {greeting}, {userName} {emoji}!
           </h1>
           <p className="text-sm md:text-base text-muted-foreground">
-            Your personal health dashboard.
+            Let&apos;s make today a little healther ~
           </p>
         </div>
 
@@ -879,10 +879,10 @@ export default function HomePage() {
           ].map((stat, idx) => (
             <Card
               key={stat.label}
-              className="bg-card border border-border rounded-lg p-4 min-w-[280px] text-center transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101"
+              className="bg-card border border-border rounded-lg p-4 pt-6 min-w-[280px] gap-0 text-center transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101"
               style={getStaggerStyle(idx)}
             >
-              <CardHeader className="pb-2">
+              <CardHeader>
                 <CardTitle className="text-xl font-semibold">
                   {stat.label}
                 </CardTitle>
@@ -897,7 +897,7 @@ export default function HomePage() {
         </div>
 
         <div style={{ animationDelay: "0.7s" }}>
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] w-full p-4 transition-all hover:shadow-xl h-auto min-h-[450px] hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg min-w-[280px] w-full pt-4 transition-all hover:shadow-xl h-auto min-h-[450px] hover:-translate-y-1 hover:scale-101">
             <CardHeader>
               <CardTitle className="text-lg md:text-xl">
                 Overall Health Trend
@@ -921,7 +921,7 @@ export default function HomePage() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           style={{ animationDelay: "0.9s" }}
         >
-          <Card className="bg-card border border-border rounded-lg p-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
             <CardHeader>
               <CardTitle>Appointments / Day</CardTitle>
             </CardHeader>
@@ -941,7 +941,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border rounded-lg p-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
             <CardHeader>
               <CardTitle>Symptom Distribution</CardTitle>
             </CardHeader>
@@ -961,7 +961,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border rounded-lg p-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
             <CardHeader>
               <CardTitle>Mood Distribution</CardTitle>
             </CardHeader>
@@ -978,7 +978,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border rounded-lg p-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
             <CardHeader>
               <CardTitle>Severity Distribution</CardTitle>
             </CardHeader>
@@ -998,7 +998,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border rounded-lg p-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
             <CardHeader>
               <CardTitle>Appointments / Hour</CardTitle>
             </CardHeader>
@@ -1018,7 +1018,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border rounded-lg p-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
             <CardHeader>
               <CardTitle>Medications / Recurrence</CardTitle>
             </CardHeader>
@@ -1043,8 +1043,8 @@ export default function HomePage() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           style={{ animationDelay: "1.1s" }}
         >
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-4 hover:-translate-y-1 hover:scale-101">
-            <CardHeader>
+          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0 hover:-translate-y-1 hover:scale-101">
+            <CardHeader className="mt-8">
               <CardTitle>Medications</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
@@ -1094,8 +1094,8 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-4 hover:-translate-y-1 hover:scale-101">
-            <CardHeader>
+          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0 hover:-translate-y-1 hover:scale-101">
+            <CardHeader className="mt-8">
               <CardTitle>Appointments</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
@@ -1141,8 +1141,8 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-4 hover:-translate-y-1 hover:scale-101">
-            <CardHeader>
+          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0 hover:-translate-y-1 hover:scale-101">
+            <CardHeader className="mt-8">
               <CardTitle>Health Logs</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">

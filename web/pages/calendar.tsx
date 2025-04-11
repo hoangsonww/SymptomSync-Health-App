@@ -492,7 +492,7 @@ export default function CalendarPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="secondary"
-              className="hover:-translate-y-1 transition-transform duration-300"
+              className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
               onClick={() => {
                 setSelectMode(!selectMode);
                 if (selectMode) setSelectedEventIds(new Set());
@@ -514,7 +514,7 @@ export default function CalendarPage() {
             {selectMode && selectedEventIds.size > 0 && (
               <Button
                 variant="destructive"
-                className="hover:-translate-y-1 transition-transform duration-300"
+                className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                 onClick={handleDeleteSelected}
               >
                 <Trash2 className="w-4 h-4 mr-1" />
@@ -531,7 +531,7 @@ export default function CalendarPage() {
               setAddType("appointment");
               setShowAddDialog(true);
             }}
-            className="hover:-translate-y-1 transition-transform duration-300"
+            className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
           >
             Add Appointment
           </Button>
@@ -541,14 +541,14 @@ export default function CalendarPage() {
               setAddType("medication");
               setShowAddDialog(true);
             }}
-            className="hover:-translate-y-1 transition-transform duration-300"
+            className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
           >
             Add Medication
           </Button>
         </div>
 
         <div
-          className="bg-popover border border-border p-1 rounded-lg"
+          className="bg-popover p-2 rounded-lg shadow-md"
           style={{ height: "calc(100vh - 12rem)" }}
         >
           <Calendar
@@ -579,18 +579,21 @@ export default function CalendarPage() {
             <DialogFooter>
               <Button
                 variant="secondary"
+                className="cursor-pointer"
                 onClick={() => setShowSelectTypeDialog(false)}
               >
                 Cancel
               </Button>
               <Button
                 variant="default"
+                className="cursor-pointer"
                 onClick={() => onSelectType("appointment")}
               >
                 Appointment
               </Button>
               <Button
                 variant="default"
+                className="cursor-pointer"
                 onClick={() => onSelectType("medication")}
               >
                 Medication
@@ -679,16 +682,25 @@ export default function CalendarPage() {
             <DialogFooter>
               <Button
                 variant="secondary"
+                className="cursor-pointer"
                 onClick={() => setShowAddDialog(false)}
               >
                 Cancel
               </Button>
               {addType === "appointment" ? (
-                <Button variant="default" onClick={handleAddAppointment}>
+                <Button
+                  variant="default"
+                  onClick={handleAddAppointment}
+                  className="cursor-pointer"
+                >
                   Save
                 </Button>
               ) : (
-                <Button variant="default" onClick={handleAddMedication}>
+                <Button
+                  variant="default"
+                  onClick={handleAddMedication}
+                  className="cursor-pointer"
+                >
                   Save
                 </Button>
               )}
@@ -741,17 +753,26 @@ export default function CalendarPage() {
             <DialogFooter>
               <Button
                 variant="secondary"
+                className="cursor-pointer"
                 onClick={() => setShowEventDialog(false)}
               >
                 Close
               </Button>
               {dialogEvent && (
                 <>
-                  <Button variant="default" onClick={handleSaveEventEdits}>
+                  <Button
+                    variant="default"
+                    className="cursor-pointer"
+                    onClick={handleSaveEventEdits}
+                  >
                     <Edit3 className="w-4 h-4 mr-1" />
                     Save Changes
                   </Button>
-                  <Button variant="destructive" onClick={handleDeleteSingle}>
+                  <Button
+                    variant="destructive"
+                    className="cursor-pointer"
+                    onClick={handleDeleteSingle}
+                  >
                     <Trash2 className="w-4 h-4 mr-1" />
                     Delete
                   </Button>
@@ -776,11 +797,16 @@ export default function CalendarPage() {
             <DialogFooter>
               <Button
                 variant="secondary"
+                className="cursor-pointer"
                 onClick={() => setShowConfirmDeleteDialog(false)}
               >
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={doDeleteEvents}>
+              <Button
+                variant="destructive"
+                className="cursor-pointer"
+                onClick={doDeleteEvents}
+              >
                 Yes, Delete
               </Button>
             </DialogFooter>

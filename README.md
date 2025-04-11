@@ -52,6 +52,17 @@ npm run dev
 Email: newemail@example.com1
 Password: 09112004@
 
+### Code Formatting with Prettier
+
+I also added a `format` script in `package.json` for you to easily run to format the entire
+project according to the Prettier configuration. You can run it with:
+
+```bash
+npm run format
+```
+
+This is recommended to be run before committing your changes to ensure that the code is formatted consistently.
+
 ---
 
 _Add some screenshots or graphics here that show your app being used!_
