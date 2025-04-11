@@ -1223,10 +1223,10 @@ export default function HomePage() {
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Severity:{" "}
-                        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-                        {/* @ts-ignore */}
                         {log.severity !== undefined &&
                         log.severity !== null &&
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
                         log.severity !== ""
                           ? log.severity
                           : "N/A"}
