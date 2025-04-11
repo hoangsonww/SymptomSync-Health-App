@@ -5,7 +5,8 @@ import { useEffect, useState, useRef } from "react";
 import NavBar from "@/components/NavBar";
 import { Toaster, toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
-import { fetchUserReminders, Reminder } from "@/lib/reminders";
+import { fetchUserReminders,Reminder } from "@/lib/reminders";
+import { Analytics } from "@vercel/analytics/react"
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -95,6 +96,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <>
         <Component {...pageProps} />
         <Toaster position="bottom-right" richColors />
+        <Analytics />
       </>
     );
   }
@@ -110,6 +112,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <Component {...pageProps} />
       </main>
       <Toaster position="bottom-right" richColors />
+      <Analytics />
     </div>
   );
 }
