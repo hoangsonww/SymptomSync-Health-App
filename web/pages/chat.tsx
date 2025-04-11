@@ -199,10 +199,13 @@ const getInitialMessages = (): ChatMessage[] => {
 // to ensure the component only mounts on the client side
 const ClientOnly: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
   if (!mounted) return null;
+
   return <>{children}</>;
 };
 
@@ -323,7 +326,6 @@ export default function AIChatPage() {
       </Head>
 
       <ClientOnly>
-        {/* Outer container prevents page scrolling */}
         <motion.div
           className="min-h-screen bg-background text-foreground p-4 sm:p-6 overflow-hidden"
           variants={containerVariants}
@@ -331,7 +333,6 @@ export default function AIChatPage() {
           animate="visible"
         >
           <div className="max-w-4xl mx-auto space-y-6">
-            {/* Heading and subheading */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-6">
               <motion.div
                 variants={containerVariants}
@@ -427,7 +428,6 @@ export default function AIChatPage() {
                   <div ref={scrollRef} />
                 </div>
 
-                {/* Input Row */}
                 <div className="flex gap-2">
                   <Input
                     placeholder="Type your message…"

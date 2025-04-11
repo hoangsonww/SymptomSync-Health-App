@@ -337,7 +337,7 @@ export default function DocumentsPage() {
                                   .delete()
                                   .eq("id", fileToDelete);
                                 toast.success("File deleted successfully");
-                                fetchFiles(); // Refresh the files list
+                                fetchFiles();
                               } catch (error) {
                                 console.error("Error deleting file:", error);
                                 toast.error("Failed to delete file");

@@ -8,7 +8,6 @@ import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-// Framer Motion variants for overall page & header
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -35,7 +34,6 @@ const fadeInUp = {
   },
 };
 
-// New container variant for cards to stagger their appearance
 const cardContainerVariants = {
   hidden: {},
   visible: {
@@ -133,7 +131,6 @@ export default function MedicationReminders() {
     }
   }
 
-  // Bell icon handler now uses the specific reminder info for the toast.
   function handleBellClick(reminder: Reminder) {
     const takeTime = format(new Date(reminder.reminder_time), "PPP, h:mm a");
     toast(
@@ -206,7 +203,6 @@ export default function MedicationReminders() {
                 </div>
 
                 <div className="flex flex-col gap-2 items-end text-white opacity-80">
-                  {/* Bell Button */}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -217,7 +213,6 @@ export default function MedicationReminders() {
                     <Bell size={16} />
                   </Button>
 
-                  {/* Pencil Button */}
                   <Button
                     variant="ghost"
                     size="icon"

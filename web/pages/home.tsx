@@ -51,8 +51,6 @@ import {
 } from "chart.js";
 import { Line, Bar, Doughnut, Radar, PolarArea } from "react-chartjs-2";
 import Head from "next/head";
-
-// Import Framer Motion for animations
 import { motion } from "framer-motion";
 
 ChartJS.register(
@@ -859,7 +857,6 @@ export default function HomePage() {
         <meta name="description" content="Your personal health dashboard." />
       </Head>
 
-      {/* Wrap the entire page in a motion.div with containerVariants */}
       <motion.div
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -868,7 +865,6 @@ export default function HomePage() {
         animate="visible"
         className="p-6 md:p-8 flex-1 overflow-y-auto space-y-8"
       >
-        {/* Top heading, subheading */}
         <motion.div variants={slideInLeft}>
           <h1 className="text-3xl font-bold mb-2">
             {greeting}, {userName} {emoji}!
