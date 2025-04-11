@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import { supabase } from "@/lib/supabaseClient";
 import { Bell, Pencil, Loader2 } from "lucide-react";
@@ -62,10 +63,23 @@ export default function MedicationReminders() {
   const [editMedTime, setEditMedTime] = useState("");
   const [editMedRecurrence, setEditMedRecurrence] = useState("Daily");
   const [editMedCalendarSync, setEditMedCalendarSync] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     fetchReminders();
   }, []);
+  
+  useEffect(() => {
+    async function checkUserAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/auth/login");
+      }
+    }
+    checkUserAuth();
+  }, [router]);
 
   async function fetchReminders() {
     const { data: userData, error: userError } = await supabase.auth.getUser();

@@ -1416,7 +1416,7 @@ export default function HomePage() {
                   type="range"
                   min={0}
                   max={10}
-                  className="w-full"
+                  className="w-full text-primary"
                   value={hlSeverity}
                   onChange={(e) => setHlSeverity(Number(e.target.value))}
                 />

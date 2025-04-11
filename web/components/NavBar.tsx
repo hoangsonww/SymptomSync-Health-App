@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
@@ -64,6 +64,8 @@ export default function NavBar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
+  const navRef = useRef<HTMLDivElement>(null);
+  const mobileButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -72,12 +74,34 @@ export default function NavBar({
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setIsLoggedIn(!!session?.user);
-      },
+      }
     );
     return () => {
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  // Handle outside clicks on mobile, excluding the menu button
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (window.innerWidth >= 768) return;
+
+      if (
+        mobileOpen &&
+        navRef.current &&
+        mobileButtonRef.current &&
+        !navRef.current.contains(event.target as Node) &&
+        !mobileButtonRef.current.contains(event.target as Node)
+      ) {
+        setMobileOpen(false);
+      }
+    }
+
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [mobileOpen]);
 
   const expandedWidth = "w-64";
   const collapsedWidth = "w-20";
@@ -103,8 +127,12 @@ export default function NavBar({
     <>
       {!staticNav && (
         <button
+          ref={mobileButtonRef}
           className="fixed top-2 right-2 z-50 md:hidden p-2 bg-primary text-white rounded-full shadow hover:bg-white/10 hover:text-primary cursor-pointer"
-          onClick={() => setMobileOpen((prev) => !prev)}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent the click from bubbling up.
+            setMobileOpen((prev) => !prev);
+          }}
         >
           {mobileOpen ? (
             <X className="w-5 h-5" />
@@ -113,7 +141,7 @@ export default function NavBar({
           )}
         </button>
       )}
-      <nav className={containerClasses}>
+      <nav ref={navRef} className={containerClasses}>
         <div>
           <div className="flex items-center justify-center p-4 border-b border-white/20">
             {isExpanded ? (
