@@ -40,7 +40,7 @@ export default function SignUp() {
   return (
     <>
       <Head>
-        <title>Sign Up | SymptomSync</title>
+        <title>SymptomSync | Sign Up</title>
         <meta
           name="description"
           content="Create an account to track and manage your health with SymptomSync."
@@ -65,11 +65,11 @@ export default function SignUp() {
         <div className="bg-secondary w-full sm:w-1/2 p-8 sm:py-12 sm:px-10 relative flex flex-col">
           <div className="absolute top-4 right-4">
             <Link
-  href="/auth/login"
-  className="border border-black px-4 py-1 rounded text-sm font-medium hover:text-white hover:bg-accent transition"
->
-  Login
-</Link>
+              href="/auth/login"
+              className="border border-black px-4 py-1 rounded text-sm font-medium hover:text-white hover:bg-accent transition"
+            >
+              Login
+            </Link>
           </div>
 
           <div className="flex flex-col justify-center flex-1 max-w-md w-full mx-auto mt-8 sm:mt-0">

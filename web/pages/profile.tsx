@@ -2,11 +2,7 @@ import { useState, useEffect, ChangeEvent } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
-import {
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -72,7 +68,7 @@ const fadeInUp = {
 export default function ProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading,setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [profileLoading, setProfileLoading] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -208,10 +204,10 @@ export default function ProfilePage() {
     <>
       <Head>
         <title>
+          SymptomSync |{" "}
           {profileToDisplay?.id === profile?.id
             ? "Your Profile"
             : `Viewing ${profileToDisplay?.full_name || profileToDisplay?.email}'s Profile`}{" "}
-          | SymptomSync
         </title>
         <meta name="description" content="View and update your profile" />
       </Head>
@@ -323,14 +319,16 @@ export default function ProfilePage() {
                 </p>
                 {(profileToDisplay?.condition_tags || []).length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {(profileToDisplay?.condition_tags || []).map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 bg-secondary text-background rounded-full text-xs flex items-center"
-                      >
-                        <Tag className="w-4 h-4 mr-1" /> {tag}
-                      </span>
-                    ))}
+                    {(profileToDisplay?.condition_tags || []).map(
+                      (tag, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 bg-secondary text-background rounded-full text-xs flex items-center"
+                        >
+                          <Tag className="w-4 h-4 mr-1" /> {tag}
+                        </span>
+                      ),
+                    )}
                   </div>
                 )}
               </div>
@@ -382,7 +380,10 @@ export default function ProfilePage() {
                       )}
                     </Avatar>
                     <div className="flex-1">
-                      <Label htmlFor="avatar" className="mb-1 block text-gray-700">
+                      <Label
+                        htmlFor="avatar"
+                        className="mb-1 block text-gray-700"
+                      >
                         Change Avatar
                       </Label>
                       <Input
@@ -417,7 +418,10 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="conditionTags" className="mb-2 text-gray-700">
+                    <Label
+                      htmlFor="conditionTags"
+                      className="mb-2 text-gray-700"
+                    >
                       Conditions (comma separated)
                     </Label>
                     <Input

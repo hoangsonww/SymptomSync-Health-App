@@ -5,7 +5,7 @@ export default function PrivacyPolicy() {
   return (
     <>
       <Head>
-        <title>Privacy Policy | SymptomSync</title>
+        <title>SymptomSync | Privacy Policy</title>
         <meta
           name="description"
           content="Read our Privacy Policy at SymptomSync. Learn how we collect, use, and protect your personal data."

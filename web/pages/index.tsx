@@ -121,13 +121,15 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Welcome | SymptomSync</title>
+        <title>SymptomSync | Welcome</title>
         <meta
           name="description"
           content="Your health companion to track, understand, and manage your daily health seamlessly."
         />
       </Head>
       <div className={`${inter.className} font-sans overflow-x-hidden`}>
+        {/* Gotta override the default scroll behavior */}
+        {/* This is a workaround for smooth scrolling */}
         <style jsx global>{`
           html {
             scroll-behavior: smooth;

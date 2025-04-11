@@ -59,7 +59,7 @@ export default function NavBar({
   setIsExpanded,
 }: NavBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isLoggedIn,setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {

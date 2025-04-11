@@ -1,0 +1,131 @@
+import { supabase } from "./supabaseClient";
+import { z } from "zod";
+
+/**
+ * This file contains functions to manage health logs in a Supabase database.
+ * It includes functions to retrieve, create, update, and delete health log records.
+ */
+
+// Zod schema for a health log record.
+export const HealthLogSchema = z.object({
+  id: z.string(),
+  user_profile_id: z.string(),
+  symptom_type: z.string().nullable(),
+  severity: z.number().nullable(),
+  mood: z.string().nullable(),
+  vitals: z.any().nullable(),
+  medication_intake: z.string().nullable(),
+  notes: z.string().nullable(),
+  start_date: z.string(),
+  end_date: z.string().nullable(),
+});
+
+export type HealthLog = z.infer<typeof HealthLogSchema>;
+
+/**
+ * Retrieves all health logs for a given user.
+ * @param userId - The id of the user.
+ * @returns An array of health log records.
+ * @throws An error if the query fails.
+ */
+export async function getHealthLogsByUser(
+  userId: string,
+): Promise<HealthLog[]> {
+  const { data, error } = await supabase
+    .from("health_logs")
+    .select("*")
+    .eq("user_profile_id", userId);
+
+  if (error) throw error;
+  return HealthLogSchema.array().parse(data);
+}
+
+/**
+ * Creates a new health log record.
+ * @param params - The health log details.
+ * @returns The created health log.
+ * @throws An error if the insert fails.
+ */
+export async function createHealthLog(params: {
+  user_profile_id: string;
+  symptom_type?: string | null;
+  severity?: number | null;
+  mood?: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  vitals?: any;
+  medication_intake?: string | null;
+  notes?: string | null;
+  start_date?: string;
+  end_date?: string | null;
+}): Promise<HealthLog> {
+  const insertPayload = {
+    user_profile_id: params.user_profile_id,
+    symptom_type: params.symptom_type ?? null,
+    severity: params.severity ?? null,
+    mood: params.mood ?? null,
+    vitals: params.vitals ?? null,
+    medication_intake: params.medication_intake ?? null,
+    notes: params.notes ?? null,
+    start_date: params.start_date ?? new Date().toISOString(),
+    end_date: params.end_date ?? new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from("health_logs")
+    .insert(insertPayload)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return HealthLogSchema.parse(data);
+}
+
+/**
+ * Updates an existing health log record.
+ * @param id - The id of the health log to update.
+ * @param updatePayload - The fields to update.
+ * @returns The updated health log.
+ * @throws An error if the update fails.
+ */
+export async function updateHealthLog(
+  id: string,
+  updatePayload: Partial<{
+    symptom_type: string | null;
+    severity: number | null;
+    mood: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vitals: any;
+    medication_intake: string | null;
+    notes: string | null;
+    start_date: string;
+    end_date: string | null;
+  }>,
+): Promise<HealthLog> {
+  const { data, error } = await supabase
+    .from("health_logs")
+    .update(updatePayload)
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return HealthLogSchema.parse(data);
+}
+
+/**
+ * Deletes a health log record.
+ * @param id - The id of the health log record to delete.
+ * @returns The deleted health log.
+ * @throws An error if the deletion fails.
+ */
+export async function deleteHealthLog(id: string): Promise<HealthLog> {
+  const { data, error } = await supabase
+    .from("health_logs")
+    .delete()
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return HealthLogSchema.parse(data);
+}
