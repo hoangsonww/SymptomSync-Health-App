@@ -2,6 +2,13 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import {
+  Pill,
+  Calendar as CalendarIcon,
+  Heart,
+  Edit3,
+  Trash2,
+} from "lucide-react";
+import {
   MedicationReminder,
   getMedicationRemindersByUser,
   createMedicationReminder,
@@ -244,6 +251,14 @@ export default function HomePage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const channelRefs: any[] = [];
   const router = useRouter();
+  const [showDeleteLogDialog, setShowDeleteLogDialog] = useState(false);
+  const [deleteLogId, setDeleteLogId] = useState<string | null>(null);
+
+  const [showDeleteMedDialog, setShowDeleteMedDialog] = useState(false);
+  const [deleteMedId, setDeleteMedId] = useState<string | null>(null);
+
+  const [showDeleteApptDialog, setShowDeleteApptDialog] = useState(false);
+  const [deleteApptId, setDeleteApptId] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkUserAuth() {
@@ -267,7 +282,6 @@ export default function HomePage() {
       getAppointmentRemindersByUser(uid),
       getHealthLogsByUser(uid),
     ]);
-
     setMedications(meds);
     setAppointments(appts);
     setLogs(userLogs);
@@ -958,21 +972,21 @@ export default function HomePage() {
             onClick={() => setAddMedOpen(true)}
             className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
           >
-            Add Medication
+            <Pill className="w-4 h-4" /> Add Medication
           </Button>
           <Button
             variant="default"
             onClick={() => setAddApptOpen(true)}
             className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
           >
-            Add Appointment
+            <CalendarIcon className="w-4 h-4" /> Add Appointment
           </Button>
           <Button
             variant="default"
             onClick={() => setAddLogOpen(true)}
             className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
           >
-            Add Health Log
+            <Heart className="w-4 h-4" /> Add Health Log
           </Button>
         </div>
 
@@ -1154,7 +1168,7 @@ export default function HomePage() {
           style={{ animationDelay: "1.1s" }}
         >
           <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
-            <CardHeader className="mt-8">
+            <CardHeader className="mt-8 text-xl">
               <CardTitle>Medications</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm pb-4">
@@ -1170,38 +1184,65 @@ export default function HomePage() {
                   .map((med, idx) => (
                     <div
                       key={med.id}
-                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm hover:scale-102 transition-transform duration-300 cursor-pointer mt-4 hover:shadow-lg"
+                      className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
                       style={getStaggerStyle(idx)}
                     >
-                      <div className="font-medium">
-                        {safeDisplay(med.medication_name)}
+                      {/* Medication Name */}
+                      <div className="mb-3">
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          💊 {safeDisplay(med.medication_name)}
+                        </h3>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Dosage: {safeDisplay(med.dosage)}
-                        <br />
-                        Schedule: {new Date(med.reminder_time).toLocaleString()}
-                        <br />
-                        Recurrence: {safeDisplay(med.recurrence)}
-                        <br />
-                        {/* Calendar Sync: {safeDisplay(med.calendar_sync_token)} */}
-                        <br />
-                        Created: {new Date(med.created_at).toLocaleString()}
+                      {/* Medication Details */}
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>
+                          <strong>Dosage:</strong> {safeDisplay(med.dosage)}
+                        </p>
+                        <div className="flex items-center flex-wrap">
+                          <p className="font-bold mr-1 inline">Schedule:</p>
+                          <span className="inline-flex items-center gap-1">
+                            <span>
+                              {new Date(med.reminder_time).toLocaleDateString()}
+                            </span>
+                            <span>at</span>
+                            <span>
+                              {new Date(med.reminder_time).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
+                            </span>
+                          </span>
+                        </div>
+                        <p>
+                          <strong>Recurrence:</strong>{" "}
+                          {safeDisplay(med.recurrence)}
+                        </p>
+                        <p>
+                          <strong>Created:</strong>{" "}
+                          {new Date(med.created_at).toLocaleString()}
+                        </p>
                       </div>
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-4">
                         <Button
                           size="sm"
                           onClick={() => openEditMedDialog(med)}
-                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                          className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                         >
-                          View / Edit
+                          <Edit3 className="w-4 h-4 mr-1" /> View / Edit
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleDeleteMedication(med.id)}
-                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                          onClick={() => {
+                            setDeleteMedId(med.id);
+                            setShowDeleteMedDialog(true);
+                          }}
+                          className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                         >
-                          Delete
+                          <Trash2 className="w-4 h-4 mr-1" /> Delete
                         </Button>
                       </div>
                     </div>
@@ -1211,10 +1252,10 @@ export default function HomePage() {
           </Card>
 
           <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
-            <CardHeader className="mt-8">
+            <CardHeader className="text-xl mt-8">
               <CardTitle>Appointments</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm pb-4">
+            <CardContent className="space-y-2 text-md pb-4">
               {appointments.length === 0 ? (
                 <p className="text-muted-foreground">No appointments yet.</p>
               ) : (
@@ -1226,34 +1267,45 @@ export default function HomePage() {
                   .map((appt, idx) => (
                     <div
                       key={appt.id}
-                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm hover:scale-102 transition-transform duration-300 cursor-pointer mt-4 hover:shadow-lg"
+                      className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
                       style={getStaggerStyle(idx)}
                     >
-                      <div className="font-medium">
-                        {safeDisplay(appt.appointment_name)}
+                      <div className="mb-3">
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          🗓️ {safeDisplay(appt.appointment_name)}
+                        </h3>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Date: {new Date(appt.date).toLocaleDateString()} @{" "}
-                        {new Date(appt.date).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                      <div className="mb-4 text-sm text-gray-600 flex flex-wrap items-center gap-2">
+                        <p className="font-bold inline">Date:</p>
+                        <p className="inline">
+                          {new Date(appt.date).toLocaleDateString()}
+                        </p>
+                        <p className="font-bold inline ml-4">Time:</p>
+                        <p className="inline">
+                          {new Date(appt.date).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
                       </div>
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex flex-wrap gap-3">
                         <Button
                           size="sm"
                           onClick={() => openEditApptDialog(appt)}
-                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                          className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                         >
-                          View / Edit
+                          <Edit3 className="w-4 h-4 mr-1" /> View / Edit
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleDeleteAppointment(appt.id)}
-                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                          onClick={() => {
+                            setDeleteApptId(appt.id);
+                            setShowDeleteApptDialog(true);
+                          }}
+                          className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                         >
-                          Delete
+                          <Trash2 className="w-4 h-4 mr-1" /> Delete
                         </Button>
                       </div>
                     </div>
@@ -1263,12 +1315,14 @@ export default function HomePage() {
           </Card>
 
           <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
-            <CardHeader className="mt-8">
+            <CardHeader className="mt-8 text-xl">
               <CardTitle>Health Logs</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm pb-4">
+            <CardContent className="space-y-2 text-sm pb-4 ">
               {logs.length === 0 ? (
-                <p className="text-muted-foreground">No health logs yet.</p>
+                <p className="text-muted-foreground text-center">
+                  No health logs yet.
+                </p>
               ) : (
                 [...logs]
                   .sort(
@@ -1286,83 +1340,135 @@ export default function HomePage() {
                             : log.vitals;
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                       } catch (error) {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         vitalsData = null;
                       }
                     }
                     return (
                       <div
                         key={log.id}
-                        className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm hover:scale-102 transition-transform duration-300 cursor-pointer mt-4 hover:shadow-lg"
+                        className="p-6 rounded-xl border border-gray-200 bg-white shadow hover:shadow-xl transition-transform duration-300 cursor-pointer mb-6"
                         style={getStaggerStyle(idx)}
                       >
-                        <div className="font-medium">
-                          Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
+                        <div className="mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800">
+                            Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
+                          </h3>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          Severity:{" "}
-                          {log.severity !== undefined &&
-                          log.severity !== null &&
-                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                          // @ts-ignore
-                          log.severity !== ""
-                            ? log.severity
-                            : "N/A"}
-                          <br />
-                          Mood: {safeDisplay(log.mood) || "N/A"}
-                          <br />
-                          <div>Vitals:</div>
-                          {vitalsData && typeof vitalsData === "object" ? (
-                            <ul className="list-disc list-inside">
-                              <li>
-                                <span className="capitalize font-medium">
-                                  heartRate:
-                                </span>{" "}
-                                {vitalsData.heartRate
-                                  ? vitalsData.heartRate
-                                  : "N/A"}
-                              </li>
-                              <li>
-                                <span className="capitalize font-medium">
-                                  bloodPressure:
-                                </span>{" "}
-                                {vitalsData.bloodPressure
-                                  ? vitalsData.bloodPressure
-                                  : "N/A"}
-                              </li>
-                            </ul>
-                          ) : (
-                            <>
-                              Vitals: {log.vitals ? log.vitals : "N/A"}
-                              {(!log.vitals || log.vitals === "N/A") && <br />}
-                            </>
-                          )}
-                          Medication Intake:{" "}
-                          {safeDisplay(log.medication_intake) || "N/A"}
-                          <br />
-                          Notes: {safeDisplay(log.notes) || "N/A"}
-                          <br />
-                          Start: {new Date(log.start_date).toLocaleString()}
-                          <br />
-                          End:{" "}
-                          {log.end_date
-                            ? new Date(log.end_date).toLocaleString()
-                            : "N/A"}
+
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <div>
+                            <p className="mb-2">
+                              <span className="font-bold">Severity:</span>{" "}
+                              {log.severity !== undefined &&
+                              log.severity !== null &&
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              // @ts-ignore
+                              log.severity !== ""
+                                ? log.severity
+                                : "N/A"}
+                            </p>
+                            <p className="mb-2">
+                              <span className="font-bold">Mood:</span>{" "}
+                              {safeDisplay(log.mood) || "N/A"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-bold">Vitals:</p>
+                            <div className="ml-4">
+                              {(() => {
+                                let vitalsObj = null;
+                                if (log.vitals) {
+                                  try {
+                                    vitalsObj =
+                                      typeof log.vitals === "string"
+                                        ? JSON.parse(log.vitals)
+                                        : log.vitals;
+                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                  } catch (error) {
+                                    vitalsObj = null;
+                                  }
+                                }
+                                return vitalsObj ? (
+                                  <>
+                                    <p className="mb-2">
+                                      <span className="font-bold">
+                                        - Heart Rate:
+                                      </span>{" "}
+                                      {vitalsObj.heartRate || "N/A"}
+                                    </p>
+                                    <p className="mb-2">
+                                      <span className="font-bold">
+                                        - Blood Pressure:
+                                      </span>{" "}
+                                      {vitalsObj.bloodPressure || "N/A"}
+                                    </p>
+                                  </>
+                                ) : (
+                                  <p>N/A</p>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                          <div>
+                            <p>
+                              <span className="font-bold">
+                                Medication Intake:
+                              </span>{" "}
+                              {safeDisplay(log.medication_intake) || "N/A"}
+                            </p>
+                          </div>
+                          <div>
+                            <p>
+                              <span className="font-bold">Notes:</span>{" "}
+                              {safeDisplay(log.notes) || "N/A"}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap mt-0 gap-2">
+                            <p className="text-sm">
+                              <span className="font-bold">Start:</span>{" "}
+                              {new Date(log.start_date).toLocaleDateString()}{" "}
+                              {new Date(log.start_date).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                            <p className="text-sm">
+                              <span className="font-bold">End:</span>{" "}
+                              {log.end_date
+                                ? new Date(log.end_date).toLocaleDateString() +
+                                  " " +
+                                  new Date(log.end_date).toLocaleTimeString(
+                                    [],
+                                    {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )
+                                : "N/A"}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex gap-2 mt-2">
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap gap-3 mt-4">
                           <Button
                             size="sm"
                             onClick={() => openEditLogDialog(log)}
-                            className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                            className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                           >
-                            View / Edit
+                            <Edit3 className="w-4 h-4 mr-1" /> View / Edit
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleDeleteLog(log.id)}
-                            className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                            onClick={() => {
+                              setDeleteLogId(log.id);
+                              setShowDeleteLogDialog(true);
+                            }}
+                            className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                           >
-                            Delete
+                            <Trash2 className="w-4 h-4 mr-1" /> Delete
                           </Button>
                         </div>
                       </div>
@@ -1422,7 +1528,6 @@ export default function HomePage() {
 
               <div className="space-y-2">
                 <Label>Schedule (Date & Time)</Label>
-                {/* Use custom datepicker and timepicker instead of native datetime-local */}
                 <div className="mb-2">
                   <Label className="text-xs">Date</Label>
                   <DatePicker
@@ -1432,7 +1537,7 @@ export default function HomePage() {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs">Time</Label>
+                  <Label className="text-xs">Time (24h)</Label>
                   <CustomTimePicker
                     value={newMedTimePicker}
                     onChange={setNewMedTimePicker}
@@ -1458,8 +1563,6 @@ export default function HomePage() {
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Optional Calendar Sync Token field is commented out */}
             </div>
             <DialogFooter>
               <Button
@@ -1506,7 +1609,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Time</Label>
+                <Label>Time (24h)</Label>
                 <CustomTimePicker
                   value={newApptTime}
                   onChange={setNewApptTime}
@@ -1666,7 +1769,7 @@ export default function HomePage() {
                     className="w-full"
                   />
                 </div>
-                <Label className="text-xs">Start Time</Label>
+                <Label className="text-xs">Start Time (24h)</Label>
                 <CustomTimePicker
                   value={hlStartTimePicker}
                   onChange={setHlStartTimePicker}
@@ -1682,7 +1785,7 @@ export default function HomePage() {
                     className="w-full"
                   />
                 </div>
-                <Label className="text-xs">End Time</Label>
+                <Label className="text-xs">End Time (24h)</Label>
                 <CustomTimePicker
                   value={hlEndTimePicker}
                   onChange={setHlEndTimePicker}
@@ -1791,7 +1894,7 @@ export default function HomePage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs">Time</Label>
+                    <Label className="text-xs">Time (24h)</Label>
                     <CustomTimePicker
                       value={editMedTimePicker}
                       onChange={setEditMedTimePicker}
@@ -1868,7 +1971,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Time</Label>
+                  <Label>Time (24h)</Label>
                   <CustomTimePicker
                     value={editApptTime}
                     onChange={setEditApptTime}
@@ -2031,7 +2134,7 @@ export default function HomePage() {
                       className="w-full"
                     />
                   </div>
-                  <Label className="text-xs">Start Time</Label>
+                  <Label className="text-xs">Start Time (24h)</Label>
                   <CustomTimePicker
                     value={editStartTimePicker}
                     onChange={setEditStartTimePicker}
@@ -2047,7 +2150,7 @@ export default function HomePage() {
                       className="w-full"
                     />
                   </div>
-                  <Label className="text-xs">End Time</Label>
+                  <Label className="text-xs">End Time (24h)</Label>
                   <CustomTimePicker
                     value={editEndTimePicker}
                     onChange={setEditEndTimePicker}
@@ -2097,6 +2200,112 @@ export default function HomePage() {
             </DialogContent>
           </Dialog>
         )}
+
+        <Dialog
+          open={showDeleteLogDialog}
+          onOpenChange={(open) => !open && setShowDeleteLogDialog(false)}
+        >
+          <DialogContent className="max-w-sm w-full">
+            <DialogHeader>
+              <DialogTitle>Confirm Delete Health Log</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this health log?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => setShowDeleteLogDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="cursor-pointer"
+                onClick={() => {
+                  if (deleteLogId) {
+                    handleDeleteLog(deleteLogId);
+                  }
+                  setShowDeleteLogDialog(false);
+                }}
+              >
+                Yes, Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={showDeleteMedDialog}
+          onOpenChange={(open) => !open && setShowDeleteMedDialog(false)}
+        >
+          <DialogContent className="max-w-sm w-full">
+            <DialogHeader>
+              <DialogTitle>Confirm Delete Medication</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this medication reminder? This
+                will remove all associated events.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => setShowDeleteMedDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="cursor-pointer"
+                onClick={() => {
+                  if (deleteMedId) {
+                    handleDeleteMedication(deleteMedId);
+                  }
+                  setShowDeleteMedDialog(false);
+                }}
+              >
+                Yes, Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={showDeleteApptDialog}
+          onOpenChange={(open) => !open && setShowDeleteApptDialog(false)}
+        >
+          <DialogContent className="max-w-sm w-full">
+            <DialogHeader>
+              <DialogTitle>Confirm Delete Appointment</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this appointment?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => setShowDeleteApptDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="cursor-pointer"
+                onClick={() => {
+                  if (deleteApptId) {
+                    handleDeleteAppointment(deleteApptId);
+                  }
+                  setShowDeleteApptDialog(false);
+                }}
+              >
+                Yes, Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </motion.div>
     </>
   );

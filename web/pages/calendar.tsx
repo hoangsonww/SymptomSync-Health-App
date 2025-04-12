@@ -296,7 +296,7 @@ function handleImportIcs(
             medication_name: medName,
             dosage: null,
             reminder_time: new Date(ev.dtstart).toISOString(),
-            recurrence: "as-needed",
+            recurrence: "As Needed",
             calendar_sync_token: null,
           });
         } else {
@@ -878,18 +878,20 @@ export default function CalendarPage() {
                   <br />
                   <span className="block mt-2">
                     <strong>- Google Calendar:</strong> Open Google Calendar,
-                    click the gear icon, then &quot;Settings&quot;. Go to &quot;Import &amp;
-                    Export&quot; and click &quot;Export&quot; to download a ZIP file containing
-                    your calendars in ICS format.
+                    click the gear icon, then &quot;Settings&quot;. Go to
+                    &quot;Import &amp; Export&quot; and click &quot;Export&quot;
+                    to download a ZIP file containing your calendars in ICS
+                    format.
                   </span>
                   <span className="block mt-2">
                     <strong>- Outlook:</strong> Open Outlook Calendar, click on
-                    &quot;File&quot;, then &quot;Save Calendar&quot;, and choose the ICS format.
+                    &quot;File&quot;, then &quot;Save Calendar&quot;, and choose
+                    the ICS format.
                   </span>
                   <span className="block mt-2">
                     <strong>- Apple Calendar (iCal):</strong> In Apple Calendar,
-                    choose &quot;File&quot; &gt; &quot;Export&quot; &gt; &quot;Export…&quot; to save your
-                    calendar as an ICS file.
+                    choose &quot;File&quot; &gt; &quot;Export&quot; &gt;
+                    &quot;Export…&quot; to save your calendar as an ICS file.
                   </span>
                   <br />
                   Only events occurring within the past year will be imported.
