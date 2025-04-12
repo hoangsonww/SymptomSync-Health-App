@@ -62,6 +62,8 @@ import Head from "next/head";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
+import { CustomTimePicker } from "@/components/ui/time-picker";
 
 ChartJS.register(
   CategoryScale,
@@ -183,11 +185,12 @@ export default function HomePage() {
   const [newMedName, setNewMedName] = useState("");
   const [newMedDosage, setNewMedDosage] = useState("");
   const [newMedDosageUnit, setNewMedDosageUnit] = useState("mg");
-  const [newMedTime, setNewMedTime] = useState("");
+  const [newMedDate, setNewMedDate] = useState<Date | undefined>(undefined);
+  const [newMedTimePicker, setNewMedTimePicker] = useState("00:00");
   const [newMedRecurrence, setNewMedRecurrence] = useState("Daily");
   const [newMedCalendarSync, setNewMedCalendarSync] = useState("");
   const [newApptName, setNewApptName] = useState("");
-  const [newApptDate, setNewApptDate] = useState("");
+  const [newApptDate, setNewApptDate] = useState<Date | undefined>(undefined);
   const [newApptTime, setNewApptTime] = useState("");
   const [hlSymptomType, setHlSymptomType] = useState("");
   const [hlSeverity, setHlSeverity] = useState<number>(0);
@@ -198,20 +201,27 @@ export default function HomePage() {
   const [hlMedIntakeNumber, setHlMedIntakeNumber] = useState("");
   const [hlMedIntakeUnit, setHlMedIntakeUnit] = useState("mg");
   const [hlNotes, setHlNotes] = useState("");
-  const [hlStartDate, setHlStartDate] = useState("");
-  const [hlEndDate, setHlEndDate] = useState("");
+  const [hlStartDatePicker, setHlStartDatePicker] = useState<Date | undefined>(
+    undefined,
+  );
+  const [hlStartTimePicker, setHlStartTimePicker] = useState("00:00");
+  const [hlEndDatePicker, setHlEndDatePicker] = useState<Date | undefined>(
+    undefined,
+  );
+  const [hlEndTimePicker, setHlEndTimePicker] = useState("00:00");
   const [editingMed, setEditingMed] = useState<MedicationReminder | null>(null);
   const [editMedName, setEditMedName] = useState("");
   const [editMedDosage, setEditMedDosage] = useState("");
   const [editMedDosageUnit, setEditMedDosageUnit] = useState("mg");
-  const [editMedTime, setEditMedTime] = useState("");
+  const [editMedDate, setEditMedDate] = useState<Date | undefined>(undefined);
+  const [editMedTimePicker, setEditMedTimePicker] = useState("00:00");
   const [editMedRecurrence, setEditMedRecurrence] = useState("Daily");
   const [editMedCalendarSync, setEditMedCalendarSync] = useState("");
   const [editingAppt, setEditingAppt] = useState<AppointmentReminder | null>(
     null,
   );
   const [editApptName, setEditApptName] = useState("");
-  const [editApptDate, setEditApptDate] = useState("");
+  const [editApptDate, setEditApptDate] = useState<Date | undefined>(undefined);
   const [editApptTime, setEditApptTime] = useState("");
   const [editingLog, setEditingLog] = useState<HealthLog | null>(null);
   const [editSymptomType, setEditSymptomType] = useState("");
@@ -223,8 +233,14 @@ export default function HomePage() {
   const [editMedIntakeNumber, setEditMedIntakeNumber] = useState("");
   const [editMedIntakeUnit, setEditMedIntakeUnit] = useState("mg");
   const [editNotes, setEditNotes] = useState("");
-  const [editStartDate, setEditStartDate] = useState("");
-  const [editEndDate, setEditEndDate] = useState("");
+  const [editStartDatePicker, setEditStartDatePicker] = useState<
+    Date | undefined
+  >(undefined);
+  const [editStartTimePicker, setEditStartTimePicker] = useState("00:00");
+  const [editEndDatePicker, setEditEndDatePicker] = useState<Date | undefined>(
+    undefined,
+  );
+  const [editEndTimePicker, setEditEndTimePicker] = useState("00:00");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const channelRefs: any[] = [];
   const router = useRouter();
@@ -353,10 +369,11 @@ export default function HomePage() {
    * Adds a new medication reminder for the user.
    */
   async function handleAddMedication() {
-    if (!userId || !newMedName || !newMedTime) return;
+    if (!userId || !newMedName || !newMedDate) return;
     try {
-      const localDate = new Date(newMedTime);
-      const isoString = localDate.toISOString();
+      const dateString = format(newMedDate, "yyyy-MM-dd");
+      const combined = `${dateString}T${newMedTimePicker}`;
+      const localDate = new Date(combined);
 
       const combinedDosage = newMedDosage
         ? `${newMedDosage} ${newMedDosageUnit}`
@@ -366,7 +383,7 @@ export default function HomePage() {
         user_profile_id: userId,
         medication_name: newMedName,
         dosage: combinedDosage || null,
-        reminder_time: isoString,
+        reminder_time: localDate.toISOString(),
         recurrence: newMedRecurrence || null,
         calendar_sync_token: newMedCalendarSync || null,
       });
@@ -376,7 +393,8 @@ export default function HomePage() {
       setNewMedName("");
       setNewMedDosage("");
       setNewMedDosageUnit("mg");
-      setNewMedTime("");
+      setNewMedDate(undefined);
+      setNewMedTimePicker("00:00");
       setNewMedRecurrence("Daily");
       setNewMedCalendarSync("");
       setAddMedOpen(false);
@@ -393,10 +411,9 @@ export default function HomePage() {
   async function handleAddAppointment() {
     if (!userId || !newApptName || !newApptDate) return;
     try {
-      const dateTimeString = newApptTime
-        ? `${newApptDate}T${newApptTime}`
-        : newApptDate;
-      const localDate = new Date(dateTimeString);
+      const dateString = format(newApptDate, "yyyy-MM-dd");
+      const combined = `${dateString}T${newApptTime}`;
+      const localDate = new Date(combined);
       const isoString = localDate.toISOString();
 
       await createAppointmentReminder({
@@ -408,7 +425,7 @@ export default function HomePage() {
       await fetchAllData(userId);
 
       setNewApptName("");
-      setNewApptDate("");
+      setNewApptDate(undefined);
       setNewApptTime("");
       setAddApptOpen(false);
       toast.success("Appointment reminder added successfully!");
@@ -425,9 +442,17 @@ export default function HomePage() {
     if (!userId) return;
 
     try {
-      const localStart = hlStartDate ? new Date(hlStartDate) : new Date();
+      const localStart = hlStartDatePicker
+        ? new Date(
+            `${format(hlStartDatePicker, "yyyy-MM-dd")}T${hlStartTimePicker}`,
+          )
+        : new Date();
       const startISO = localStart.toISOString();
-      const localEnd = hlEndDate ? new Date(hlEndDate) : new Date();
+      const localEnd = hlEndDatePicker
+        ? new Date(
+            `${format(hlEndDatePicker, "yyyy-MM-dd")}T${hlEndTimePicker}`,
+          )
+        : new Date();
       const endISO = localEnd.toISOString();
 
       const bpString =
@@ -467,8 +492,10 @@ export default function HomePage() {
       setHlMedIntakeNumber("");
       setHlMedIntakeUnit("mg");
       setHlNotes("");
-      setHlStartDate("");
-      setHlEndDate("");
+      setHlStartDatePicker(undefined);
+      setHlStartTimePicker("00:00");
+      setHlEndDatePicker(undefined);
+      setHlEndTimePicker("00:00");
       setAddLogOpen(false);
       toast.success("Health log added successfully!");
     } catch (err) {
@@ -492,8 +519,9 @@ export default function HomePage() {
       setEditMedDosage("");
       setEditMedDosageUnit("mg");
     }
-
-    setEditMedTime(med.reminder_time);
+    const medDate = new Date(med.reminder_time);
+    setEditMedDate(medDate);
+    setEditMedTimePicker(medDate.toTimeString().slice(0, 5));
     setEditMedRecurrence(med.recurrence ?? "Daily");
     setEditMedCalendarSync(med.calendar_sync_token ?? "");
   }
@@ -502,10 +530,11 @@ export default function HomePage() {
    * Handles the update of a medication reminder.
    */
   async function handleUpdateMed() {
-    if (!editingMed || !userId) return;
+    if (!editingMed || !userId || !editMedDate) return;
     try {
-      const localDate = new Date(editMedTime);
-      const isoString = localDate.toISOString();
+      const dateString = format(editMedDate, "yyyy-MM-dd");
+      const combined = `${dateString}T${editMedTimePicker}`;
+      const isoString = new Date(combined).toISOString();
 
       const combinedDosage = editMedDosage
         ? `${editMedDosage} ${editMedDosageUnit}`
@@ -536,23 +565,19 @@ export default function HomePage() {
     setEditApptName(appt.appointment_name);
 
     const d = new Date(appt.date);
-    const dateStr = d.toISOString().split("T")[0];
-    const timeStr = d.toTimeString().slice(0, 5);
-    setEditApptDate(dateStr);
-    setEditApptTime(timeStr);
+    setEditApptDate(d);
+    setEditApptTime(d.toTimeString().slice(0, 5));
   }
 
   /**
    * Handles the update of an appointment reminder.
    */
   async function handleUpdateAppt() {
-    if (!editingAppt || !userId) return;
+    if (!editingAppt || !userId || !editApptDate) return;
     try {
-      const dateTimeString = editApptTime
-        ? `${editApptDate}T${editApptTime}`
-        : editApptDate;
-      const localDate = new Date(dateTimeString);
-      const isoString = localDate.toISOString();
+      const dateString = format(editApptDate, "yyyy-MM-dd");
+      const combined = `${dateString}T${editApptTime}`;
+      const isoString = new Date(combined).toISOString();
 
       await updateAppointmentReminder(editingAppt.id, {
         appointment_name: editApptName,
@@ -577,8 +602,19 @@ export default function HomePage() {
     setEditSeverity(log.severity ?? 0);
     setEditMood(log.mood ?? "");
     setEditNotes(log.notes ?? "");
-    setEditStartDate(log.start_date);
-    setEditEndDate(log.end_date ?? "");
+
+    const start = new Date(log.start_date);
+    setEditStartDatePicker(start);
+    setEditStartTimePicker(start.toTimeString().slice(0, 5));
+
+    if (log.end_date) {
+      const end = new Date(log.end_date);
+      setEditEndDatePicker(end);
+      setEditEndTimePicker(end.toTimeString().slice(0, 5));
+    } else {
+      setEditEndDatePicker(undefined);
+      setEditEndTimePicker("00:00");
+    }
 
     let heartRateStr = "";
     if (log.vitals) {
@@ -621,12 +657,16 @@ export default function HomePage() {
    * Handles updating a health log in the database.
    */
   async function handleUpdateLog() {
-    if (!editingLog || !userId) return;
+    if (!editingLog || !userId || !editStartDatePicker) return;
     try {
-      const localStart = new Date(editStartDate);
-      const startISO = localStart.toISOString();
-      const localEnd = editEndDate ? new Date(editEndDate) : new Date();
-      const endISO = localEnd.toISOString();
+      const startCombined = `${format(editStartDatePicker, "yyyy-MM-dd")}T${editStartTimePicker}`;
+      const startISO = new Date(startCombined).toISOString();
+      const endCombined = editEndDatePicker
+        ? `${format(editEndDatePicker, "yyyy-MM-dd")}T${editEndTimePicker}`
+        : "";
+      const endISO = endCombined
+        ? new Date(endCombined).toISOString()
+        : new Date().toISOString();
 
       const bpString =
         editBloodPressureSys && editBloodPressureDia
@@ -1333,6 +1373,7 @@ export default function HomePage() {
           </Card>
         </div>
 
+        {/* Add Medication Dialog */}
         <Dialog open={addMedOpen} onOpenChange={setAddMedOpen}>
           <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -1381,11 +1422,22 @@ export default function HomePage() {
 
               <div className="space-y-2">
                 <Label>Schedule (Date & Time)</Label>
-                <Input
-                  type="datetime-local"
-                  value={newMedTime}
-                  onChange={(e) => setNewMedTime(e.target.value)}
-                />
+                {/* Use custom datepicker and timepicker instead of native datetime-local */}
+                <div className="mb-2">
+                  <Label className="text-xs">Date</Label>
+                  <DatePicker
+                    value={newMedDate}
+                    onChange={setNewMedDate}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Time</Label>
+                  <CustomTimePicker
+                    value={newMedTimePicker}
+                    onChange={setNewMedTimePicker}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -1421,7 +1473,7 @@ export default function HomePage() {
                 variant="default"
                 className="cursor-pointer"
                 onClick={handleAddMedication}
-                disabled={!newMedName || !newMedTime}
+                disabled={!newMedName || !newMedDate}
               >
                 Save
               </Button>
@@ -1429,6 +1481,7 @@ export default function HomePage() {
           </DialogContent>
         </Dialog>
 
+        {/* Add Appointment Dialog */}
         <Dialog open={addApptOpen} onOpenChange={setAddApptOpen}>
           <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -1449,19 +1502,14 @@ export default function HomePage() {
 
               <div className="space-y-2">
                 <Label>Date</Label>
-                <Input
-                  type="date"
-                  value={newApptDate}
-                  onChange={(e) => setNewApptDate(e.target.value)}
-                />
+                <DatePicker value={newApptDate} onChange={setNewApptDate} />
               </div>
 
               <div className="space-y-2">
                 <Label>Time</Label>
-                <Input
-                  type="time"
+                <CustomTimePicker
                   value={newApptTime}
-                  onChange={(e) => setNewApptTime(e.target.value)}
+                  onChange={setNewApptTime}
                 />
               </div>
             </div>
@@ -1485,6 +1533,7 @@ export default function HomePage() {
           </DialogContent>
         </Dialog>
 
+        {/* Add Health Log Dialog */}
         <Dialog open={addLogOpen} onOpenChange={setAddLogOpen}>
           <DialogContent className="max-w-xl w-full max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -1610,25 +1659,44 @@ export default function HomePage() {
 
               <div className="space-y-2">
                 <Label>Start Date</Label>
-                <Input
-                  type="datetime-local"
-                  value={hlStartDate}
-                  onChange={(e) => setHlStartDate(e.target.value)}
+                <div className="mb-2">
+                  <DatePicker
+                    value={hlStartDatePicker}
+                    onChange={setHlStartDatePicker}
+                    className="w-full"
+                  />
+                </div>
+                <Label className="text-xs">Start Time</Label>
+                <CustomTimePicker
+                  value={hlStartTimePicker}
+                  onChange={setHlStartTimePicker}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>End Date</Label>
-                <Input
-                  type="datetime-local"
-                  value={hlEndDate}
-                  onChange={(e) => setHlEndDate(e.target.value)}
+                <div className="mb-2">
+                  <DatePicker
+                    value={hlEndDatePicker}
+                    onChange={setHlEndDatePicker}
+                    className="w-full"
+                  />
+                </div>
+                <Label className="text-xs">End Time</Label>
+                <CustomTimePicker
+                  value={hlEndTimePicker}
+                  onChange={setHlEndTimePicker}
                 />
               </div>
-              {/* Display an error message if end date is provided and is not after start date */}
-              {hlStartDate &&
-                hlEndDate &&
-                new Date(hlEndDate) <= new Date(hlStartDate) && (
+              {/* Display an error message if end date/time is provided and is not after start date */}
+              {hlStartDatePicker &&
+                hlEndDatePicker &&
+                new Date(
+                  `${format(hlEndDatePicker, "yyyy-MM-dd")}T${hlEndTimePicker}`,
+                ) <=
+                  new Date(
+                    `${format(hlStartDatePicker, "yyyy-MM-dd")}T${hlStartTimePicker}`,
+                  ) && (
                   <div className="text-red-500 text-sm">
                     End Date must be later than Start Date.
                   </div>
@@ -1646,12 +1714,16 @@ export default function HomePage() {
                 variant="default"
                 className="cursor-pointer"
                 onClick={handleAddHealthLog}
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 disabled={
                   !hlSymptomType ||
-                  !hlStartDate ||
-                  (hlEndDate && new Date(hlEndDate) <= new Date(hlStartDate))
+                  !hlStartDatePicker ||
+                  (hlEndDatePicker &&
+                    new Date(
+                      `${format(hlEndDatePicker, "yyyy-MM-dd")}T${hlEndTimePicker}`,
+                    ) <=
+                      new Date(
+                        `${format(hlStartDatePicker, "yyyy-MM-dd")}T${hlStartTimePicker}`,
+                      ))
                 }
               >
                 Save
@@ -1710,11 +1782,21 @@ export default function HomePage() {
 
                 <div className="space-y-2">
                   <Label>Schedule (Date & Time)</Label>
-                  <Input
-                    type="datetime-local"
-                    value={editMedTime}
-                    onChange={(e) => setEditMedTime(e.target.value)}
-                  />
+                  <div className="mb-2">
+                    <Label className="text-xs">Date</Label>
+                    <DatePicker
+                      value={editMedDate}
+                      onChange={setEditMedDate}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Time</Label>
+                    <CustomTimePicker
+                      value={editMedTimePicker}
+                      onChange={setEditMedTimePicker}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -1750,7 +1832,7 @@ export default function HomePage() {
                   variant="default"
                   className="cursor-pointer"
                   onClick={handleUpdateMed}
-                  disabled={!editMedName || !editMedTime}
+                  disabled={!editMedName || !editMedDate}
                 >
                   Save
                 </Button>
@@ -1782,19 +1864,14 @@ export default function HomePage() {
 
                 <div className="space-y-2">
                   <Label>Date</Label>
-                  <Input
-                    type="date"
-                    value={editApptDate}
-                    onChange={(e) => setEditApptDate(e.target.value)}
-                  />
+                  <DatePicker value={editApptDate} onChange={setEditApptDate} />
                 </div>
 
                 <div className="space-y-2">
                   <Label>Time</Label>
-                  <Input
-                    type="time"
+                  <CustomTimePicker
                     value={editApptTime}
-                    onChange={(e) => setEditApptTime(e.target.value)}
+                    onChange={setEditApptTime}
                   />
                 </div>
               </div>
@@ -1947,25 +2024,44 @@ export default function HomePage() {
 
                 <div className="space-y-2">
                   <Label>Start Date</Label>
-                  <Input
-                    type="datetime-local"
-                    value={editStartDate}
-                    onChange={(e) => setEditStartDate(e.target.value)}
+                  <div className="mb-2">
+                    <DatePicker
+                      value={editStartDatePicker}
+                      onChange={setEditStartDatePicker}
+                      className="w-full"
+                    />
+                  </div>
+                  <Label className="text-xs">Start Time</Label>
+                  <CustomTimePicker
+                    value={editStartTimePicker}
+                    onChange={setEditStartTimePicker}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label>End Date</Label>
-                  <Input
-                    type="datetime-local"
-                    value={editEndDate}
-                    onChange={(e) => setEditEndDate(e.target.value)}
+                  <div className="mb-2">
+                    <DatePicker
+                      value={editEndDatePicker}
+                      onChange={setEditEndDatePicker}
+                      className="w-full"
+                    />
+                  </div>
+                  <Label className="text-xs">End Time</Label>
+                  <CustomTimePicker
+                    value={editEndTimePicker}
+                    onChange={setEditEndTimePicker}
                   />
                 </div>
                 {/* Display an error message if end date is provided and is not after start date */}
-                {editStartDate &&
-                  editEndDate &&
-                  new Date(editEndDate) <= new Date(editStartDate) && (
+                {editStartDatePicker &&
+                  editEndDatePicker &&
+                  new Date(
+                    `${format(editEndDatePicker, "yyyy-MM-dd")}T${editEndTimePicker}`,
+                  ) <=
+                    new Date(
+                      `${format(editStartDatePicker, "yyyy-MM-dd")}T${editStartTimePicker}`,
+                    ) && (
                     <div className="text-red-500 text-sm">
                       End Date must be later than Start Date.
                     </div>
@@ -1983,13 +2079,16 @@ export default function HomePage() {
                   variant="default"
                   className="cursor-pointer"
                   onClick={handleUpdateLog}
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
                   disabled={
                     !editSymptomType ||
-                    !editStartDate ||
-                    (editEndDate &&
-                      new Date(editEndDate) <= new Date(editStartDate))
+                    !editStartDatePicker ||
+                    (editEndDatePicker &&
+                      new Date(
+                        `${format(editEndDatePicker, "yyyy-MM-dd")}T${editEndTimePicker}`,
+                      ) <=
+                        new Date(
+                          `${format(editStartDatePicker, "yyyy-MM-dd")}T${editStartTimePicker}`,
+                        ))
                   }
                 >
                   Save

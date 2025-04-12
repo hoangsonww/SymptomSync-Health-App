@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/ui/date-picker";
+import { CustomTimePicker } from "@/components/ui/time-picker";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -60,7 +62,8 @@ export default function MedicationReminders() {
   const [editMedName, setEditMedName] = useState("");
   const [editMedDosage, setEditMedDosage] = useState("");
   const [editMedDosageUnit, setEditMedDosageUnit] = useState("mg");
-  const [editMedTime, setEditMedTime] = useState("");
+  const [editMedDate, setEditMedDate] = useState<Date | undefined>(undefined);
+  const [editMedTimePicker, setEditMedTimePicker] = useState("00:00");
   const [editMedRecurrence, setEditMedRecurrence] = useState("Daily");
   const [editMedCalendarSync, setEditMedCalendarSync] = useState("");
   const router = useRouter();
@@ -118,19 +121,19 @@ export default function MedicationReminders() {
       setEditMedDosageUnit("mg");
     }
 
-    const localDateTime = format(
-      new Date(med.reminder_time),
-      "yyyy-MM-dd'T'HH:mm",
-    );
-    setEditMedTime(localDateTime);
+    const medDate = new Date(med.reminder_time);
+    setEditMedDate(medDate);
+    setEditMedTimePicker(medDate.toTimeString().slice(0, 5));
 
     setEditMedRecurrence(med.recurrence ?? "Daily");
     setEditMedCalendarSync("");
   }
 
   async function saveEditedReminder() {
-    if (!editingMed) return;
-    const localDate = new Date(editMedTime);
+    if (!editingMed || !editMedDate) return;
+    const dateString = format(editMedDate, "yyyy-MM-dd");
+    const combined = `${dateString}T${editMedTimePicker}`;
+    const localDate = new Date(combined);
     const isoString = localDate.toISOString();
 
     const { error } = await supabase
@@ -272,12 +275,23 @@ export default function MedicationReminders() {
                 placeholder="Dosage"
               />
 
-              <Input
-                type="datetime-local"
-                value={editMedTime}
-                onChange={(e) => setEditMedTime(e.target.value)}
-                className="mb-3 w-full border rounded p-2"
-              />
+              <div className="space-y-3 mb-3">
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    Date
+                  </label>
+                  <DatePicker value={editMedDate} onChange={setEditMedDate} />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    Time
+                  </label>
+                  <CustomTimePicker
+                    value={editMedTimePicker}
+                    onChange={setEditMedTimePicker}
+                  />
+                </div>
+              </div>
 
               <div className="flex justify-end gap-2">
                 <Button

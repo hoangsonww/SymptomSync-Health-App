@@ -48,6 +48,8 @@ import { toast } from "sonner";
 import { Trash2, Edit3, CheckSquare, XSquare } from "lucide-react";
 import Head from "next/head";
 import { motion } from "framer-motion";
+import { DatePicker } from "@/components/ui/date-picker";
+import { CustomTimePicker } from "@/components/ui/time-picker";
 
 const containerVariants = {
   hidden: { opacity: 0, pointerEvents: "none" },
@@ -181,16 +183,17 @@ export default function CalendarPage() {
     "appointment",
   );
   const [newApptName, setNewApptName] = useState("");
-  const [newApptDate, setNewApptDate] = useState("");
-  const [newApptTime, setNewApptTime] = useState("");
+  const [newApptDate, setNewApptDate] = useState<Date | undefined>(undefined);
+  const [newApptTime, setNewApptTime] = useState("00:00");
   const [newMedName, setNewMedName] = useState("");
-  const [newMedTime, setNewMedTime] = useState("");
+  const [newMedDate, setNewMedDate] = useState<Date | undefined>(undefined);
+  const [newMedTimePicker, setNewMedTimePicker] = useState("00:00");
   const [newMedRecurrence, setNewMedRecurrence] = useState<null | string>(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [dialogEvent, setDialogEvent] = useState<CalendarEvent | null>(null);
   const [editTitle, setEditTitle] = useState("");
-  const [editDate, setEditDate] = useState("");
-  const [editTime, setEditTime] = useState("");
+  const [editDate, setEditDate] = useState<Date | undefined>(undefined);
+  const [editTime, setEditTime] = useState("00:00");
   const [showConfirmDeleteDialog, setShowConfirmDeleteDialog] = useState(false);
   const [deleteTargetIds, setDeleteTargetIds] = useState<string[]>([]);
   const [selectMode, setSelectMode] = useState(false);
@@ -311,13 +314,13 @@ export default function CalendarPage() {
   function onSelectType(type: "appointment" | "medication") {
     setAddType(type);
     if (slotDate) {
-      const dateStr = format(slotDate, "yyyy-MM-dd");
       const timeStr = format(slotDate, "HH:mm");
       if (type === "appointment") {
-        setNewApptDate(dateStr);
+        setNewApptDate(slotDate);
         setNewApptTime(timeStr);
       } else {
-        setNewMedTime(`${dateStr}T${timeStr}`);
+        setNewMedDate(slotDate);
+        setNewMedTimePicker(timeStr);
       }
     }
     setShowSelectTypeDialog(false);
@@ -330,9 +333,10 @@ export default function CalendarPage() {
   async function handleAddAppointment() {
     if (!userId || !newApptName || !newApptDate) return;
     try {
+      const dateString = format(newApptDate, "yyyy-MM-dd");
       const dateTimeString = newApptTime
-        ? `${newApptDate}T${newApptTime}`
-        : newApptDate;
+        ? `${dateString}T${newApptTime}`
+        : dateString;
       const localDate = new Date(dateTimeString);
       const isoString = localDate.toISOString();
 
@@ -359,8 +363,8 @@ export default function CalendarPage() {
       toast.success("Appointment created");
       setShowAddDialog(false);
       setNewApptName("");
-      setNewApptDate("");
-      setNewApptTime("");
+      setNewApptDate(undefined);
+      setNewApptTime("00:00");
     } catch (err) {
       toast.error("Error creating appointment");
       console.error(err);
@@ -371,9 +375,11 @@ export default function CalendarPage() {
    * Add Medication
    */
   async function handleAddMedication() {
-    if (!userId || !newMedName || !newMedTime) return;
+    if (!userId || !newMedName || !newMedDate) return;
     try {
-      const localDate = new Date(newMedTime);
+      const dateString = format(newMedDate, "yyyy-MM-dd");
+      const combined = `${dateString}T${newMedTimePicker}`;
+      const localDate = new Date(combined);
       const isoString = localDate.toISOString();
 
       const created = await createMedicationReminder({
@@ -391,7 +397,8 @@ export default function CalendarPage() {
       toast.success("Medication created");
       setShowAddDialog(false);
       setNewMedName("");
-      setNewMedTime("");
+      setNewMedDate(undefined);
+      setNewMedTimePicker("00:00");
       setNewMedRecurrence(null);
     } catch (err) {
       toast.error("Error creating medication");
@@ -412,9 +419,8 @@ export default function CalendarPage() {
     }
     setDialogEvent(ev);
     setEditTitle(ev.title.replace(/^Med: |^Appt: /, ""));
-    const dt = ev.start;
-    setEditDate(format(dt, "yyyy-MM-dd"));
-    setEditTime(format(dt, "HH:mm"));
+    setEditDate(ev.start);
+    setEditTime(format(ev.start, "HH:mm"));
     setShowEventDialog(true);
   }
 
@@ -444,8 +450,9 @@ export default function CalendarPage() {
    * Save event edits => if it's appointment or medication
    */
   async function handleSaveEventEdits() {
-    if (!dialogEvent || !userId) return;
-    const dateTimeString = editTime ? `${editDate}T${editTime}` : editDate;
+    if (!dialogEvent || !userId || !editDate) return;
+    const dateString = format(editDate, "yyyy-MM-dd");
+    const dateTimeString = `${dateString}T${editTime}`;
     const localDate = new Date(dateTimeString);
     const isoString = localDate.toISOString();
 
@@ -741,18 +748,13 @@ export default function CalendarPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Date</Label>
-                  <Input
-                    type="date"
-                    value={newApptDate}
-                    onChange={(e) => setNewApptDate(e.target.value)}
-                  />
+                  <DatePicker value={newApptDate} onChange={setNewApptDate} />
                 </div>
                 <div className="space-y-2">
                   <Label>Time</Label>
-                  <Input
-                    type="time"
+                  <CustomTimePicker
                     value={newApptTime}
-                    onChange={(e) => setNewApptTime(e.target.value)}
+                    onChange={setNewApptTime}
                   />
                 </div>
               </div>
@@ -768,11 +770,17 @@ export default function CalendarPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Schedule (Date & Time)</Label>
-                  <Input
-                    type="datetime-local"
-                    value={newMedTime}
-                    onChange={(e) => setNewMedTime(e.target.value)}
-                  />
+                  <div className="mb-2">
+                    <Label className="text-xs">Date</Label>
+                    <DatePicker value={newMedDate} onChange={setNewMedDate} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Time</Label>
+                    <CustomTimePicker
+                      value={newMedTimePicker}
+                      onChange={setNewMedTimePicker}
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Recurrence</Label>
@@ -817,7 +825,7 @@ export default function CalendarPage() {
                   variant="default"
                   onClick={handleAddMedication}
                   className="cursor-pointer"
-                  disabled={!newMedName || !newMedTime}
+                  disabled={!newMedName || !newMedDate}
                 >
                   Save
                 </Button>
@@ -851,19 +859,11 @@ export default function CalendarPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Date</Label>
-                  <Input
-                    type="date"
-                    value={editDate}
-                    onChange={(e) => setEditDate(e.target.value)}
-                  />
+                  <DatePicker value={editDate} onChange={setEditDate} />
                 </div>
                 <div className="space-y-2">
                   <Label>Time</Label>
-                  <Input
-                    type="time"
-                    value={editTime}
-                    onChange={(e) => setEditTime(e.target.value)}
-                  />
+                  <CustomTimePicker value={editTime} onChange={setEditTime} />
                 </div>
               </div>
             )}
