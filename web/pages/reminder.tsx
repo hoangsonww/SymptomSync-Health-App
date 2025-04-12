@@ -118,20 +118,27 @@ export default function MedicationReminders() {
       setEditMedDosageUnit("mg");
     }
 
-    setEditMedTime(med.reminder_time);
+    const localDateTime = format(
+      new Date(med.reminder_time),
+      "yyyy-MM-dd'T'HH:mm",
+    );
+    setEditMedTime(localDateTime);
+
     setEditMedRecurrence(med.recurrence ?? "Daily");
     setEditMedCalendarSync("");
   }
 
   async function saveEditedReminder() {
     if (!editingMed) return;
+    const localDate = new Date(editMedTime);
+    const isoString = localDate.toISOString();
 
     const { error } = await supabase
       .from("medication_reminders")
       .update({
         medication_name: editMedName,
         dosage: `${editMedDosage} ${editMedDosageUnit}`,
-        reminder_time: editMedTime,
+        reminder_time: isoString,
         recurrence: editMedRecurrence,
         calendar_sync_token: editMedCalendarSync,
       })
@@ -241,6 +248,7 @@ export default function MedicationReminders() {
             ))}
           </motion.div>
         )}
+
         {editingMed && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">

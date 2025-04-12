@@ -75,11 +75,35 @@ npm run format
 
 This is recommended to be run before committing your changes to ensure that the code is formatted consistently.
 
+### Known Issues
+
+#### 1. React Big Calendar
+
+If you navigate client-side from another page to the Calendar page,
+some buttons on the calendar won't work (e.g. Agenda, Day, Week, Month). Simply refreshing the page will fix this issue. Also, this does not happen in production, only in development mode.
+
+#### 2. Timezone Misalignments
+
+The calendar is set to UTC timezone, but the events are created in the user's local timezone. This can cause some misalignments in the calendar view. We can fix this by converting the event times to UTC before saving them to the database.
+
+So, before you save the event to the database (i.e. before passing to the Supabase helpers), you must convert the event times to UTC. You can do this by using `Date` object with the `toISOString()` method. For example:
+
+```javascript
+const event = {
+  start: new Date(event.start).toISOString(),
+  end: new Date(event.end).toISOString(),
+  title: event.title,
+  allDay: event.allDay,
+};
+```
+
+_Remember to delete this section before submission!_
+
 ---
 
-_Add some screenshots or graphics here that show your app being used!_
-
-_Include a short description of your app here._
+<p align="center">
+  <img src="docs/img/dashboard.png" alt="SymptomSync Logo" width="100%"/>
+</p>
 
 ## Features
 

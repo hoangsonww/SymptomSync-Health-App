@@ -60,6 +60,8 @@ import {
 import { Line, Bar, Doughnut, Radar, PolarArea } from "react-chartjs-2";
 import Head from "next/head";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -75,7 +77,6 @@ ChartJS.register(
   Legend,
 );
 
-// Framer Motion variants
 const containerVariants = {
   hidden: { opacity: 0, pointerEvents: "none" },
   visible: {
@@ -379,8 +380,10 @@ export default function HomePage() {
       setNewMedRecurrence("Daily");
       setNewMedCalendarSync("");
       setAddMedOpen(false);
+      toast.success("Medication reminder added successfully!");
     } catch (err) {
       console.error("Error creating medication:", err);
+      toast.error("Error creating medication reminder.");
     }
   }
 
@@ -408,7 +411,9 @@ export default function HomePage() {
       setNewApptDate("");
       setNewApptTime("");
       setAddApptOpen(false);
+      toast.success("Appointment reminder added successfully!");
     } catch (err) {
+      toast.error("Error creating appointment reminder.");
       console.error("Error creating appointment:", err);
     }
   }
@@ -465,7 +470,9 @@ export default function HomePage() {
       setHlStartDate("");
       setHlEndDate("");
       setAddLogOpen(false);
+      toast.success("Health log added successfully!");
     } catch (err) {
+      toast.error("Error creating health log.");
       console.error("Error creating health log:", err);
     }
   }
@@ -514,7 +521,9 @@ export default function HomePage() {
 
       await fetchAllData(userId);
       setEditingMed(null);
+      toast.success("Medication reminder updated successfully!");
     } catch (err) {
+      toast.error("Error updating medication reminder.");
       console.error("Error updating medication:", err);
     }
   }
@@ -552,7 +561,9 @@ export default function HomePage() {
 
       await fetchAllData(userId);
       setEditingAppt(null);
+      toast.success("Appointment reminder updated successfully!");
     } catch (err) {
+      toast.error("Error updating appointment reminder.");
       console.error("Error updating appointment:", err);
     }
   }
@@ -644,7 +655,9 @@ export default function HomePage() {
 
       await fetchAllData(userId);
       setEditingLog(null);
+      toast.success("Health log updated successfully!");
     } catch (err) {
+      toast.error("Error updating health log.");
       console.error("Error updating health log:", err);
     }
   }
@@ -657,7 +670,9 @@ export default function HomePage() {
     try {
       await deleteMedicationReminder(id);
       await fetchAllData(userId);
+      toast.success("Medication reminder deleted successfully!");
     } catch (err) {
+      toast.error("Error deleting medication reminder.");
       console.error("Error deleting medication:", err);
     }
   }
@@ -670,7 +685,9 @@ export default function HomePage() {
     try {
       await deleteAppointmentReminder(id);
       await fetchAllData(userId);
+      toast.success("Appointment reminder deleted successfully!");
     } catch (err) {
+      toast.error("Error deleting appointment reminder.");
       console.error("Error deleting appointment:", err);
     }
   }
@@ -683,7 +700,9 @@ export default function HomePage() {
     try {
       await deleteHealthLog(id);
       await fetchAllData(userId);
+      toast.success("Health log deleted successfully!");
     } catch (err) {
+      toast.error("Error deleting health log.");
       console.error("Error deleting health log:", err);
     }
   }
@@ -700,19 +719,20 @@ export default function HomePage() {
     "#9A6AFF",
   ];
 
-  // Sort logs by start_date for chart
   const sortedLogs = [...logs].sort(
     (a, b) =>
       new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
   );
-  const severityLabels = sortedLogs.map((log) => log.start_date.split("T")[0]);
+  const severityLabels = sortedLogs.map((log) =>
+    format(new Date(log.start_date), "yyyy-MM-dd"),
+  );
   const severityData = sortedLogs.map((log) => log.severity ?? 0);
 
   const severityLineData = {
     labels: severityLabels,
     datasets: [
       {
-        label: "Symptom Severity",
+        label: "Symptom Severity (lower is better)",
         data: severityData,
         borderColor: colorSet[0],
         backgroundColor: colorSet[0],
@@ -724,7 +744,7 @@ export default function HomePage() {
 
   const apptsCountMap: Record<string, number> = {};
   appointments.forEach((appt) => {
-    const day = new Date(appt.date).toISOString().split("T")[0];
+    const day = format(new Date(appt.date), "yyyy-MM-dd");
     apptsCountMap[day] = (apptsCountMap[day] || 0) + 1;
   });
   const apptLabels = Object.keys(apptsCountMap).sort();
@@ -733,7 +753,7 @@ export default function HomePage() {
     labels: apptLabels,
     datasets: [
       {
-        label: "Appointments / Day",
+        label: "Appointments by Day",
         data: apptValues,
         backgroundColor: colorSet[1],
         borderColor: colorSet[1],
@@ -824,7 +844,7 @@ export default function HomePage() {
     labels: hourLabels.map((hr) => `${hr}:00`),
     datasets: [
       {
-        label: "Appointments / Hour",
+        label: "Appointments by Hour",
         data: hourValues,
         backgroundColor: colorSet[3],
         borderColor: colorSet[3],
@@ -973,7 +993,7 @@ export default function HomePage() {
         >
           <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
             <CardHeader>
-              <CardTitle>Appointments / Day</CardTitle>
+              <CardTitle>Appointments by Day</CardTitle>
             </CardHeader>
             <CardContent className="relative w-full h-full">
               {apptLabels.length === 0 ? (
@@ -1050,10 +1070,10 @@ export default function HomePage() {
 
           <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
             <CardHeader>
-              <CardTitle>Appointments / Hour</CardTitle>
+              <CardTitle>Appointments by Hour</CardTitle>
             </CardHeader>
             <CardContent className="relative w-full h-full">
-              {hourLabels.length === 0 ? (
+              {appointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground mt-2">
                   No appointment hours found.
                 </p>
@@ -1070,7 +1090,7 @@ export default function HomePage() {
 
           <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
             <CardHeader>
-              <CardTitle>Medications / Recurrence</CardTitle>
+              <CardTitle>Medications by Recurrence</CardTitle>
             </CardHeader>
             <CardContent className="relative w-full h-full">
               {recurrenceLabels.length === 0 ? (
@@ -1097,49 +1117,55 @@ export default function HomePage() {
             <CardHeader className="mt-8">
               <CardTitle>Medications</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2 text-sm pb-4">
               {medications.length === 0 ? (
                 <p className="text-muted-foreground">No medications yet.</p>
               ) : (
-                medications.map((med, idx) => (
-                  <div
-                    key={med.id}
-                    className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
-                    style={getStaggerStyle(idx)}
-                  >
-                    <div className="font-medium">
-                      {safeDisplay(med.medication_name)}
+                [...medications]
+                  .sort(
+                    (a, b) =>
+                      new Date(a.reminder_time).getTime() -
+                      new Date(b.reminder_time).getTime(),
+                  )
+                  .map((med, idx) => (
+                    <div
+                      key={med.id}
+                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
+                      style={getStaggerStyle(idx)}
+                    >
+                      <div className="font-medium">
+                        {safeDisplay(med.medication_name)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Dosage: {safeDisplay(med.dosage)}
+                        <br />
+                        Schedule: {new Date(med.reminder_time).toLocaleString()}
+                        <br />
+                        Recurrence: {safeDisplay(med.recurrence)}
+                        <br />
+                        {/* Calendar Sync: {safeDisplay(med.calendar_sync_token)} */}
+                        <br />
+                        Created: {new Date(med.created_at).toLocaleString()}
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => openEditMedDialog(med)}
+                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                        >
+                          View / Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteMedication(med.id)}
+                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      Dosage: {safeDisplay(med.dosage)}
-                      <br />
-                      Schedule: {new Date(med.reminder_time).toLocaleString()}
-                      <br />
-                      Recurrence: {safeDisplay(med.recurrence)}
-                      <br />
-                      {/* Calendar Sync: {safeDisplay(med.calendar_sync_token)} */}
-                      <br />
-                      Created: {new Date(med.created_at).toLocaleString()}
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <Button
-                        size="sm"
-                        onClick={() => openEditMedDialog(med)}
-                        className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                      >
-                        View / Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteMedication(med.id)}
-                        className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))
+                  ))
               )}
             </CardContent>
           </Card>
@@ -1148,45 +1174,50 @@ export default function HomePage() {
             <CardHeader className="mt-8">
               <CardTitle>Appointments</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2 text-sm pb-4">
               {appointments.length === 0 ? (
                 <p className="text-muted-foreground">No appointments yet.</p>
               ) : (
-                appointments.map((appt, idx) => (
-                  <div
-                    key={appt.id}
-                    className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
-                    style={getStaggerStyle(idx)}
-                  >
-                    <div className="font-medium">
-                      {safeDisplay(appt.appointment_name)}
+                [...appointments]
+                  .sort(
+                    (a, b) =>
+                      new Date(a.date).getTime() - new Date(b.date).getTime(),
+                  )
+                  .map((appt, idx) => (
+                    <div
+                      key={appt.id}
+                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
+                      style={getStaggerStyle(idx)}
+                    >
+                      <div className="font-medium">
+                        {safeDisplay(appt.appointment_name)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Date: {new Date(appt.date).toLocaleDateString()} @{" "}
+                        {new Date(appt.date).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => openEditApptDialog(appt)}
+                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                        >
+                          View / Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteAppointment(appt.id)}
+                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      Date: {new Date(appt.date).toLocaleDateString()} @{" "}
-                      {new Date(appt.date).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <Button
-                        size="sm"
-                        onClick={() => openEditApptDialog(appt)}
-                        className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                      >
-                        View / Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteAppointment(appt.id)}
-                        className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))
+                  ))
               )}
             </CardContent>
           </Card>
@@ -1195,102 +1226,108 @@ export default function HomePage() {
             <CardHeader className="mt-8">
               <CardTitle>Health Logs</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2 text-sm pb-4">
               {logs.length === 0 ? (
                 <p className="text-muted-foreground">No health logs yet.</p>
               ) : (
-                logs.map((log, idx) => {
-                  let vitalsData = null;
-                  if (log.vitals) {
-                    try {
-                      vitalsData =
-                        typeof log.vitals === "string"
-                          ? JSON.parse(log.vitals)
-                          : log.vitals;
-                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    } catch (error) {
-                      vitalsData = null;
+                [...logs]
+                  .sort(
+                    (a, b) =>
+                      new Date(a.start_date).getTime() -
+                      new Date(b.start_date).getTime(),
+                  )
+                  .map((log, idx) => {
+                    let vitalsData = null;
+                    if (log.vitals) {
+                      try {
+                        vitalsData =
+                          typeof log.vitals === "string"
+                            ? JSON.parse(log.vitals)
+                            : log.vitals;
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      } catch (error) {
+                        vitalsData = null;
+                      }
                     }
-                  }
-                  return (
-                    <div
-                      key={log.id}
-                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
-                      style={getStaggerStyle(idx)}
-                    >
-                      <div className="font-medium">
-                        Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
+                    return (
+                      <div
+                        key={log.id}
+                        className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
+                        style={getStaggerStyle(idx)}
+                      >
+                        <div className="font-medium">
+                          Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Severity:{" "}
+                          {log.severity !== undefined &&
+                          log.severity !== null &&
+                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                          // @ts-ignore
+                          log.severity !== ""
+                            ? log.severity
+                            : "N/A"}
+                          <br />
+                          Mood: {safeDisplay(log.mood) || "N/A"}
+                          <br />
+                          <div>Vitals:</div>
+                          {vitalsData && typeof vitalsData === "object" ? (
+                            <ul className="list-disc list-inside">
+                              <li>
+                                <span className="capitalize font-medium">
+                                  heartRate:
+                                </span>{" "}
+                                {vitalsData.heartRate
+                                  ? vitalsData.heartRate
+                                  : "N/A"}
+                              </li>
+                              <li>
+                                <span className="capitalize font-medium">
+                                  bloodPressure:
+                                </span>{" "}
+                                {vitalsData.bloodPressure
+                                  ? vitalsData.bloodPressure
+                                  : "N/A"}
+                              </li>
+                            </ul>
+                          ) : (
+                            <>
+                              Vitals: {log.vitals ? log.vitals : "N/A"}
+                              {(!log.vitals || log.vitals === "N/A") && <br />}
+                            </>
+                          )}
+                          Medication Intake:{" "}
+                          {safeDisplay(log.medication_intake) || "N/A"}
+                          <br />
+                          Notes: {safeDisplay(log.notes) || "N/A"}
+                          <br />
+                          Start: {new Date(log.start_date).toLocaleString()}
+                          <br />
+                          End:{" "}
+                          {log.end_date
+                            ? new Date(log.end_date).toLocaleString()
+                            : "N/A"}
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            size="sm"
+                            onClick={() => openEditLogDialog(log)}
+                            className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                          >
+                            View / Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteLog(log.id)}
+                            className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Severity:{" "}
-                        {log.severity !== undefined &&
-                        log.severity !== null &&
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        log.severity !== ""
-                          ? log.severity
-                          : "N/A"}
-                        <br />
-                        Mood: {safeDisplay(log.mood) || "N/A"}
-                        <br />
-                        <div>Vitals:</div>
-                        {vitalsData && typeof vitalsData === "object" ? (
-                          <ul className="list-disc list-inside">
-                            <li>
-                              <span className="capitalize font-medium">
-                                heartRate:
-                              </span>{" "}
-                              {vitalsData.heartRate
-                                ? vitalsData.heartRate
-                                : "N/A"}
-                            </li>
-                            <li>
-                              <span className="capitalize font-medium">
-                                bloodPressure:
-                              </span>{" "}
-                              {vitalsData.bloodPressure
-                                ? vitalsData.bloodPressure
-                                : "N/A"}
-                            </li>
-                          </ul>
-                        ) : (
-                          <>
-                            Vitals: {log.vitals ? log.vitals : "N/A"}
-                            {(!log.vitals || log.vitals === "N/A") && <br />}
-                          </>
-                        )}
-                        Medication Intake:{" "}
-                        {safeDisplay(log.medication_intake) || "N/A"}
-                        <br />
-                        Notes: {safeDisplay(log.notes) || "N/A"}
-                        <br />
-                        Start: {new Date(log.start_date).toLocaleString()}
-                        <br />
-                        End:{" "}
-                        {log.end_date
-                          ? new Date(log.end_date).toLocaleString()
-                          : "N/A"}
-                      </div>
-                      <div className="flex gap-2 mt-2">
-                        <Button
-                          size="sm"
-                          onClick={() => openEditLogDialog(log)}
-                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          View / Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteLog(log.id)}
-                          className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })
+                    );
+                  })
               )}
             </CardContent>
           </Card>
@@ -1319,6 +1356,9 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
+                    min="0"
+                    max="1000"
+                    step="0.1"
                     value={newMedDosage}
                     onChange={(e) => setNewMedDosage(e.target.value)}
                     placeholder="e.g. 200"
@@ -1367,14 +1407,7 @@ export default function HomePage() {
                 </Select>
               </div>
 
-              {/* <div className="space-y-2">
-                <Label>Calendar Sync Token (Optional)</Label>
-                <Input
-                  value={newMedCalendarSync}
-                  onChange={(e) => setNewMedCalendarSync(e.target.value)}
-                  placeholder="If applicable"
-                />
-              </div> */}
+              {/* Optional Calendar Sync Token field is commented out */}
             </div>
             <DialogFooter>
               <Button
@@ -1388,6 +1421,7 @@ export default function HomePage() {
                 variant="default"
                 className="cursor-pointer"
                 onClick={handleAddMedication}
+                disabled={!newMedName || !newMedTime}
               >
                 Save
               </Button>
@@ -1443,6 +1477,7 @@ export default function HomePage() {
                 variant="default"
                 className="cursor-pointer"
                 onClick={handleAddAppointment}
+                disabled={!newApptName || !newApptDate || !newApptTime}
               >
                 Save
               </Button>
@@ -1502,6 +1537,8 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
+                    min="0"
+                    max="300"
                     value={hlHeartRate}
                     onChange={(e) => setHlHeartRate(e.target.value)}
                     placeholder="e.g. 72"
@@ -1515,6 +1552,8 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
+                    min="0"
+                    max="300"
                     value={hlBloodPressureSys}
                     onChange={(e) => setHlBloodPressureSys(e.target.value)}
                     placeholder="Systolic"
@@ -1522,6 +1561,8 @@ export default function HomePage() {
                   <span>/</span>
                   <Input
                     type="number"
+                    min="0"
+                    max="300"
                     value={hlBloodPressureDia}
                     onChange={(e) => setHlBloodPressureDia(e.target.value)}
                     placeholder="Diastolic"
@@ -1535,6 +1576,9 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
+                    min="0"
+                    max="1000"
+                    step="0.1"
                     value={hlMedIntakeNumber}
                     onChange={(e) => setHlMedIntakeNumber(e.target.value)}
                     placeholder="e.g. 200"
@@ -1581,6 +1625,14 @@ export default function HomePage() {
                   onChange={(e) => setHlEndDate(e.target.value)}
                 />
               </div>
+              {/* Display an error message if end date is provided and is not after start date */}
+              {hlStartDate &&
+                hlEndDate &&
+                new Date(hlEndDate) <= new Date(hlStartDate) && (
+                  <div className="text-red-500 text-sm">
+                    End Date must be later than Start Date.
+                  </div>
+                )}
             </div>
             <DialogFooter>
               <Button
@@ -1594,6 +1646,13 @@ export default function HomePage() {
                 variant="default"
                 className="cursor-pointer"
                 onClick={handleAddHealthLog}
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                disabled={
+                  !hlSymptomType ||
+                  !hlStartDate ||
+                  (hlEndDate && new Date(hlEndDate) <= new Date(hlStartDate))
+                }
               >
                 Save
               </Button>
@@ -1627,6 +1686,9 @@ export default function HomePage() {
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
+                      min="0"
+                      max="1000"
+                      step="0.1"
                       value={editMedDosage}
                       onChange={(e) => setEditMedDosage(e.target.value)}
                     />
@@ -1674,13 +1736,7 @@ export default function HomePage() {
                   </Select>
                 </div>
 
-                {/* <div className="space-y-2">
-                  <Label>Calendar Sync Token</Label>
-                  <Input
-                    value={editMedCalendarSync}
-                    onChange={(e) => setEditMedCalendarSync(e.target.value)}
-                  />
-                </div> */}
+                {/* Optional Calendar Sync Token field is commented out */}
               </div>
               <DialogFooter>
                 <Button
@@ -1694,6 +1750,7 @@ export default function HomePage() {
                   variant="default"
                   className="cursor-pointer"
                   onClick={handleUpdateMed}
+                  disabled={!editMedName || !editMedTime}
                 >
                   Save
                 </Button>
@@ -1753,6 +1810,7 @@ export default function HomePage() {
                   variant="default"
                   className="cursor-pointer"
                   onClick={handleUpdateAppt}
+                  disabled={!editApptName || !editApptDate || !editApptTime}
                 >
                   Save
                 </Button>
@@ -1819,6 +1877,8 @@ export default function HomePage() {
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
+                      min="0"
+                      max="300"
                       value={editHeartRate}
                       onChange={(e) => setEditHeartRate(e.target.value)}
                     />
@@ -1831,6 +1891,8 @@ export default function HomePage() {
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
+                      min="0"
+                      max="300"
                       value={editBloodPressureSys}
                       onChange={(e) => setEditBloodPressureSys(e.target.value)}
                       placeholder="Systolic"
@@ -1838,6 +1900,8 @@ export default function HomePage() {
                     <span>/</span>
                     <Input
                       type="number"
+                      min="0"
+                      max="300"
                       value={editBloodPressureDia}
                       onChange={(e) => setEditBloodPressureDia(e.target.value)}
                       placeholder="Diastolic"
@@ -1851,6 +1915,9 @@ export default function HomePage() {
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
+                      min="0"
+                      max="1000"
+                      step="0.1"
                       value={editMedIntakeNumber}
                       onChange={(e) => setEditMedIntakeNumber(e.target.value)}
                     />
@@ -1895,6 +1962,14 @@ export default function HomePage() {
                     onChange={(e) => setEditEndDate(e.target.value)}
                   />
                 </div>
+                {/* Display an error message if end date is provided and is not after start date */}
+                {editStartDate &&
+                  editEndDate &&
+                  new Date(editEndDate) <= new Date(editStartDate) && (
+                    <div className="text-red-500 text-sm">
+                      End Date must be later than Start Date.
+                    </div>
+                  )}
               </div>
               <DialogFooter>
                 <Button
@@ -1908,6 +1983,14 @@ export default function HomePage() {
                   variant="default"
                   className="cursor-pointer"
                   onClick={handleUpdateLog}
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  disabled={
+                    !editSymptomType ||
+                    !editStartDate ||
+                    (editEndDate &&
+                      new Date(editEndDate) <= new Date(editStartDate))
+                  }
                 >
                   Save
                 </Button>

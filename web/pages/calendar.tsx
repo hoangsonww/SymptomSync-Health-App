@@ -330,13 +330,16 @@ export default function CalendarPage() {
   async function handleAddAppointment() {
     if (!userId || !newApptName || !newApptDate) return;
     try {
-      const dateTime = newApptTime
+      const dateTimeString = newApptTime
         ? `${newApptDate}T${newApptTime}`
         : newApptDate;
+      const localDate = new Date(dateTimeString);
+      const isoString = localDate.toISOString();
+
       const created = await createAppointmentReminder({
         user_profile_id: userId,
         appointment_name: newApptName,
-        date: dateTime,
+        date: isoString,
       });
 
       const startDt = new Date(created.date);
@@ -353,7 +356,7 @@ export default function CalendarPage() {
         },
       ]);
 
-      toast.success("Appointment created & displayed");
+      toast.success("Appointment created");
       setShowAddDialog(false);
       setNewApptName("");
       setNewApptDate("");
@@ -370,11 +373,14 @@ export default function CalendarPage() {
   async function handleAddMedication() {
     if (!userId || !newMedName || !newMedTime) return;
     try {
+      const localDate = new Date(newMedTime);
+      const isoString = localDate.toISOString();
+
       const created = await createMedicationReminder({
         user_profile_id: userId,
         medication_name: newMedName,
         dosage: null,
-        reminder_time: newMedTime,
+        reminder_time: isoString,
         recurrence: newMedRecurrence,
         calendar_sync_token: null,
       });
@@ -382,7 +388,7 @@ export default function CalendarPage() {
       const repeated = expandMedication(created);
       setEvents((prev) => [...prev, ...repeated]);
 
-      toast.success("Medication created & displayed");
+      toast.success("Medication created");
       setShowAddDialog(false);
       setNewMedName("");
       setNewMedTime("");
@@ -439,15 +445,17 @@ export default function CalendarPage() {
    */
   async function handleSaveEventEdits() {
     if (!dialogEvent || !userId) return;
-    const dateTime = editTime ? `${editDate}T${editTime}` : editDate;
-    const newStart = new Date(dateTime);
+    const dateTimeString = editTime ? `${editDate}T${editTime}` : editDate;
+    const localDate = new Date(dateTimeString);
+    const isoString = localDate.toISOString();
 
     try {
-      const [type, realId] = dialogEvent.id.split("-");
+      const [type, ...rest] = dialogEvent.id.split("-");
       if (type === "appt") {
+        const realId = rest.join("-");
         const updated = await updateAppointmentReminder(realId, {
           appointment_name: editTitle,
-          date: newStart.toISOString(),
+          date: isoString,
         });
         setEvents((prev) =>
           prev.map((e) => {
@@ -466,11 +474,14 @@ export default function CalendarPage() {
         );
         toast.success("Appointment updated");
       } else {
-        const updated = await updateMedicationReminder(realId, {
+        // from a string like "med-<UUID>-<occurrenceIndex>"
+        const withoutPrefix = dialogEvent.id.slice(4);
+        const lastDash = withoutPrefix.lastIndexOf("-");
+        const realIdMed = withoutPrefix.substring(0, lastDash);
+        const updated = await updateMedicationReminder(realIdMed, {
           medication_name: editTitle,
-          reminder_time: newStart.toISOString(),
+          reminder_time: isoString,
         });
-
         setEvents((prev) =>
           prev.map((e) => {
             if (e.id === dialogEvent.id) {
@@ -507,18 +518,50 @@ export default function CalendarPage() {
 
   async function doDeleteEvents() {
     try {
+      const appointmentIdsToDelete = new Set();
+      const medicationIdsToDelete = new Set();
+
       for (const eId of deleteTargetIds) {
-        const [type, realId] = eId.split("-");
-        if (type === "appt") {
-          await deleteAppointmentReminder(realId);
-        } else {
-          await deleteMedicationReminder(realId);
+        if (eId.startsWith("appt-")) {
+          const realId = eId.slice(5);
+          appointmentIdsToDelete.add(realId);
+        } else if (eId.startsWith("med-")) {
+          const withoutPrefix = eId.slice(4);
+          const lastDash = withoutPrefix.lastIndexOf("-");
+          const realId = withoutPrefix.substring(0, lastDash);
+          medicationIdsToDelete.add(realId);
         }
       }
+
+      for (const apptId of appointmentIdsToDelete) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        await deleteAppointmentReminder(apptId);
+      }
+
+      for (const medId of medicationIdsToDelete) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        await deleteMedicationReminder(medId);
+      }
+
       toast.success("Deleted events");
+
       setEvents((prev) =>
-        prev.filter((evt) => !deleteTargetIds.includes(evt.id)),
+        prev.filter((evt) => {
+          if (evt.type === "appointment") {
+            const evtId = evt.id.slice(5);
+            return !appointmentIdsToDelete.has(evtId);
+          } else if (evt.type === "medication") {
+            const withoutPrefix = evt.id.slice(4);
+            const lastDash = withoutPrefix.lastIndexOf("-");
+            const medId = withoutPrefix.substring(0, lastDash);
+            return !medicationIdsToDelete.has(medId);
+          }
+          return true;
+        }),
       );
+
       setSelectedEventIds(new Set());
     } catch (err) {
       toast.error("Error deleting events");
@@ -765,6 +808,7 @@ export default function CalendarPage() {
                   variant="default"
                   onClick={handleAddAppointment}
                   className="cursor-pointer"
+                  disabled={!newApptName || !newApptDate}
                 >
                   Save
                 </Button>
@@ -773,6 +817,7 @@ export default function CalendarPage() {
                   variant="default"
                   onClick={handleAddMedication}
                   className="cursor-pointer"
+                  disabled={!newMedName || !newMedTime}
                 >
                   Save
                 </Button>
@@ -837,6 +882,7 @@ export default function CalendarPage() {
                     variant="default"
                     className="cursor-pointer"
                     onClick={handleSaveEventEdits}
+                    disabled={!editTitle || !editDate || !editTime}
                   >
                     <Edit3 className="w-4 h-4 mr-1" />
                     Save Changes
