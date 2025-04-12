@@ -1254,7 +1254,10 @@ export default function HomePage() {
                             </li>
                           </ul>
                         ) : (
-                          <>Vitals: {log.vitals ? log.vitals : "N/A"}</>
+                          <>
+                            Vitals: {log.vitals ? log.vitals : "N/A"}
+                            {(!log.vitals || log.vitals === "N/A") && <br />}
+                          </>
                         )}
                         Medication Intake:{" "}
                         {safeDisplay(log.medication_intake) || "N/A"}

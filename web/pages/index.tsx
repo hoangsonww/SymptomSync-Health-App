@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { Inter } from "next/font/google";
 import dynamic from "next/dynamic";
 import { motion, useInView } from "framer-motion";
@@ -118,6 +119,21 @@ const sliderSettings = {
 };
 
 export default function Home() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      setUser(user);
+    };
+
+    fetchUser();
+  }, []);
+
   return (
     <>
       <Head>
@@ -150,12 +166,15 @@ export default function Home() {
             </p>
           </AnimatedInView>
           <AnimatedInView delay={0.4}>
-            <Link href="/auth/login" className="inline-block">
+            <Link
+              href={user ? "/home" : "/auth/login"}
+              className="inline-block"
+            >
               <Button
                 variant="default"
                 className="bg-white text-primary rounded-full px-8 py-4 text-lg hover:scale-105 hover:shadow-2xl hover:text-white cursor-pointer"
               >
-                Get Started
+                {user ? "Continue Your Journey" : "Get Started"}
               </Button>
             </Link>
           </AnimatedInView>
@@ -627,7 +646,7 @@ export default function Home() {
               SymptomSync.
             </p>
             <motion.a
-              href="/auth/signUp"
+              href={user ? "/home" : "/auth/signUp"}
               className="inline-block shadow-2xl rounded-full"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -636,7 +655,7 @@ export default function Home() {
                 variant="default"
                 className="rounded-full px-10 py-4 text-lg shadow-3xl hover:shadow-3xl hover:bg-white hover:text-foreground cursor-pointer"
               >
-                Sign Up for Free!
+                {user ? "Continue Your Journey" : "Sign Up for Free!"}
               </Button>
             </motion.a>
           </AnimatedInView>
