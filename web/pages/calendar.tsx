@@ -422,17 +422,17 @@ export default function CalendarPage() {
   }
 
   function eventPropGetter(event: CalendarEvent) {
-  const style: React.CSSProperties = { 
-    cursor: "pointer", 
-    backgroundColor: "#344966" 
-  };
-  
-  if (selectedEventIds.has(event.id)) {
-    style.backgroundColor = "#4a5a75";
-    style.border = "2px solid #FF577F";
+    const style: React.CSSProperties = {
+      cursor: "pointer",
+      backgroundColor: "#344966",
+    };
+
+    if (selectedEventIds.has(event.id)) {
+      style.backgroundColor = "#4a5a75";
+      style.border = "2px solid #FF577F";
+    }
+    return { style };
   }
-  return { style };
-}
 
   /**
    * Save event edits => if it's appointment or medication

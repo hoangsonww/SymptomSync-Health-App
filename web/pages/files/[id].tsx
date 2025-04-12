@@ -1,20 +1,12 @@
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/router";
+import { fetchFileDetails, FileRow } from "@/lib/fileDetails";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Tag, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import Head from "next/head";
-
-type FileRow = {
-  id: string;
-  filename: string;
-  url: string;
-  file_type: string;
-  uploaded_at: string;
-  tags?: string[];
-};
 
 export default function FileViewPage() {
   const router = useRouter();
@@ -23,31 +15,39 @@ export default function FileViewPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
-
-    async function fetchFile() {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
+    async function checkUserAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
         router.push("/auth/login");
-        return;
       }
+    }
+    checkUserAuth();
+  }, [router]);
 
-      const { data, error } = await supabase
-        .from("files")
-        .select("*")
-        .eq("id", id)
-        .single();
+  useEffect(() => {
+    if (!id || Array.isArray(id)) return;
 
+    async function getFile() {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const { file, error } = await fetchFileDetails(id);
       if (error) {
+        // Optionally, check if the error is due to a missing user and redirect accordingly
+        if (error.message === "User not authenticated") {
+          router.push("/auth/login");
+          return;
+        }
         toast.error("Failed to fetch file");
         console.error("Error fetching file:", error);
       } else {
-        setFile(data);
+        setFile(file!);
       }
       setLoading(false);
     }
 
-    fetchFile();
+    getFile();
   }, [id, router]);
 
   return (

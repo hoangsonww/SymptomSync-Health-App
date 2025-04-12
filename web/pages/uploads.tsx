@@ -282,7 +282,7 @@ export default function DocumentsPage() {
                             onChange={(e) =>
                               setFileToUpload(e.target.files?.[0] || null)
                             }
-                            className="py-2"
+                            className="cursor-pointer"
                           />
                           <Input
                             placeholder="Custom Filename (optional)"
