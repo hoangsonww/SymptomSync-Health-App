@@ -45,7 +45,15 @@ import {
 } from "date-fns";
 import { enUS } from "date-fns/locale/en-US";
 import { toast } from "sonner";
-import { Trash2, Edit3, CheckSquare, XSquare } from "lucide-react";
+import {
+  Trash2,
+  Edit3,
+  CheckSquare,
+  XSquare,
+  Download,
+  Calendar as CalendarIcon,
+  Pill,
+} from "lucide-react";
 import Head from "next/head";
 import { motion } from "framer-motion";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -99,7 +107,7 @@ type CalendarEvent = {
 };
 
 /**
- * Takes a medication reminder and expands it into multiple calendar events based on its recurrence.
+ * Takes a medication reminder and expands it into multiple calendar events based on its recurrence
  *
  * @param med - The medication reminder object.
  * @param horizonDays - The number of days to expand the events into the future.
@@ -111,13 +119,19 @@ function expandMedication(
 ): CalendarEvent[] {
   const baseTime = new Date(med.reminder_time);
   const events: CalendarEvent[] = [];
+  const recurrence = med.recurrence
+    ? med.recurrence
+        .toLowerCase()
+        .replace(/[-\s]+/g, " ")
+        .trim()
+    : "";
 
-  if (!med.recurrence || med.recurrence.toLowerCase() === "as needed") {
+  if (!recurrence || recurrence === "as needed") {
     events.push({
-      id: `med-${med.id}`,
-      title: `Med: ${med.medication_name}`,
-      start: new Date(med.reminder_time),
-      end: new Date(med.reminder_time),
+      id: `med-${med.id}-0`,
+      title: `💊 Med: ${med.medication_name}`,
+      start: baseTime,
+      end: baseTime,
       type: "medication",
     });
     return events;
@@ -126,22 +140,21 @@ function expandMedication(
   const endPoint = addDays(baseTime, horizonDays);
 
   let deltaDays = 1;
-  if (med.recurrence.toLowerCase() === "weekly") {
+  if (recurrence === "weekly") {
     deltaDays = 7;
-  } else if (med.recurrence.toLowerCase() === "biweekly") {
+  } else if (recurrence === "biweekly") {
     deltaDays = 14;
-  } else if (med.recurrence.toLowerCase() === "monthly") {
-    // no need to change deltaDays for monthly – handled below
+  } else if (recurrence === "monthly") {
+    // Monthly recurrence will be handled below
   }
 
   let index = 0;
-
-  if (med.recurrence.toLowerCase() === "monthly") {
+  if (recurrence === "monthly") {
     let current = new Date(baseTime);
     while (current <= endPoint) {
       events.push({
         id: `med-${med.id}-${index}`,
-        title: `Med: ${med.medication_name}`,
+        title: `💊 Med: ${med.medication_name}`,
         start: new Date(current),
         end: new Date(current),
         type: "medication",
@@ -154,7 +167,7 @@ function expandMedication(
     while (current <= endPoint) {
       events.push({
         id: `med-${med.id}-${index}`,
-        title: `Med: ${med.medication_name}`,
+        title: `💊 Med: ${med.medication_name}`,
         start: new Date(current),
         end: new Date(current),
         type: "medication",
@@ -165,6 +178,143 @@ function expandMedication(
   }
 
   return events;
+}
+
+/**
+ * Converts a raw ICS date string of the form "YYYYMMDDTHHMMSS"
+ * into a valid ISO 8601 date string (like "YYYY-MM-DDTHH:MM:SSZ")
+ *
+ * Asked ChatGPT to help me with the regexs.
+ */
+function normalizeIcsDate(dateStr: string): string {
+  const regex = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)$/;
+  const match = regex.exec(dateStr);
+  if (match) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_, year, month, day, hour, minute, second, z] = match;
+    return `${year}-${month}-${day}T${hour}:${minute}:${second}${z || "Z"}`;
+  }
+
+  return dateStr;
+}
+
+/**
+ * Generates an ICS string from the given events
+ */
+function generateIcs(events: CalendarEvent[]): string {
+  const formatDateUtc = (date: Date) => format(date, "yyyyMMdd'T'HHmmss'Z'");
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "CALSCALE:GREGORIAN",
+    "PRODID:-//SymptomSync//EN",
+    "VERSION:2.0",
+    "X-WR-CALNAME:SymptomSync Calendar",
+  ];
+  const dtStamp = formatDateUtc(new Date());
+  events.forEach((ev) => {
+    ics.push("BEGIN:VEVENT");
+    ics.push(`UID:${ev.id}@symptomsync.com`);
+    ics.push(`DTSTAMP:${dtStamp}`);
+    ics.push(`DTSTART:${formatDateUtc(ev.start)}`);
+    ics.push(`DTEND:${formatDateUtc(ev.end)}`);
+
+    if (ev.type === "medication") {
+      ics.push(`SUMMARY:💊 Med: ${ev.title.replace(/^💊 Med: /, "")}`);
+    } else {
+      ics.push(`SUMMARY:🗓️ Appt: ${ev.title.replace(/^🗓️ Appt: /, "")}`);
+    }
+    ics.push("END:VEVENT");
+  });
+  ics.push("END:VCALENDAR");
+  return ics.join("\r\n");
+}
+
+/**
+ * Parses a simple ICS string and returns an array of objects representing the events.
+ * This parser extracts DTSTART, DTEND, and SUMMARY and normalizes the dates.
+ * Only events within the past year are returned to avoid too large calendars
+ */
+function parseIcs(
+  icsText: string,
+): { summary: string; dtstart: string; dtend: string }[] {
+  const events = [];
+  const lines = icsText.split(/\r?\n/);
+  let currentEvent: { summary?: string; dtstart?: string; dtend?: string } = {};
+  let inEvent = false;
+  for (const line of lines) {
+    if (line === "BEGIN:VEVENT") {
+      inEvent = true;
+      currentEvent = {};
+    } else if (line === "END:VEVENT") {
+      inEvent = false;
+      if (currentEvent.dtstart && currentEvent.dtend && currentEvent.summary) {
+        events.push({
+          summary: currentEvent.summary,
+          dtstart: currentEvent.dtstart,
+          dtend: currentEvent.dtend,
+        });
+      }
+    } else if (inEvent) {
+      if (line.startsWith("SUMMARY:")) {
+        currentEvent.summary = line.substring(8).trim();
+      } else if (line.startsWith("DTSTART:")) {
+        currentEvent.dtstart = normalizeIcsDate(line.substring(8).trim());
+      } else if (line.startsWith("DTEND:")) {
+        currentEvent.dtend = normalizeIcsDate(line.substring(6).trim());
+      }
+    }
+  }
+  const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+  return events.filter(
+    (ev) => new Date(ev.dtstart).getTime() >= oneYearAgo.getTime(),
+  );
+}
+
+/**
+ * Handles importing an ICS file. Tries its best to classify events as
+ * medications or appointments based on the summary. But this is a heuristic
+ * and may not be 100% accurate. For events it doesn't recognize, it will
+ * treat them as appointments
+ */
+function handleImportIcs(
+  e: React.ChangeEvent<HTMLInputElement>,
+  userId: string,
+  refresh: () => Promise<void>,
+) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const text = event.target?.result as string;
+      const importedEvents = parseIcs(text);
+      for (const ev of importedEvents) {
+        if (/^(Med:|Medication:)/i.test(ev.summary)) {
+          const medName = ev.summary.replace(/^(Med:|Medication:)\s*/i, "");
+          await createMedicationReminder({
+            user_profile_id: userId,
+            medication_name: medName,
+            dosage: null,
+            reminder_time: new Date(ev.dtstart).toISOString(),
+            recurrence: "as-needed",
+            calendar_sync_token: null,
+          });
+        } else {
+          await createAppointmentReminder({
+            user_profile_id: userId,
+            appointment_name: ev.summary,
+            date: new Date(ev.dtstart).toISOString(),
+          });
+        }
+      }
+      toast.success("ICS file imported successfully");
+      await refresh();
+    } catch (error) {
+      console.error("Error importing ICS", error);
+      toast.error("Error importing ICS file");
+    }
+  };
+  reader.readAsText(file);
 }
 
 export default function CalendarPage() {
@@ -200,6 +350,7 @@ export default function CalendarPage() {
   const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(
     new Set(),
   );
+  const [showIcsDialog, setShowIcsDialog] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -226,9 +377,7 @@ export default function CalendarPage() {
       } = await supabase.auth.getUser();
       if (!user || !isMounted) return;
       setUserId(user.id);
-
       await fetchAllData(user.id);
-
       const medsChannel = supabase
         .channel("medsSub")
         .on(
@@ -245,7 +394,6 @@ export default function CalendarPage() {
         )
         .subscribe();
       channelRefs.current.push(medsChannel);
-
       const apptsChannel = supabase
         .channel("apptsSub")
         .on(
@@ -271,7 +419,7 @@ export default function CalendarPage() {
   }, []);
 
   /**
-   * Retrieve meds & appts => generate events array
+   * Retrieve meds & appts and generate the events array.
    */
   async function fetchAllData(uid: string) {
     const [meds, appts] = await Promise.all([
@@ -280,26 +428,23 @@ export default function CalendarPage() {
     ]);
     setMedications(meds);
     setAppointments(appts);
-
     let medEvents: CalendarEvent[] = [];
     meds.forEach((m) => {
       const repeated = expandMedication(m);
       medEvents = medEvents.concat(repeated);
     });
-
     const apptEvents: CalendarEvent[] = appts.map((a) => {
       const startDate = new Date(a.date);
       const endDate = new Date(a.date);
       endDate.setHours(endDate.getHours() + 1);
       return {
         id: `appt-${a.id}`,
-        title: `Appt: ${a.appointment_name}`,
+        title: `🗓️ Appt: ${a.appointment_name}`,
         start: startDate,
         end: endDate,
         type: "appointment",
       };
     });
-
     setEvents([...medEvents, ...apptEvents]);
   }
 
@@ -339,13 +484,11 @@ export default function CalendarPage() {
         : dateString;
       const localDate = new Date(dateTimeString);
       const isoString = localDate.toISOString();
-
       const created = await createAppointmentReminder({
         user_profile_id: userId,
         appointment_name: newApptName,
         date: isoString,
       });
-
       const startDt = new Date(created.date);
       const endDt = new Date(created.date);
       endDt.setHours(endDt.getHours() + 1);
@@ -353,13 +496,12 @@ export default function CalendarPage() {
         ...prev,
         {
           id: `appt-${created.id}`,
-          title: `Appt: ${created.appointment_name}`,
+          title: `🗓️ Appt: ${created.appointment_name}`,
           start: startDt,
           end: endDt,
           type: "appointment",
         },
       ]);
-
       toast.success("Appointment created");
       setShowAddDialog(false);
       setNewApptName("");
@@ -381,7 +523,6 @@ export default function CalendarPage() {
       const combined = `${dateString}T${newMedTimePicker}`;
       const localDate = new Date(combined);
       const isoString = localDate.toISOString();
-
       const created = await createMedicationReminder({
         user_profile_id: userId,
         medication_name: newMedName,
@@ -390,10 +531,8 @@ export default function CalendarPage() {
         recurrence: newMedRecurrence,
         calendar_sync_token: null,
       });
-
       const repeated = expandMedication(created);
       setEvents((prev) => [...prev, ...repeated]);
-
       toast.success("Medication created");
       setShowAddDialog(false);
       setNewMedName("");
@@ -418,7 +557,12 @@ export default function CalendarPage() {
       return;
     }
     setDialogEvent(ev);
-    setEditTitle(ev.title.replace(/^Med: |^Appt: /, ""));
+
+    if (ev.type === "medication") {
+      setEditTitle(ev.title.replace(/^💊 Med: /, ""));
+    } else {
+      setEditTitle(ev.title.replace(/^🗓️ Appt: /, ""));
+    }
     setEditDate(ev.start);
     setEditTime(format(ev.start, "HH:mm"));
     setShowEventDialog(true);
@@ -438,7 +582,6 @@ export default function CalendarPage() {
       cursor: "pointer",
       backgroundColor: "#344966",
     };
-
     if (selectedEventIds.has(event.id)) {
       style.backgroundColor = "#4a5a75";
       style.border = "2px solid #FF577F";
@@ -447,7 +590,9 @@ export default function CalendarPage() {
   }
 
   /**
-   * Save event edits => if it's appointment or medication
+   * Save event edits
+   * For appointments, only update the single event
+   * For medications, update the entire series
    */
   async function handleSaveEventEdits() {
     if (!dialogEvent || !userId || !editDate) return;
@@ -455,7 +600,6 @@ export default function CalendarPage() {
     const dateTimeString = `${dateString}T${editTime}`;
     const localDate = new Date(dateTimeString);
     const isoString = localDate.toISOString();
-
     try {
       const [type, ...rest] = dialogEvent.id.split("-");
       if (type === "appt") {
@@ -471,7 +615,7 @@ export default function CalendarPage() {
               newEnd.setHours(newEnd.getHours() + 1);
               return {
                 ...e,
-                title: `Appt: ${updated.appointment_name}`,
+                title: `🗓️ Appt: ${updated.appointment_name}`,
                 start: new Date(updated.date),
                 end: newEnd,
               };
@@ -481,7 +625,6 @@ export default function CalendarPage() {
         );
         toast.success("Appointment updated");
       } else {
-        // from a string like "med-<UUID>-<occurrenceIndex>"
         const withoutPrefix = dialogEvent.id.slice(4);
         const lastDash = withoutPrefix.lastIndexOf("-");
         const realIdMed = withoutPrefix.substring(0, lastDash);
@@ -489,19 +632,16 @@ export default function CalendarPage() {
           medication_name: editTitle,
           reminder_time: isoString,
         });
-        setEvents((prev) =>
-          prev.map((e) => {
-            if (e.id === dialogEvent.id) {
-              return {
-                ...e,
-                title: `Med: ${updated.medication_name}`,
-                start: new Date(updated.reminder_time),
-                end: new Date(updated.reminder_time),
-              };
+        const newEventsForMed = expandMedication(updated);
+        setEvents((prev) => {
+          const filtered = prev.filter((e) => {
+            if (e.type === "medication") {
+              return !e.id.startsWith(`med-${realIdMed}`);
             }
-            return e;
-          }),
-        );
+            return true;
+          });
+          return [...filtered, ...newEventsForMed];
+        });
         toast.success("Medication updated");
       }
       setShowEventDialog(false);
@@ -527,7 +667,6 @@ export default function CalendarPage() {
     try {
       const appointmentIdsToDelete = new Set();
       const medicationIdsToDelete = new Set();
-
       for (const eId of deleteTargetIds) {
         if (eId.startsWith("appt-")) {
           const realId = eId.slice(5);
@@ -539,21 +678,17 @@ export default function CalendarPage() {
           medicationIdsToDelete.add(realId);
         }
       }
-
       for (const apptId of appointmentIdsToDelete) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         await deleteAppointmentReminder(apptId);
       }
-
       for (const medId of medicationIdsToDelete) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         await deleteMedicationReminder(medId);
       }
-
       toast.success("Deleted events");
-
       setEvents((prev) =>
         prev.filter((evt) => {
           if (evt.type === "appointment") {
@@ -568,7 +703,6 @@ export default function CalendarPage() {
           return true;
         }),
       );
-
       setSelectedEventIds(new Set());
     } catch (err) {
       toast.error("Error deleting events");
@@ -577,6 +711,21 @@ export default function CalendarPage() {
     setShowConfirmDeleteDialog(false);
     setShowEventDialog(false);
     setSelectMode(false);
+  }
+
+  async function handleExportCalendar() {
+    // Generate the ICS file string from the events in state.
+    const icsString = generateIcs(events);
+    // Create a blob and generate a downloadable link.
+    const blob = new Blob([icsString], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "calendar.ics";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -617,7 +766,7 @@ export default function CalendarPage() {
               }}
               className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
             >
-              Add Appointment
+              <CalendarIcon className="w-4 h-4ZZZZZ" /> Add Appointment
             </Button>
             <Button
               variant="default"
@@ -627,7 +776,14 @@ export default function CalendarPage() {
               }}
               className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
             >
-              Add Medication
+              <Pill className="w-4 h-4ZZZZZ" /> Add Medication
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowIcsDialog(true)}
+              className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+            >
+              <Download className="w-4 h-4ZZZZZ" /> ICS Sync
             </Button>
             <Button
               variant="secondary"
@@ -639,13 +795,11 @@ export default function CalendarPage() {
             >
               {selectMode ? (
                 <>
-                  <XSquare className="w-4 h-4 mr-1" />
-                  Cancel Selection
+                  <XSquare className="w-4 h-4ZZZZZ" /> Cancel Selection
                 </>
               ) : (
                 <>
-                  <CheckSquare className="w-4 h-4 mr-1" />
-                  Select Multiple
+                  <CheckSquare className="w-4 h-4ZZZZZ" /> Select Multiple
                 </>
               )}
             </Button>
@@ -655,8 +809,8 @@ export default function CalendarPage() {
                 className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                 onClick={handleDeleteSelected}
               >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Delete {selectedEventIds.size} Selected
+                <Trash2 className="w-4 h-4ZZZZZ" /> Delete{" "}
+                {selectedEventIds.size} Selected
               </Button>
             )}
           </div>
@@ -683,6 +837,88 @@ export default function CalendarPage() {
             dayPropGetter={dayPropGetter}
           />
         </motion.div>
+
+        {/* ICS Sync Dialog */}
+        <Dialog open={showIcsDialog} onOpenChange={setShowIcsDialog}>
+          <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>ICS Import/Export</DialogTitle>
+              <DialogDescription>
+                Use this tool to export your calendar as an ICS file to sync
+                with another calendar service, or import an ICS file from
+                another provider into your SymptomSync calendar.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 py-4">
+              {/* Export Section */}
+              <div className="p-4 bg-white rounded shadow">
+                <h3 className="text-lg font-semibold mb-2">
+                  Export Your Calendar
+                </h3>
+                <p className="text-sm mb-4">
+                  Download an ICS file containing all your events. You can then
+                  manually import this file into Google Calendar, Outlook, or
+                  Apple Calendar.
+                </p>
+                <Button
+                  variant="default"
+                  onClick={handleExportCalendar}
+                  className="cursor-pointer hover:-translate-y-1 transition-transform duration-300"
+                >
+                  <Download className="w-4 h-4 mr-1" /> Download ICS File
+                </Button>
+              </div>
+              <div className="border-t border-gray-200"></div>
+              {/* Import Section */}
+              <div className="p-4 bg-white rounded shadow">
+                <h3 className="text-lg font-semibold mb-2">Import Calendar</h3>
+                <p className="text-sm mb-4">
+                  To import events from your other calendar, export an ICS file
+                  from your calendar provider:
+                  <br />
+                  <span className="block mt-2">
+                    <strong>- Google Calendar:</strong> Open Google Calendar,
+                    click the gear icon, then &quot;Settings&quot;. Go to &quot;Import &amp;
+                    Export&quot; and click &quot;Export&quot; to download a ZIP file containing
+                    your calendars in ICS format.
+                  </span>
+                  <span className="block mt-2">
+                    <strong>- Outlook:</strong> Open Outlook Calendar, click on
+                    &quot;File&quot;, then &quot;Save Calendar&quot;, and choose the ICS format.
+                  </span>
+                  <span className="block mt-2">
+                    <strong>- Apple Calendar (iCal):</strong> In Apple Calendar,
+                    choose &quot;File&quot; &gt; &quot;Export&quot; &gt; &quot;Export…&quot; to save your
+                    calendar as an ICS file.
+                  </span>
+                  <br />
+                  Only events occurring within the past year will be imported.
+                </p>
+                <Input
+                  type="file"
+                  accept=".ics"
+                  className="cursor-pointer"
+                  onChange={(e) => {
+                    if (userId) {
+                      handleImportIcs(e, userId, async () => {
+                        await fetchAllData(userId);
+                      });
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => setShowIcsDialog(false)}
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Dialog
           open={showSelectTypeDialog}
@@ -735,7 +971,6 @@ export default function CalendarPage() {
                   : "Add medication info, date/time, and recurrence."}
               </DialogDescription>
             </DialogHeader>
-
             {addType === "appointment" ? (
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
@@ -802,7 +1037,6 @@ export default function CalendarPage() {
                 </div>
               </div>
             )}
-
             <DialogFooter>
               <Button
                 variant="secondary"
@@ -842,7 +1076,6 @@ export default function CalendarPage() {
                 Edit or delete the event below.
               </DialogDescription>
             </DialogHeader>
-
             {dialogEvent && (
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
@@ -867,7 +1100,6 @@ export default function CalendarPage() {
                 </div>
               </div>
             )}
-
             <DialogFooter>
               <Button
                 variant="secondary"
@@ -884,16 +1116,14 @@ export default function CalendarPage() {
                     onClick={handleSaveEventEdits}
                     disabled={!editTitle || !editDate || !editTime}
                   >
-                    <Edit3 className="w-4 h-4 mr-1" />
-                    Save Changes
+                    <Edit3 className="w-4 h-4 mr-1" /> Save Changes
                   </Button>
                   <Button
                     variant="destructive"
                     className="cursor-pointer"
                     onClick={handleDeleteSingle}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Delete
+                    <Trash2 className="w-4 h-4 mr-1" /> Delete
                   </Button>
                 </>
               )}
@@ -910,7 +1140,8 @@ export default function CalendarPage() {
               <DialogTitle>Confirm Deletion</DialogTitle>
               <DialogDescription>
                 Are you sure you want to delete {deleteTargetIds.length}{" "}
-                event(s)?
+                event(s)? Deleting the event(s) will also delete all events in
+                the series.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

@@ -1153,7 +1153,7 @@ export default function HomePage() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           style={{ animationDelay: "1.1s" }}
         >
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0 hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
             <CardHeader className="mt-8">
               <CardTitle>Medications</CardTitle>
             </CardHeader>
@@ -1170,7 +1170,7 @@ export default function HomePage() {
                   .map((med, idx) => (
                     <div
                       key={med.id}
-                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
+                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm hover:scale-102 transition-transform duration-300 cursor-pointer mt-4 hover:shadow-lg"
                       style={getStaggerStyle(idx)}
                     >
                       <div className="font-medium">
@@ -1210,7 +1210,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0 hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
             <CardHeader className="mt-8">
               <CardTitle>Appointments</CardTitle>
             </CardHeader>
@@ -1226,7 +1226,7 @@ export default function HomePage() {
                   .map((appt, idx) => (
                     <div
                       key={appt.id}
-                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
+                      className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm hover:scale-102 transition-transform duration-300 cursor-pointer mt-4 hover:shadow-lg"
                       style={getStaggerStyle(idx)}
                     >
                       <div className="font-medium">
@@ -1262,7 +1262,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0 hover:-translate-y-1 hover:scale-101">
+          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
             <CardHeader className="mt-8">
               <CardTitle>Health Logs</CardTitle>
             </CardHeader>
@@ -1292,7 +1292,7 @@ export default function HomePage() {
                     return (
                       <div
                         key={log.id}
-                        className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm"
+                        className="p-2 rounded-md w-full flex flex-col gap-1 shadow-sm hover:scale-102 transition-transform duration-300 cursor-pointer mt-4 hover:shadow-lg"
                         style={getStaggerStyle(idx)}
                       >
                         <div className="font-medium">
