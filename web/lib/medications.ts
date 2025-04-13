@@ -12,10 +12,10 @@ export const MedicationReminderSchema = z.object({
   user_profile_id: z.string(),
   medication_name: z.string(),
   dosage: z.string().nullable(),
-  reminder_time: z.string(), // ISO timestamp string
+  reminder_time: z.string(),
   recurrence: z.string().nullable(),
   calendar_sync_token: z.string().nullable(),
-  created_at: z.string(), // ISO timestamp string
+  created_at: z.string(),
 });
 
 export type MedicationReminder = z.infer<typeof MedicationReminderSchema>;

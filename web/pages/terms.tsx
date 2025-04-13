@@ -1,4 +1,34 @@
 import Head from "next/head";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const slideInLeft = {
+  hidden: { opacity: 0, x: -50 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
 
 export default function TermsAndConditions() {
   return (
@@ -10,9 +40,14 @@ export default function TermsAndConditions() {
           content="Read the Terms and Conditions for SymptomSync. Understand the rules and guidelines for using our app."
         />
       </Head>
-      <main className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-8 lg:px-16">
+      <motion.main
+        className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-8 lg:px-16"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
         <div className="max-w-4xl mx-auto">
-          <header className="mb-12 text-center">
+          <motion.header className="mb-12 text-center" variants={slideInLeft}>
             <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">
               Terms & Conditions
             </h1>
@@ -20,10 +55,10 @@ export default function TermsAndConditions() {
               Please read these terms and conditions carefully before using
               SymptomSync.
             </p>
-          </header>
+          </motion.header>
 
-          <section className="space-y-8">
-            <article>
+          <motion.section className="space-y-8" variants={containerVariants}>
+            <motion.article variants={fadeInUp}>
               <h2 className="text-2xl font-bold mb-4">Acceptance of Terms</h2>
               <p className="leading-7">
                 By accessing and using SymptomSync (&quot;the App&quot;), you
@@ -31,9 +66,9 @@ export default function TermsAndConditions() {
                 agreement. If you do not agree to these terms, please do not use
                 our services.
               </p>
-            </article>
+            </motion.article>
 
-            <article>
+            <motion.article variants={fadeInUp}>
               <h2 className="text-2xl font-bold mb-4">Changes to Terms</h2>
               <p className="leading-7">
                 We reserve the right to update or change these Terms and
@@ -42,9 +77,9 @@ export default function TermsAndConditions() {
                 use of the service after any modifications to the Terms
                 constitutes your acceptance of the new Terms.
               </p>
-            </article>
+            </motion.article>
 
-            <article>
+            <motion.article variants={fadeInUp}>
               <h2 className="text-2xl font-bold mb-4">User Responsibilities</h2>
               <p className="leading-7 mb-4">
                 When you use SymptomSync, you agree that you will not engage in
@@ -66,9 +101,9 @@ export default function TermsAndConditions() {
                   your account information.
                 </li>
               </ul>
-            </article>
+            </motion.article>
 
-            <article>
+            <motion.article variants={fadeInUp}>
               <h2 className="text-2xl font-bold mb-4">Intellectual Property</h2>
               <p className="leading-7">
                 All content, trademarks, and data on SymptomSync, including but
@@ -77,9 +112,9 @@ export default function TermsAndConditions() {
                 licensors. Unauthorized use of any material may violate
                 copyright laws.
               </p>
-            </article>
+            </motion.article>
 
-            <article>
+            <motion.article variants={fadeInUp}>
               <h2 className="text-2xl font-bold mb-4">
                 Limitation of Liability
               </h2>
@@ -89,18 +124,18 @@ export default function TermsAndConditions() {
                 indirect, incidental, special, consequential or punitive
                 damages, arising out of your use of or inability to use the App.
               </p>
-            </article>
+            </motion.article>
 
-            <article>
+            <motion.article variants={fadeInUp}>
               <h2 className="text-2xl font-bold mb-4">Governing Law</h2>
               <p className="leading-7">
                 These Terms shall be governed and construed in accordance with
                 the laws of the jurisdiction in which SymptomSync operates,
                 without regard to its conflict of law provisions.
               </p>
-            </article>
+            </motion.article>
 
-            <article>
+            <motion.article variants={fadeInUp}>
               <h2 className="text-2xl font-bold mb-4">Contact Information</h2>
               <p className="leading-7">
                 If you have any questions about these Terms and Conditions,
@@ -113,10 +148,10 @@ export default function TermsAndConditions() {
                 </a>
                 .
               </p>
-            </article>
-          </section>
+            </motion.article>
+          </motion.section>
         </div>
-      </main>
+      </motion.main>
     </>
   );
 }

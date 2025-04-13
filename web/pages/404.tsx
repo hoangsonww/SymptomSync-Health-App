@@ -6,7 +6,7 @@ export default function Custom404() {
   return (
     <>
       <Head>
-        <title>404 - Not Found | SymptomSync</title>
+        <title>SymptomSync | 404 - Not Found</title>
         <meta name="description" content="Page not found" />
       </Head>
       <div className="min-h-screen flex flex-col items-center justify-center bg-primary text-primary-foreground px-4">

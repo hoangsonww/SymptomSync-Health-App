@@ -1,15 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { supabase } from "@/lib/supabaseClient";
 import { Bell, Pencil, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
+import { CustomTimePicker } from "@/components/ui/time-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { DatePicker } from "@/components/ui/date-picker";
-import { CustomTimePicker } from "@/components/ui/time-picker";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,10 +45,9 @@ const slideInLeft = {
 };
 
 const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
     transition: { duration: 0.5, ease: "easeOut" },
   },
 };
@@ -67,9 +82,46 @@ export default function MedicationReminders() {
   const [editMedRecurrence, setEditMedRecurrence] = useState("Daily");
   const [editMedCalendarSync, setEditMedCalendarSync] = useState("");
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const broadcastChannelRef = useRef<any>(null);
+
+  /**
+   * Trigger a broadcast event to all connected clients
+   *
+   * @param eventName - The name of the event to broadcast.
+   * @param message - The message to send with the event.
+   */
+  const sendBroadcast = (eventName: string, message: string) => {
+    if (broadcastChannelRef.current) {
+      broadcastChannelRef.current.send({
+        type: "broadcast",
+        event: eventName,
+        payload: { message },
+      });
+    }
+  };
 
   useEffect(() => {
-    fetchReminders();
+    broadcastChannelRef.current = supabase.channel("universal-channel", {
+      config: { broadcast: { self: false } },
+    });
+    const channel = broadcastChannelRef.current;
+
+    channel
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on("broadcast", { event: "*" }, (payload: any) => {
+        toast.success(
+          `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
+        );
+      })
+      .subscribe((status: string) => {
+        console.log("Universal channel status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      broadcastChannelRef.current = null;
+    };
   }, []);
 
   useEffect(() => {
@@ -84,6 +136,69 @@ export default function MedicationReminders() {
     checkUserAuth();
   }, [router]);
 
+  useEffect(() => {
+    fetchReminders();
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let subscription: any;
+
+    async function init() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      subscription = supabase
+        .channel("medicationChanges")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "medication_reminders",
+            filter: `user_profile_id=eq.${user.id}`,
+          },
+          () => {
+            console.log("Med INSERT received");
+            fetchReminders();
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "medication_reminders",
+            filter: `user_profile_id=eq.${user.id}`,
+          },
+          () => {
+            console.log("Med UPDATE received");
+            fetchReminders();
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "medication_reminders",
+          },
+          () => {
+            fetchReminders();
+          },
+        )
+        .subscribe();
+    }
+    init();
+
+    return () => {
+      if (subscription) supabase.removeChannel(subscription);
+    };
+  }, []);
+
+  // Retrieves the medication reminders for the authenticated user
   async function fetchReminders() {
     const { data: userData, error: userError } = await supabase.auth.getUser();
 
@@ -113,6 +228,7 @@ export default function MedicationReminders() {
     setEditMedName(med.medication_name);
 
     if (med.dosage) {
+      // Assume dosage is stored as "number unit", e.g. "500 mg"
       const parts = med.dosage.split(" ");
       setEditMedDosage(parts[0] || "");
       setEditMedDosageUnit(parts[1] || "mg");
@@ -129,7 +245,8 @@ export default function MedicationReminders() {
     setEditMedCalendarSync("");
   }
 
-  async function saveEditedReminder() {
+  // Saves the updated medication reminder to Supabase
+  async function handleUpdateMed() {
     if (!editingMed || !editMedDate) return;
     const dateString = format(editMedDate, "yyyy-MM-dd");
     const combined = `${dateString}T${editMedTimePicker}`;
@@ -140,6 +257,7 @@ export default function MedicationReminders() {
       .from("medication_reminders")
       .update({
         medication_name: editMedName,
+        // Join the numeric dosage with unit (example: "500 mg")
         dosage: `${editMedDosage} ${editMedDosageUnit}`,
         reminder_time: isoString,
         recurrence: editMedRecurrence,
@@ -149,19 +267,30 @@ export default function MedicationReminders() {
 
     if (error) {
       console.error("Failed to update reminder:", error);
+      toast.error("Failed to update reminder.");
     } else {
       await fetchReminders();
       setEditingMed(null);
+      setEditMedName("");
+      setEditMedDosage("");
+      setEditMedDosageUnit("mg");
+      setEditMedDate(undefined);
+      setEditMedTimePicker("00:00");
+      setEditMedRecurrence("Daily");
+      setEditMedCalendarSync("");
+      toast.success("Reminder updated successfully.");
+      sendBroadcast(
+        "med-update",
+        `Medication reminder "${editMedName}" updated successfully.`,
+      );
     }
   }
 
+  // Triggers a toast notification for a reminder when the bell icon is clicked
   function handleBellClick(reminder: Reminder) {
     const takeTime = format(new Date(reminder.reminder_time), "PPP, h:mm a");
     toast(
       `Reminder: Don't forget to take ${reminder.medication_name} at ${takeTime}!`,
-      {
-        duration: 4000,
-      },
     );
   }
 
@@ -174,6 +303,7 @@ export default function MedicationReminders() {
           content="Manage your medication reminders and never miss your dose."
         />
       </Head>
+
       <motion.div
         className="min-h-screen p-6 bg-gradient-to-r"
         variants={containerVariants}
@@ -182,14 +312,11 @@ export default function MedicationReminders() {
       >
         <motion.header
           variants={slideInLeft}
-          className="text-center md:text-left mb-8"
+          className="text-center md:text-left mb-8 p-2"
         >
-          <h1 className="text-3xl font-bold text-gray-800">
-            Medication Schedule 💊
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-800">Medications 💊</h1>
           <p className="text-muted-foreground mt-2 text-center md:text-left">
-            Here are your medication reminders. Remember to take your meds on
-            time!
+            Here are all your medications. Remember to take your meds on time!
           </p>
         </motion.header>
 
@@ -212,7 +339,7 @@ export default function MedicationReminders() {
                   scale: 1.02,
                   boxShadow: "0px 8px 16px rgba(0,0,0,0.2)",
                 }}
-                className="bg-[#2F3C56] text-white p-6 rounded-xl shadow-lg flex justify-between items-start cursor-pointer transition-transform"
+                className="bg-[#2F3C56] text-white p-6 rounded-xl shadow-lg flex justify-between items-start transition-transform"
               >
                 <div className="flex-1">
                   <h2 className="text-xl font-bold mb-1">
@@ -224,8 +351,10 @@ export default function MedicationReminders() {
                   <p className="italic text-sm mb-2">
                     Dosage: {reminder.dosage || "N/A"}
                   </p>
+                  <p className="text-sm">
+                    Recurrence: {reminder.recurrence || "N/A"}
+                  </p>
                 </div>
-
                 <div className="flex flex-col gap-2 items-end text-white opacity-80">
                   <Button
                     variant="ghost"
@@ -236,7 +365,6 @@ export default function MedicationReminders() {
                   >
                     <Bell size={16} />
                   </Button>
-
                   <Button
                     variant="ghost"
                     size="icon"
@@ -252,40 +380,66 @@ export default function MedicationReminders() {
           </motion.div>
         )}
 
-        {editingMed && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h2 className="text-xl font-bold mb-4 text-gray-800">
-                Edit Reminder
-              </h2>
+        {/* Edit Medication Dialog */}
+        <Dialog
+          open={Boolean(editingMed)}
+          onOpenChange={() => setEditingMed(null)}
+        >
+          <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Medication</DialogTitle>
+              <DialogDescription>Update all relevant fields.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label>Medication Name</Label>
+                <Input
+                  value={editMedName}
+                  onChange={(e) => setEditMedName(e.target.value)}
+                  placeholder="Medication Name"
+                />
+              </div>
 
-              <Input
-                type="text"
-                value={editMedName}
-                onChange={(e) => setEditMedName(e.target.value)}
-                className="mb-3 w-full border rounded p-2"
-                placeholder="Medication Name"
-              />
+              <div className="space-y-2">
+                <Label>Dosage</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="1000"
+                    step="0.1"
+                    value={editMedDosage}
+                    onChange={(e) => setEditMedDosage(e.target.value)}
+                    placeholder="Amount"
+                  />
+                  <Select
+                    value={editMedDosageUnit}
+                    onValueChange={setEditMedDosageUnit}
+                  >
+                    <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mg">mg</SelectItem>
+                      <SelectItem value="ml">ml</SelectItem>
+                      <SelectItem value="g">g</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-              <Input
-                type="text"
-                value={editMedDosage}
-                onChange={(e) => setEditMedDosage(e.target.value)}
-                className="mb-3 w-full border rounded p-2"
-                placeholder="Dosage"
-              />
-
-              <div className="space-y-3 mb-3">
-                <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Date
-                  </label>
-                  <DatePicker value={editMedDate} onChange={setEditMedDate} />
+              <div className="space-y-2">
+                <Label>Schedule (Date & Time)</Label>
+                <div className="mb-2">
+                  <Label className="text-xs">Date</Label>
+                  <DatePicker
+                    value={editMedDate}
+                    onChange={setEditMedDate}
+                    className="w-full"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Time
-                  </label>
+                  <Label className="text-xs">Time (24h)</Label>
                   <CustomTimePicker
                     value={editMedTimePicker}
                     onChange={setEditMedTimePicker}
@@ -293,20 +447,44 @@ export default function MedicationReminders() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2">
-                <Button
-                  onClick={() => setEditingMed(null)}
-                  className="cursor-pointer"
+              <div className="space-y-2">
+                <Label>Recurrence</Label>
+                <Select
+                  value={editMedRecurrence}
+                  onValueChange={setEditMedRecurrence}
                 >
-                  Cancel
-                </Button>
-                <Button onClick={saveEditedReminder} className="cursor-pointer">
-                  Save
-                </Button>
+                  <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                    <SelectValue placeholder="Select recurrence" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Daily">Daily</SelectItem>
+                    <SelectItem value="Weekly">Weekly</SelectItem>
+                    <SelectItem value="Biweekly">Biweekly</SelectItem>
+                    <SelectItem value="Monthly">Monthly</SelectItem>
+                    <SelectItem value="As Needed">As Needed</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </div>
-        )}
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() => setEditingMed(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                className="cursor-pointer"
+                onClick={handleUpdateMed}
+                disabled={!editMedName || !editMedDate}
+              >
+                Save
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </motion.div>
     </>
   );

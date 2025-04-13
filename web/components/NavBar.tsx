@@ -81,7 +81,6 @@ export default function NavBar({
     };
   }, []);
 
-  // Handle outside clicks on mobile, excluding the menu button
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (window.innerWidth >= 768) return;
@@ -130,7 +129,7 @@ export default function NavBar({
           ref={mobileButtonRef}
           className="fixed top-2 right-2 z-50 md:hidden p-2 bg-primary text-white rounded-full shadow hover:bg-white/10 hover:text-primary cursor-pointer"
           onClick={(e) => {
-            e.stopPropagation(); // Prevent the click from bubbling up.
+            e.stopPropagation();
             setMobileOpen((prev) => !prev);
           }}
         >
@@ -186,7 +185,7 @@ export default function NavBar({
             <NavItem
               href="/reminder"
               icon={<List className="w-5 h-5" />}
-              label="Schedule"
+              label="Medications"
               isExpanded={isExpanded}
             />
             <NavItem
@@ -223,10 +222,13 @@ export default function NavBar({
             )}
           </div>
         </div>
-        <div className="p-4 border-t border-white/20">
+        <div className="p-0 border-t border-white/20">
           <button
-            onClick={() => setIsExpanded((prev) => !prev)}
-            className="w-full flex items-center justify-center p-2 hover:bg-white/20 rounded transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded((prev) => !prev);
+            }}
+            className="w-full flex items-center justify-center p-4 hover:bg-white/20 rounded transition-colors cursor-pointer"
           >
             {isExpanded ? (
               <ChevronLeft className="w-5 h-5" />

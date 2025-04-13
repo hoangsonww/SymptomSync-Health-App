@@ -5,6 +5,7 @@ import { Eye, EyeOff, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { signUp } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Head from "next/head";
 
 export default function SignUp() {
@@ -78,7 +79,7 @@ export default function SignUp() {
             </h2>
 
             <form onSubmit={handleSubmit}>
-              <input
+              <Input
                 type="email"
                 placeholder="name@example.com"
                 value={email}
@@ -89,12 +90,12 @@ export default function SignUp() {
                     handleSubmit(e);
                   }
                 }}
-                className="w-full mb-4 px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full mb-4 px-4 py-2 rounded border border-gray-800 focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-foreground"
                 required
               />
 
               <div className="relative mb-4">
-                <input
+                <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
@@ -105,14 +106,16 @@ export default function SignUp() {
                       handleSubmit(e);
                     }
                   }}
-                  className="w-full mb-0 px-4 py-2 pr-10 rounded border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full mb-4 px-4 py-2 rounded border border-gray-800 focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-foreground"
                   required
                 />
                 <Button
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  variant="none"
                   type="button"
-                  variant="ghost"
                   aria-label="Toggle password visibility"
-                  className="absolute inset-y-0 right-2 flex items-center cursor-pointer"
+                  className="absolute inset-y-2 right-2 flex items-center cursor-pointer h-5 w-5"
                   onClick={() => setShowPassword((prev) => !prev)}
                   tabIndex={-1}
                 >
@@ -125,7 +128,7 @@ export default function SignUp() {
               </div>
 
               <div className="relative mb-6">
-                <input
+                <Input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm Password"
                   value={confirmPassword}
@@ -136,14 +139,16 @@ export default function SignUp() {
                       handleSubmit(e);
                     }
                   }}
-                  className="w-full px-4 py-2 pr-10 rounded border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full mb-4 px-4 py-2 rounded border border-gray-800 focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-foreground"
                   required
                 />
                 <Button
-                  variant="ghost"
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  variant="none"
                   aria-label="Toggle confirm password visibility"
                   type="button"
-                  className="absolute inset-y-0 right-2 flex items-center"
+                  className="absolute inset-y-2 right-2 flex items-center cursor-pointer h-5 w-5"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
                   tabIndex={-1}
                 >

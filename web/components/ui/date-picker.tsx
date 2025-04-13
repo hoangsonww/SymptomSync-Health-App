@@ -19,22 +19,17 @@ interface DatePickerProps {
 export function DatePicker({ value, onChange, className }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    console.log("Popover open state changed:", open);
-  }, [open]);
-
   const formattedDate = value ? format(value, "PPP") : "Pick a date";
 
   return (
     <Popover
       open={open}
       onOpenChange={(newState) => {
-        console.log("Popover onOpenChange called with:", newState);
         setOpen(newState);
       }}
     >
       <PopoverTrigger asChild className="cursor-pointer">
-        <div onClick={() => console.log("PopoverTrigger wrapper clicked")}>
+        <div>
           <Button
             type="button"
             variant="outline"
@@ -58,10 +53,8 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
           mode="single"
           selected={value}
           onSelect={(d) => {
-            console.log("Calendar date selected:", d);
             if (d) {
               onChange(d);
-              console.log("Date changed. Closing popover.");
               setOpen(false);
             }
           }}

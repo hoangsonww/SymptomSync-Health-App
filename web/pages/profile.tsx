@@ -1,6 +1,6 @@
-import { useState, useEffect, ChangeEvent } from "react";
-import Head from "next/head";
+import { useState, useEffect, ChangeEvent, useRef } from "react";
 import { useRouter } from "next/router";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ import {
   type Profile,
 } from "@/lib/profile";
 import { supabase } from "@/lib/supabaseClient";
+import Head from "next/head";
 
 // A simple debounce hook to limit frequent search calls
 function useDebounce<T>(value: T, delay: number): T {
@@ -46,7 +47,6 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-// Framer Motion variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -81,6 +81,8 @@ export default function ProfilePage() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const profileToDisplay = selectedProfile || profile;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const broadcastChannelRef = useRef<any>(null);
 
   useEffect(() => {
     async function checkUserAuth() {
@@ -94,53 +96,89 @@ export default function ProfilePage() {
     checkUserAuth();
   }, [router]);
 
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const data = await getCurrentProfile();
-        if (!data) {
-          router.push("/auth/login");
-          return;
-        }
-        setProfile(data);
-        setFullName(data.full_name || data.email);
-        setConditionTags((data.condition_tags || []).join(", "));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        toast.error("Error fetching profile: " + error.message);
-      } finally {
-        setLoading(false);
+  useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        data: { user },
+      } = await supabase.auth.getUser();
+      const data = await getCurrentProfile();
+      if (!data) {
+        router.push("/auth/login");
+        return null;
       }
-    }
-    fetchProfile();
-  }, [router]);
+      setProfile(data);
+      setFullName(data.full_name || data.email);
+      setConditionTags((data.condition_tags || []).join(", "));
+      setLoading(false);
+      return data;
+    },
+    enabled: true,
+  });
 
-  useEffect(() => {
-    async function doSearch() {
+  useQuery({
+    queryKey: ["profileSearch", debouncedSearchQuery],
+    queryFn: async () => {
       if (debouncedSearchQuery.trim() === "") {
         setSearchResults([]);
-        return;
+        return [];
       }
       setSearchLoading(true);
       try {
         const results = await searchProfiles(debouncedSearchQuery.trim());
         setSearchResults(results);
+        return results;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Error searching profiles: " + error.message);
+        return [];
       } finally {
         setSearchLoading(false);
       }
-    }
-    doSearch();
-  }, [debouncedSearchQuery]);
+    },
+    enabled: true,
+  });
 
+  useEffect(() => {
+    broadcastChannelRef.current = supabase.channel("universal-channel", {
+      config: { broadcast: { self: false } },
+    });
+    const channel = broadcastChannelRef.current;
+
+    channel
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on("broadcast", { event: "*" }, (payload: any) => {
+        toast.success(
+          `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
+        );
+      })
+      .subscribe((status: string) => {
+        console.log("Universal channel status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      broadcastChannelRef.current = null;
+    };
+  }, []);
+
+  /**
+   * Handles the change event for the avatar file input
+   *
+   * @param e - The change event from the file input
+   */
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setAvatarFile(e.target.files[0]);
     }
   };
 
+  /**
+   * Handles the form submission to update the profile
+   *
+   * @param e - The form event
+   */
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileLoading(true);
@@ -170,6 +208,9 @@ export default function ProfilePage() {
     }
   };
 
+  /**
+   * Handles the removal of the avatar
+   */
   const handleRemoveAvatar = async () => {
     setProfileLoading(true);
     try {
@@ -208,12 +249,13 @@ export default function ProfilePage() {
         </title>
         <meta name="description" content="View and update your profile" />
       </Head>
+
       <div className="min-h-screen bg-background text-foreground p-4 sm:p-6">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-4xl mx-auto space-y-8"
+          className="max-w-4xl mx-auto space-y-8 pt-2"
         >
           <motion.header
             variants={slideInLeft}

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
+import { useQuery } from "@tanstack/react-query";
 import { fetchFileDetails, FileRow } from "@/lib/fileDetails";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,44 +12,74 @@ import Head from "next/head";
 export default function FileViewPage() {
   const router = useRouter();
   const { id } = router.query;
-  const [file, setFile] = useState<FileRow | null>(null);
-  const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const broadcastChannelRef = useRef<any>(null);
+
+  /**
+   * Using React Query to fetch file details and handle loading and error states.
+   * Only using React Query for this page since it depends on the file ID from the URL,
+   * so using React Query might mitigate the race condition of the file ID being undefined
+   * or if the user selects one file then another one before the first one is loaded.
+   * Other pages, including the dashboard, are not too prone to race conditions since
+   * they are not dependent on the URL (and data is always fetched for this particular
+   * signed in user).
+   */
+  const {
+    data: file,
+    isLoading,
+    error,
+  } = useQuery<FileRow, Error>({
+    queryKey: ["file", id],
+    queryFn: async () => {
+      if (!id || Array.isArray(id)) throw new Error("Invalid file id");
+      const { file, error } = await fetchFileDetails(id);
+      if (error) {
+        if (error.message === "User not authenticated") {
+          router.push("/auth/login");
+        }
+        throw new Error("Failed to fetch file");
+      }
+      return file!;
+    },
+    enabled: !!id,
+  });
 
   useEffect(() => {
     async function checkUserAuth() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/auth/login");
-      }
+      if (!user) router.push("/auth/login");
     }
     checkUserAuth();
   }, [router]);
 
   useEffect(() => {
-    if (!id || Array.isArray(id)) return;
+    if (error) toast.error(error.message);
+  }, [error]);
 
-    async function getFile() {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const { file, error } = await fetchFileDetails(id);
-      if (error) {
-        // Optionally, check if the error is due to a missing user and redirect accordingly
-        if (error.message === "User not authenticated") {
-          router.push("/auth/login");
-          return;
-        }
-        toast.error("Failed to fetch file");
-        console.error("Error fetching file:", error);
-      } else {
-        setFile(file!);
-      }
-      setLoading(false);
-    }
+  useEffect(() => {
+    broadcastChannelRef.current = supabase.channel("universal-channel", {
+      config: { broadcast: { self: false } },
+    });
+    const channel = broadcastChannelRef.current;
 
-    getFile();
-  }, [id, router]);
+    channel
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on("broadcast", { event: "*" }, (payload: any) => {
+        toast.success(
+          `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
+        );
+      })
+      .subscribe((status: string) => {
+        console.log("Universal channel status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      broadcastChannelRef.current = null;
+    };
+  }, []);
 
   return (
     <>
@@ -66,7 +97,7 @@ export default function FileViewPage() {
               <ChevronLeft />
               Back
             </Button>
-            {loading ? (
+            {isLoading ? (
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="animate-spin h-8 w-8" />
               </div>
@@ -90,8 +121,6 @@ export default function FileViewPage() {
                 <Card className="shadow-lg m-0">
                   <CardContent className="p-0 m-0">
                     {file.file_type.startsWith("image") ? (
-                      // Using img instead of Next Image because Next Image uses up bandwidth and requires more
-                      // configuration
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={file.url}

@@ -73,6 +73,7 @@ export default function Document() {
       <body className="antialiased">
         <Main />
         <NextScript />
+        <noscript>You need to enable JavaScript to run this app.</noscript>
       </body>
     </Html>
   );

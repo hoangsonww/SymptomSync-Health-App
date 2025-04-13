@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
 import {
@@ -118,8 +118,22 @@ const cardContainerVariants = {
   },
 };
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: index * 0.1,
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  }),
+};
+
 /**
- * Returns a friendly greeting based on the current hour of the day.
+ * Returns a friendly greeting based on the current hour of the day
+ *
  * @returns A greeting string, e.g., "Good Morning", "Good Afternoon", or "Good Evening".
  */
 function getGreetingParts(): { greeting: string; emoji: string } {
@@ -132,7 +146,8 @@ function getGreetingParts(): { greeting: string; emoji: string } {
 /**
  * A helper function to display a string value safely, avoiding
  * showing "null" or "undefined".
- * @param val - The string or null/undefined value to display.
+ *
+ * @param val - The string or null/undefined value to display
  * @returns A safe display string.
  */
 function safeDisplay(val: string | null | undefined): string {
@@ -140,9 +155,10 @@ function safeDisplay(val: string | null | undefined): string {
 }
 
 /**
- * Function to animate a counter from 0 to a given value.
- * @param param0 - The value to animate to and the duration of the animation.
- * @returns A span element containing the animated number.
+ * Function to animate a counter from 0 to a given value
+ *
+ * @param param0 - The value to animate to and the duration of the animation
+ * @returns A span element containing the animated number
  */
 function AnimatedCounter({
   value,
@@ -198,7 +214,7 @@ export default function HomePage() {
   const [newMedCalendarSync, setNewMedCalendarSync] = useState("");
   const [newApptName, setNewApptName] = useState("");
   const [newApptDate, setNewApptDate] = useState<Date | undefined>(undefined);
-  const [newApptTime, setNewApptTime] = useState("");
+  const [newApptTime, setNewApptTime] = useState("00:00");
   const [hlSymptomType, setHlSymptomType] = useState("");
   const [hlSeverity, setHlSeverity] = useState<number>(0);
   const [hlMood, setHlMood] = useState("");
@@ -250,13 +266,13 @@ export default function HomePage() {
   const [editEndTimePicker, setEditEndTimePicker] = useState("00:00");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const channelRefs: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const broadcastChannelRef = useRef<any>(null);
   const router = useRouter();
   const [showDeleteLogDialog, setShowDeleteLogDialog] = useState(false);
   const [deleteLogId, setDeleteLogId] = useState<string | null>(null);
-
   const [showDeleteMedDialog, setShowDeleteMedDialog] = useState(false);
   const [deleteMedId, setDeleteMedId] = useState<string | null>(null);
-
   const [showDeleteApptDialog, setShowDeleteApptDialog] = useState(false);
   const [deleteApptId, setDeleteApptId] = useState<string | null>(null);
 
@@ -274,7 +290,9 @@ export default function HomePage() {
 
   /**
    * This function fetches all data for the user, including medications, appointments, and health logs
-   * @param uid - The user ID.
+   * from the database. It uses Promise.all to fetch all data concurrently to improve performance
+   *
+   * @param uid - The user ID
    */
   async function fetchAllData(uid: string) {
     const [meds, appts, userLogs] = await Promise.all([
@@ -282,6 +300,7 @@ export default function HomePage() {
       getAppointmentRemindersByUser(uid),
       getHealthLogsByUser(uid),
     ]);
+
     setMedications(meds);
     setAppointments(appts);
     setLogs(userLogs);
@@ -291,8 +310,30 @@ export default function HomePage() {
   }
 
   /**
-   * Supabase Realtime: Listens for changes in the database (in terms of medication,
-   * appointments, and health logs) and updates the state accordingly.
+   * This function sends a broadcast message to all connected clients using the Supabase
+   * broadcast channel. It is used to notify other devices or tabs when a new medication,
+   * appointment, or health log is added
+   *
+   * @param eventName - The name of the event to broadcast
+   * @param message - The message to send
+   */
+  const sendBroadcast = (eventName: string, message: string) => {
+    if (broadcastChannelRef.current) {
+      broadcastChannelRef.current.send({
+        type: "broadcast",
+        event: eventName,
+        payload: { message },
+      });
+    }
+  };
+
+  /**
+   * Supabase Realtime #1: Listens for changes in the database (in terms of medication,
+   * appointments, and health logs) and updates the state accordingly
+   *
+   * For example, if the user adds a new med from another device, it will be reflected
+   * in the UI in the current device without needing to refresh the page. Same for
+   * appointments and health logs
    */
   useEffect(() => {
     let isMounted = true;
@@ -317,12 +358,12 @@ export default function HomePage() {
 
       await fetchAllData(user.id);
 
-      const medsChannel = supabase
-        .channel("medicationChanges")
+      const medsChannel = supabase.channel("medicationChanges");
+      medsChannel
         .on(
           "postgres_changes",
           {
-            event: "*",
+            event: "INSERT",
             schema: "public",
             table: "medication_reminders",
             filter: `user_profile_id=eq.${user.id}`,
@@ -331,15 +372,38 @@ export default function HomePage() {
             if (isMounted) fetchAllData(user.id);
           },
         )
-        .subscribe();
-      channelRefs.push(medsChannel);
-
-      const apptsChannel = supabase
-        .channel("appointmentChanges")
         .on(
           "postgres_changes",
           {
-            event: "*",
+            event: "UPDATE",
+            schema: "public",
+            table: "medication_reminders",
+            filter: `user_profile_id=eq.${user.id}`,
+          },
+          () => {
+            if (isMounted) fetchAllData(user.id);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "medication_reminders",
+          },
+          () => {
+            fetchAllData(user.id);
+          },
+        )
+        .subscribe();
+      channelRefs.push(medsChannel);
+
+      const apptsChannel = supabase.channel("appointmentChanges");
+      apptsChannel
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
             schema: "public",
             table: "appointment_reminders",
             filter: `user_profile_id=eq.${user.id}`,
@@ -348,21 +412,67 @@ export default function HomePage() {
             if (isMounted) fetchAllData(user.id);
           },
         )
-        .subscribe();
-      channelRefs.push(apptsChannel);
-
-      const logsChannel = supabase
-        .channel("healthLogChanges")
         .on(
           "postgres_changes",
           {
-            event: "*",
+            event: "UPDATE",
+            schema: "public",
+            table: "appointment_reminders",
+            filter: `user_profile_id=eq.${user.id}`,
+          },
+          () => {
+            if (isMounted) fetchAllData(user.id);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "appointment_reminders",
+          },
+          () => {
+            fetchAllData(user.id);
+          },
+        )
+        .subscribe();
+      channelRefs.push(apptsChannel);
+
+      const logsChannel = supabase.channel("healthLogChanges");
+      logsChannel
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
             schema: "public",
             table: "health_logs",
             filter: `user_profile_id=eq.${user.id}`,
           },
           () => {
             if (isMounted) fetchAllData(user.id);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "health_logs",
+            filter: `user_profile_id=eq.${user.id}`,
+          },
+          () => {
+            if (isMounted) fetchAllData(user.id);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "health_logs",
+          },
+          () => {
+            fetchAllData(user.id);
           },
         )
         .subscribe();
@@ -380,7 +490,41 @@ export default function HomePage() {
   }, []);
 
   /**
-   * Adds a new medication reminder for the user.
+   * Supabase Realtime #2: In the above realtime functionality, we already
+   * created postgres changes for meds, appointments, and health logs. However,
+   * that will only update the UI if the user adds a new med, appointment, or log
+   * from another device. But we may also wanna broadcast a message to the user
+   * when a new med, appointment, or log is added from another device as well.
+   * This is where the broadcast channel comes in - it will broadcast a message
+   * to the user when a new med, appointment, or log is added from another device so
+   * that the user knows that something has changed in the UI and the reason
+   * for that change.
+   */
+  useEffect(() => {
+    broadcastChannelRef.current = supabase.channel("universal-channel", {
+      config: { broadcast: { self: false } },
+    });
+    const channel = broadcastChannelRef.current;
+
+    channel
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on("broadcast", { event: "*" }, (payload: any) => {
+        toast.success(
+          `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
+        );
+      })
+      .subscribe((status: string) => {
+        console.log("Universal channel status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      broadcastChannelRef.current = null;
+    };
+  }, []);
+
+  /**
+   * Adds a new medication reminder for the user
    */
   async function handleAddMedication() {
     if (!userId || !newMedName || !newMedDate) return;
@@ -388,7 +532,6 @@ export default function HomePage() {
       const dateString = format(newMedDate, "yyyy-MM-dd");
       const combined = `${dateString}T${newMedTimePicker}`;
       const localDate = new Date(combined);
-
       const combinedDosage = newMedDosage
         ? `${newMedDosage} ${newMedDosageUnit}`
         : "";
@@ -401,6 +544,11 @@ export default function HomePage() {
         recurrence: newMedRecurrence || null,
         calendar_sync_token: newMedCalendarSync || null,
       });
+
+      sendBroadcast(
+        "med-add",
+        `New medication reminder "${newMedName}" added.`,
+      );
 
       await fetchAllData(userId);
 
@@ -420,7 +568,7 @@ export default function HomePage() {
   }
 
   /**
-   * Adds a new appointment reminder for the user.
+   * Adds a new appointment reminder for the user
    */
   async function handleAddAppointment() {
     if (!userId || !newApptName || !newApptDate) return;
@@ -436,6 +584,11 @@ export default function HomePage() {
         date: isoString,
       });
 
+      sendBroadcast(
+        "appt-add",
+        `New appointment reminder "${newApptName}" added.`,
+      );
+
       await fetchAllData(userId);
 
       setNewApptName("");
@@ -450,7 +603,7 @@ export default function HomePage() {
   }
 
   /**
-   * Adds a new health log for the user.
+   * Adds a new health log for the user
    */
   async function handleAddHealthLog() {
     if (!userId) return;
@@ -495,6 +648,8 @@ export default function HomePage() {
         end_date: endISO,
       });
 
+      sendBroadcast("log-add", `New health log added successfully.`);
+
       await fetchAllData(userId);
 
       setHlSymptomType("");
@@ -519,7 +674,7 @@ export default function HomePage() {
   }
 
   /**
-   * Opens the edit dialog for a medication reminder.
+   * Opens the edit dialog for a medication reminder
    */
   function openEditMedDialog(med: MedicationReminder) {
     setEditingMed(med);
@@ -541,7 +696,7 @@ export default function HomePage() {
   }
 
   /**
-   * Handles the update of a medication reminder.
+   * Handles the update of a medication reminder
    */
   async function handleUpdateMed() {
     if (!editingMed || !userId || !editMedDate) return;
@@ -562,6 +717,11 @@ export default function HomePage() {
         calendar_sync_token: editMedCalendarSync,
       });
 
+      sendBroadcast(
+        "med-update",
+        `Medication reminder "${editMedName}" updated successfully.`,
+      );
+
       await fetchAllData(userId);
       setEditingMed(null);
       toast.success("Medication reminder updated successfully!");
@@ -572,7 +732,7 @@ export default function HomePage() {
   }
 
   /**
-   * Opens the edit dialog for an appointment reminder.
+   * Opens the edit dialog for an appointment reminder
    */
   function openEditApptDialog(appt: AppointmentReminder) {
     setEditingAppt(appt);
@@ -584,7 +744,7 @@ export default function HomePage() {
   }
 
   /**
-   * Handles the update of an appointment reminder.
+   * Handles the update of an appointment reminder
    */
   async function handleUpdateAppt() {
     if (!editingAppt || !userId || !editApptDate) return;
@@ -598,6 +758,11 @@ export default function HomePage() {
         date: isoString,
       });
 
+      sendBroadcast(
+        "appt-update",
+        `Appointment reminder "${editApptName}" updated successfully.`,
+      );
+
       await fetchAllData(userId);
       setEditingAppt(null);
       toast.success("Appointment reminder updated successfully!");
@@ -608,7 +773,7 @@ export default function HomePage() {
   }
 
   /**
-   * Opens the edit dialog for a health log.
+   * Opens the edit dialog for a health log
    */
   function openEditLogDialog(log: HealthLog) {
     setEditingLog(log);
@@ -668,7 +833,7 @@ export default function HomePage() {
   }
 
   /**
-   * Handles updating a health log in the database.
+   * Handles updating a health log in the database
    */
   async function handleUpdateLog() {
     if (!editingLog || !userId || !editStartDatePicker) return;
@@ -707,6 +872,8 @@ export default function HomePage() {
         end_date: endISO,
       });
 
+      sendBroadcast("log-update", `Health log updated successfully.`);
+
       await fetchAllData(userId);
       setEditingLog(null);
       toast.success("Health log updated successfully!");
@@ -717,13 +884,14 @@ export default function HomePage() {
   }
 
   /**
-   * Deletes a medication reminder.
+   * Deletes a medication reminder
    */
   async function handleDeleteMedication(id: string) {
     if (!userId) return;
     try {
       await deleteMedicationReminder(id);
       await fetchAllData(userId);
+      sendBroadcast("med-delete", `Medication reminder deleted successfully.`);
       toast.success("Medication reminder deleted successfully!");
     } catch (err) {
       toast.error("Error deleting medication reminder.");
@@ -732,13 +900,17 @@ export default function HomePage() {
   }
 
   /**
-   * Deletes an appointment reminder.
+   * Deletes an appointment reminder
    */
   async function handleDeleteAppointment(id: string) {
     if (!userId) return;
     try {
       await deleteAppointmentReminder(id);
       await fetchAllData(userId);
+      sendBroadcast(
+        "appt-delete",
+        `Appointment reminder deleted successfully.`,
+      );
       toast.success("Appointment reminder deleted successfully!");
     } catch (err) {
       toast.error("Error deleting appointment reminder.");
@@ -747,13 +919,14 @@ export default function HomePage() {
   }
 
   /**
-   * Deletes a health log.
+   * Deletes a health log
    */
   async function handleDeleteLog(id: string) {
     if (!userId) return;
     try {
       await deleteHealthLog(id);
       await fetchAllData(userId);
+      sendBroadcast("log-delete", `Health log deleted successfully.`);
       toast.success("Health log deleted successfully!");
     } catch (err) {
       toast.error("Error deleting health log.");
@@ -777,9 +950,11 @@ export default function HomePage() {
     (a, b) =>
       new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
   );
+
   const severityLabels = sortedLogs.map((log) =>
     format(new Date(log.start_date), "yyyy-MM-dd"),
   );
+
   const severityData = sortedLogs.map((log) => log.severity ?? 0);
 
   const severityLineData = {
@@ -801,6 +976,7 @@ export default function HomePage() {
     const day = format(new Date(appt.date), "yyyy-MM-dd");
     apptsCountMap[day] = (apptsCountMap[day] || 0) + 1;
   });
+
   const apptLabels = Object.keys(apptsCountMap).sort();
   const apptValues = apptLabels.map((day) => apptsCountMap[day]);
   const appointmentsBarData = {
@@ -825,6 +1001,7 @@ export default function HomePage() {
       symptomFreqMap[s] = (symptomFreqMap[s] || 0) + 1;
     });
   });
+
   const doughnutLabels = Object.keys(symptomFreqMap);
   const doughnutValues = doughnutLabels.map((k) => symptomFreqMap[k]);
   const symptomDoughnutData = {
@@ -847,12 +1024,15 @@ export default function HomePage() {
     if (!lower) return;
     moodCountMap[lower] = (moodCountMap[lower] || 0) + 1;
   });
+
   const moodLabels = Object.keys(moodCountMap).map(
     (mood) => mood.charAt(0).toUpperCase() + mood.slice(1),
   );
+
   const moodValues = moodLabels.map(
     (label) => moodCountMap[label.toLowerCase()],
   );
+
   const moodRadarData = {
     labels: moodLabels,
     datasets: [
@@ -870,10 +1050,12 @@ export default function HomePage() {
     const s = log.severity ?? 0;
     severityCountMap[s] = (severityCountMap[s] || 0) + 1;
   });
+
   const polarSeverityLabels = Object.keys(severityCountMap).sort();
   const polarSeverityValues = polarSeverityLabels.map(
     (key) => severityCountMap[key],
   );
+
   const severityPolarData = {
     labels: polarSeverityLabels.map((lab) => `Severity ${lab}`),
     datasets: [
@@ -892,6 +1074,7 @@ export default function HomePage() {
     const hour = new Date(appt.date).getHours();
     apptHourMap[hour] = (apptHourMap[hour] || 0) + 1;
   });
+
   const hourLabels = Array.from({ length: 24 }, (_, i) => i);
   const hourValues = hourLabels.map((hr) => apptHourMap[hr] || 0);
   const appointmentsHourBarData = {
@@ -912,6 +1095,7 @@ export default function HomePage() {
     const rec = m.recurrence || "N/A";
     recurrenceFreqMap[rec] = (recurrenceFreqMap[rec] || 0) + 1;
   });
+
   const recurrenceLabels = Object.keys(recurrenceFreqMap);
   const recurrenceValues = recurrenceLabels.map((k) => recurrenceFreqMap[k]);
   const medicationRecurrenceData = {
@@ -932,6 +1116,13 @@ export default function HomePage() {
     maintainAspectRatio: false,
   };
 
+  /**
+   * This function returns the style object for the staggered animation
+   * for each card in the dashboard
+   *
+   * @param index - The index of the card to apply staggered animation
+   * @returns - The style object for the card
+   */
   const getStaggerStyle = (index: number) => ({
     animationDelay: `${0.1 + index * 0.05}s`,
   });
@@ -1001,26 +1192,39 @@ export default function HomePage() {
             { label: "Total Appointments", value: totalAppointments },
             { label: "Total Health Logs", value: totalLogs },
           ].map((stat, idx) => (
-            <Card
+            <motion.div
               key={stat.label}
-              className="bg-card border border-border rounded-lg p-4 pt-6 min-w-[280px] gap-0 text-center transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101"
-              style={getStaggerStyle(idx)}
+              custom={idx}
+              initial="hidden"
+              animate="visible"
+              variants={cardVariants}
             >
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold">
-                  {stat.label}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">
-                  <AnimatedCounter value={stat.value} />
-                </div>
-              </CardContent>
-            </Card>
+              <Card
+                key={stat.label}
+                className="bg-card border border-border rounded-lg p-4 pt-6 min-w-[280px] gap-0 text-center transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101"
+                style={getStaggerStyle(idx)}
+              >
+                <CardHeader>
+                  <CardTitle className="text-xl font-semibold">
+                    {stat.label}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">
+                    <AnimatedCounter value={stat.value} />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
         </motion.div>
 
-        <div style={{ animationDelay: "0.7s" }}>
+        <motion.div
+          custom={3}
+          initial="hidden"
+          animate="visible"
+          variants={cardVariants}
+        >
           <Card className="bg-card border border-border rounded-lg min-w-[280px] w-full pt-4 transition-all hover:shadow-xl h-auto min-h-[450px] hover:-translate-y-1 hover:scale-101">
             <CardHeader>
               <CardTitle className="text-lg md:text-xl">
@@ -1039,422 +1243,276 @@ export default function HomePage() {
               )}
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
 
-        <div
+        <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          style={{ animationDelay: "0.9s" }}
+          initial="hidden"
+          animate="visible"
         >
-          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
-            <CardHeader>
-              <CardTitle>Appointments by Day</CardTitle>
-            </CardHeader>
-            <CardContent className="relative w-full h-full">
-              {apptLabels.length === 0 ? (
-                <p className="text-sm text-muted-foreground mt-2">
-                  No appointments found.
-                </p>
-              ) : (
-                <div className="w-full h-[250px]">
-                  <Bar
-                    data={appointmentsBarData}
-                    options={defaultChartOptions}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <motion.div custom={0} variants={cardVariants}>
+            <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+              <CardHeader>
+                <CardTitle>Appointments by Day</CardTitle>
+              </CardHeader>
+              <CardContent className="relative w-full h-full">
+                {apptLabels.length === 0 ? (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    No appointments found.
+                  </p>
+                ) : (
+                  <div className="w-full h-[250px]">
+                    <Bar
+                      data={appointmentsBarData}
+                      options={defaultChartOptions}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
-            <CardHeader>
-              <CardTitle>Symptom Distribution</CardTitle>
-            </CardHeader>
-            <CardContent className="relative w-full h-full">
-              {doughnutLabels.length === 0 ? (
-                <p className="text-sm text-muted-foreground mt-2">
-                  No symptoms recorded.
-                </p>
-              ) : (
-                <div className="w-full h-[250px]">
-                  <Doughnut
-                    data={symptomDoughnutData}
-                    options={defaultChartOptions}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <motion.div custom={1} variants={cardVariants}>
+            <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+              <CardHeader>
+                <CardTitle>Symptom Distribution</CardTitle>
+              </CardHeader>
+              <CardContent className="relative w-full h-full">
+                {doughnutLabels.length === 0 ? (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    No symptoms recorded.
+                  </p>
+                ) : (
+                  <div className="w-full h-[250px]">
+                    <Doughnut
+                      data={symptomDoughnutData}
+                      options={defaultChartOptions}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
-            <CardHeader>
-              <CardTitle>Mood Distribution</CardTitle>
-            </CardHeader>
-            <CardContent className="relative w-full h-full">
-              {moodLabels.length === 0 ? (
-                <p className="text-sm text-muted-foreground mt-2">
-                  No mood data recorded.
-                </p>
-              ) : (
-                <div className="w-full h-[250px]">
-                  <Radar data={moodRadarData} options={defaultChartOptions} />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <motion.div custom={2} variants={cardVariants}>
+            <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+              <CardHeader>
+                <CardTitle>Mood Distribution</CardTitle>
+              </CardHeader>
+              <CardContent className="relative w-full h-full">
+                {moodLabels.length === 0 ? (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    No mood data recorded.
+                  </p>
+                ) : (
+                  <div className="w-full h-[250px]">
+                    <Radar data={moodRadarData} options={defaultChartOptions} />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
-            <CardHeader>
-              <CardTitle>Severity Distribution</CardTitle>
-            </CardHeader>
-            <CardContent className="relative w-full h-full">
-              {polarSeverityLabels.length === 0 ? (
-                <p className="text-sm text-muted-foreground mt-2">
-                  No severity data found.
-                </p>
-              ) : (
-                <div className="w-full h-[250px]">
-                  <PolarArea
-                    data={severityPolarData}
-                    options={defaultChartOptions}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <motion.div custom={3} variants={cardVariants}>
+            <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+              <CardHeader>
+                <CardTitle>Severity Distribution</CardTitle>
+              </CardHeader>
+              <CardContent className="relative w-full h-full">
+                {polarSeverityLabels.length === 0 ? (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    No severity data found.
+                  </p>
+                ) : (
+                  <div className="w-full h-[250px]">
+                    <PolarArea
+                      data={severityPolarData}
+                      options={defaultChartOptions}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
-            <CardHeader>
-              <CardTitle>Appointments by Hour</CardTitle>
-            </CardHeader>
-            <CardContent className="relative w-full h-full">
-              {appointments.length === 0 ? (
-                <p className="text-sm text-muted-foreground mt-2">
-                  No appointment hours found.
-                </p>
-              ) : (
-                <div className="w-full h-[250px]">
-                  <Bar
-                    data={appointmentsHourBarData}
-                    options={defaultChartOptions}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <motion.div custom={4} variants={cardVariants}>
+            <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+              <CardHeader>
+                <CardTitle>Appointments by Hour</CardTitle>
+              </CardHeader>
+              <CardContent className="relative w-full h-full">
+                {appointments.length === 0 ? (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    No appointment hours found.
+                  </p>
+                ) : (
+                  <div className="w-full h-[250px]">
+                    <Bar
+                      data={appointmentsHourBarData}
+                      options={defaultChartOptions}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
-            <CardHeader>
-              <CardTitle>Medications by Recurrence</CardTitle>
-            </CardHeader>
-            <CardContent className="relative w-full h-full">
-              {recurrenceLabels.length === 0 ? (
-                <p className="text-sm text-muted-foreground mt-2">
-                  No medications to display.
-                </p>
-              ) : (
-                <div className="w-full h-[250px]">
-                  <Bar
-                    data={medicationRecurrenceData}
-                    options={defaultChartOptions}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+          <motion.div custom={5} variants={cardVariants}>
+            <Card className="bg-card border border-border rounded-lg pt-4 min-w-[280px] h-auto min-h-[330px] transition-all hover:shadow-xl hover:-translate-y-1 hover:scale-101">
+              <CardHeader>
+                <CardTitle>Medications by Recurrence</CardTitle>
+              </CardHeader>
+              <CardContent className="relative w-full h-full">
+                {recurrenceLabels.length === 0 ? (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    No medications to display.
+                  </p>
+                ) : (
+                  <div className="w-full h-[250px]">
+                    <Bar
+                      data={medicationRecurrenceData}
+                      options={defaultChartOptions}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
 
-        <div
+        <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          style={{ animationDelay: "1.1s" }}
+          initial="hidden"
+          animate="visible"
         >
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
-            <CardHeader className="mt-8 text-xl">
-              <CardTitle>Medications</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm pb-4">
-              {medications.length === 0 ? (
-                <p className="text-muted-foreground">No medications yet.</p>
-              ) : (
-                [...medications]
-                  .sort(
-                    (a, b) =>
-                      new Date(a.reminder_time).getTime() -
-                      new Date(b.reminder_time).getTime(),
-                  )
-                  .map((med, idx) => (
-                    <div
-                      key={med.id}
-                      className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
-                      style={getStaggerStyle(idx)}
-                    >
-                      {/* Medication Name */}
-                      <div className="mb-3">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          💊 {safeDisplay(med.medication_name)}
-                        </h3>
-                      </div>
-                      {/* Medication Details */}
-                      <div className="text-sm text-gray-600 space-y-1">
-                        <p>
-                          <strong>Dosage:</strong> {safeDisplay(med.dosage)}
-                        </p>
-                        <div className="flex items-center flex-wrap">
-                          <p className="font-bold mr-1 inline">Schedule:</p>
-                          <span className="inline-flex items-center gap-1">
-                            <span>
-                              {new Date(med.reminder_time).toLocaleDateString()}
-                            </span>
-                            <span>at</span>
-                            <span>
-                              {new Date(med.reminder_time).toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )}
-                            </span>
-                          </span>
-                        </div>
-                        <p>
-                          <strong>Recurrence:</strong>{" "}
-                          {safeDisplay(med.recurrence)}
-                        </p>
-                        <p>
-                          <strong>Created:</strong>{" "}
-                          {new Date(med.created_at).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-4">
-                        <Button
-                          size="sm"
-                          onClick={() => openEditMedDialog(med)}
-                          className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          <Edit3 className="w-4 h-4 mr-1" /> View / Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            setDeleteMedId(med.id);
-                            setShowDeleteMedDialog(true);
-                          }}
-                          className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" /> Delete
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
-            <CardHeader className="text-xl mt-8">
-              <CardTitle>Appointments</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-md pb-4">
-              {appointments.length === 0 ? (
-                <p className="text-muted-foreground">No appointments yet.</p>
-              ) : (
-                [...appointments]
-                  .sort(
-                    (a, b) =>
-                      new Date(a.date).getTime() - new Date(b.date).getTime(),
-                  )
-                  .map((appt, idx) => (
-                    <div
-                      key={appt.id}
-                      className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
-                      style={getStaggerStyle(idx)}
-                    >
-                      <div className="mb-3">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          🗓️ {safeDisplay(appt.appointment_name)}
-                        </h3>
-                      </div>
-                      <div className="mb-4 text-sm text-gray-600 flex flex-wrap items-center gap-2">
-                        <p className="font-bold inline">Date:</p>
-                        <p className="inline">
-                          {new Date(appt.date).toLocaleDateString()}
-                        </p>
-                        <p className="font-bold inline ml-4">Time:</p>
-                        <p className="inline">
-                          {new Date(appt.date).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-3">
-                        <Button
-                          size="sm"
-                          onClick={() => openEditApptDialog(appt)}
-                          className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          <Edit3 className="w-4 h-4 mr-1" /> View / Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            setDeleteApptId(appt.id);
-                            setShowDeleteApptDialog(true);
-                          }}
-                          className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" /> Delete
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
-            <CardHeader className="mt-8 text-xl">
-              <CardTitle>Health Logs</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm pb-4 ">
-              {logs.length === 0 ? (
-                <p className="text-muted-foreground text-center">
-                  No health logs yet.
-                </p>
-              ) : (
-                [...logs]
-                  .sort(
-                    (a, b) =>
-                      new Date(a.start_date).getTime() -
-                      new Date(b.start_date).getTime(),
-                  )
-                  .map((log, idx) => {
-                    let vitalsData = null;
-                    if (log.vitals) {
-                      try {
-                        vitalsData =
-                          typeof log.vitals === "string"
-                            ? JSON.parse(log.vitals)
-                            : log.vitals;
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                      } catch (error) {
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        vitalsData = null;
-                      }
-                    }
-                    return (
+          <motion.div custom={0} variants={cardVariants}>
+            <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
+              <CardHeader className="mt-8 text-xl">
+                <CardTitle>Medications</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm pb-4">
+                {medications.length === 0 ? (
+                  <p className="text-muted-foreground">No medications yet.</p>
+                ) : (
+                  [...medications]
+                    .sort(
+                      (a, b) =>
+                        new Date(a.reminder_time).getTime() -
+                        new Date(b.reminder_time).getTime(),
+                    )
+                    .map((med, idx) => (
                       <div
-                        key={log.id}
-                        className="p-6 rounded-xl border border-gray-200 bg-white shadow hover:shadow-xl transition-transform duration-300 cursor-pointer mb-6"
+                        key={med.id}
+                        className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
                         style={getStaggerStyle(idx)}
                       >
-                        <div className="mb-2">
+                        <div className="mb-3">
                           <h3 className="text-lg font-semibold text-gray-800">
-                            Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
+                            💊 {safeDisplay(med.medication_name)}
                           </h3>
                         </div>
-
-                        <div className="space-y-2 text-sm text-gray-600">
-                          <div>
-                            <p className="mb-2">
-                              <span className="font-bold">Severity:</span>{" "}
-                              {log.severity !== undefined &&
-                              log.severity !== null &&
-                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                              // @ts-ignore
-                              log.severity !== ""
-                                ? log.severity
-                                : "N/A"}
-                            </p>
-                            <p className="mb-2">
-                              <span className="font-bold">Mood:</span>{" "}
-                              {safeDisplay(log.mood) || "N/A"}
-                            </p>
+                        <div className="text-sm text-gray-600 space-y-1">
+                          <p>
+                            <strong>Dosage:</strong> {safeDisplay(med.dosage)}
+                          </p>
+                          <div className="flex items-center flex-wrap">
+                            <p className="font-bold mr-1 inline">Schedule:</p>
+                            <span className="inline-flex items-center gap-1">
+                              <span>
+                                {new Date(
+                                  med.reminder_time,
+                                ).toLocaleDateString()}
+                              </span>
+                              <span>at</span>
+                              <span>
+                                {new Date(med.reminder_time).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )}
+                              </span>
+                            </span>
                           </div>
-                          <div>
-                            <p className="font-bold">Vitals:</p>
-                            <div className="ml-4">
-                              {(() => {
-                                let vitalsObj = null;
-                                if (log.vitals) {
-                                  try {
-                                    vitalsObj =
-                                      typeof log.vitals === "string"
-                                        ? JSON.parse(log.vitals)
-                                        : log.vitals;
-                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                  } catch (error) {
-                                    vitalsObj = null;
-                                  }
-                                }
-                                return vitalsObj ? (
-                                  <>
-                                    <p className="mb-2">
-                                      <span className="font-bold">
-                                        - Heart Rate:
-                                      </span>{" "}
-                                      {vitalsObj.heartRate || "N/A"}
-                                    </p>
-                                    <p className="mb-2">
-                                      <span className="font-bold">
-                                        - Blood Pressure:
-                                      </span>{" "}
-                                      {vitalsObj.bloodPressure || "N/A"}
-                                    </p>
-                                  </>
-                                ) : (
-                                  <p>N/A</p>
-                                );
-                              })()}
-                            </div>
-                          </div>
-                          <div>
-                            <p>
-                              <span className="font-bold">
-                                Medication Intake:
-                              </span>{" "}
-                              {safeDisplay(log.medication_intake) || "N/A"}
-                            </p>
-                          </div>
-                          <div>
-                            <p>
-                              <span className="font-bold">Notes:</span>{" "}
-                              {safeDisplay(log.notes) || "N/A"}
-                            </p>
-                          </div>
-                          <div className="flex flex-wrap mt-0 gap-2">
-                            <p className="text-sm">
-                              <span className="font-bold">Start:</span>{" "}
-                              {new Date(log.start_date).toLocaleDateString()}{" "}
-                              {new Date(log.start_date).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </p>
-                            <p className="text-sm">
-                              <span className="font-bold">End:</span>{" "}
-                              {log.end_date
-                                ? new Date(log.end_date).toLocaleDateString() +
-                                  " " +
-                                  new Date(log.end_date).toLocaleTimeString(
-                                    [],
-                                    {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    },
-                                  )
-                                : "N/A"}
-                            </p>
-                          </div>
+                          <p>
+                            <strong>Recurrence:</strong>{" "}
+                            {safeDisplay(med.recurrence)}
+                          </p>
+                          <p>
+                            <strong>Created:</strong>{" "}
+                            {new Date(med.created_at).toLocaleString()}
+                          </p>
                         </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-3 mt-4">
+                        <div className="flex flex-wrap gap-2 mt-4">
                           <Button
                             size="sm"
-                            onClick={() => openEditLogDialog(log)}
+                            onClick={() => openEditMedDialog(med)}
+                            className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                          >
+                            <Edit3 className="w-4 h-4 mr-1" /> View / Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setDeleteMedId(med.id);
+                              setShowDeleteMedDialog(true);
+                            }}
+                            className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" /> Delete
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div custom={1} variants={cardVariants}>
+            <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
+              <CardHeader className="text-xl mt-8">
+                <CardTitle>Appointments</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-md pb-4">
+                {appointments.length === 0 ? (
+                  <p className="text-muted-foreground">No appointments yet.</p>
+                ) : (
+                  [...appointments]
+                    .sort(
+                      (a, b) =>
+                        new Date(a.date).getTime() - new Date(b.date).getTime(),
+                    )
+                    .map((appt, idx) => (
+                      <div
+                        key={appt.id}
+                        className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
+                        style={getStaggerStyle(idx)}
+                      >
+                        <div className="mb-3">
+                          <h3 className="text-lg font-semibold text-gray-800">
+                            🗓️ {safeDisplay(appt.appointment_name)}
+                          </h3>
+                        </div>
+                        <div className="mb-4 text-sm text-gray-600 flex flex-wrap items-center gap-2">
+                          <p className="font-bold inline">Date:</p>
+                          <p className="inline">
+                            {new Date(appt.date).toLocaleDateString()}
+                          </p>
+                          <p className="font-bold inline ml-4">Time:</p>
+                          <p className="inline">
+                            {new Date(appt.date).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          <Button
+                            size="sm"
+                            onClick={() => openEditApptDialog(appt)}
                             className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                           >
                             <Edit3 className="w-4 h-4 mr-1" /> View / Edit
@@ -1463,8 +1521,8 @@ export default function HomePage() {
                             size="sm"
                             variant="destructive"
                             onClick={() => {
-                              setDeleteLogId(log.id);
-                              setShowDeleteLogDialog(true);
+                              setDeleteApptId(appt.id);
+                              setShowDeleteApptDialog(true);
                             }}
                             className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                           >
@@ -1472,14 +1530,183 @@ export default function HomePage() {
                           </Button>
                         </div>
                       </div>
-                    );
-                  })
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                    ))
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Add Medication Dialog */}
+          <motion.div custom={2} variants={cardVariants}>
+            <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
+              <CardHeader className="mt-8 text-xl">
+                <CardTitle>Health Logs</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm pb-4 ">
+                {logs.length === 0 ? (
+                  <p className="text-muted-foreground text-center">
+                    No health logs yet.
+                  </p>
+                ) : (
+                  [...logs]
+                    .sort(
+                      (a, b) =>
+                        new Date(a.start_date).getTime() -
+                        new Date(b.start_date).getTime(),
+                    )
+                    .map((log, idx) => {
+                      let vitalsData = null;
+                      if (log.vitals) {
+                        try {
+                          vitalsData =
+                            typeof log.vitals === "string"
+                              ? JSON.parse(log.vitals)
+                              : log.vitals;
+                          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        } catch (error) {
+                          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                          vitalsData = null;
+                        }
+                      }
+                      return (
+                        <div
+                          key={log.id}
+                          className="p-6 rounded-xl border border-gray-200 bg-white shadow hover:shadow-xl transition-transform duration-300 cursor-pointer mb-6"
+                          style={getStaggerStyle(idx)}
+                        >
+                          <div className="mb-2">
+                            <h3 className="text-lg font-semibold text-gray-800">
+                              Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
+                            </h3>
+                          </div>
+
+                          <div className="space-y-2 text-sm text-gray-600">
+                            <div>
+                              <p className="mb-2">
+                                <span className="font-bold">Severity:</span>{" "}
+                                {log.severity !== undefined &&
+                                log.severity !== null &&
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-ignore
+                                log.severity !== ""
+                                  ? log.severity
+                                  : "N/A"}
+                              </p>
+                              <p className="mb-2">
+                                <span className="font-bold">Mood:</span>{" "}
+                                {safeDisplay(log.mood) || "N/A"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="font-bold">Vitals:</p>
+                              <div className="ml-4">
+                                {(() => {
+                                  let vitalsObj = null;
+                                  if (log.vitals) {
+                                    try {
+                                      vitalsObj =
+                                        typeof log.vitals === "string"
+                                          ? JSON.parse(log.vitals)
+                                          : log.vitals;
+                                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                    } catch (error) {
+                                      vitalsObj = null;
+                                    }
+                                  }
+                                  return vitalsObj ? (
+                                    <>
+                                      <p className="mb-2">
+                                        <span className="font-bold">
+                                          - Heart Rate:
+                                        </span>{" "}
+                                        {vitalsObj.heartRate || "N/A"}
+                                      </p>
+                                      <p className="mb-2">
+                                        <span className="font-bold">
+                                          - Blood Pressure:
+                                        </span>{" "}
+                                        {vitalsObj.bloodPressure || "N/A"}
+                                      </p>
+                                    </>
+                                  ) : (
+                                    <p>N/A</p>
+                                  );
+                                })()}
+                              </div>
+                            </div>
+                            <div>
+                              <p>
+                                <span className="font-bold">
+                                  Medication Intake:
+                                </span>{" "}
+                                {safeDisplay(log.medication_intake) || "N/A"}
+                              </p>
+                            </div>
+                            <div>
+                              <p>
+                                <span className="font-bold">Notes:</span>{" "}
+                                {safeDisplay(log.notes) || "N/A"}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap mt-0 gap-2">
+                              <p className="text-sm">
+                                <span className="font-bold">Start:</span>{" "}
+                                {new Date(log.start_date).toLocaleDateString()}{" "}
+                                {new Date(log.start_date).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )}
+                              </p>
+                              <p className="text-sm">
+                                <span className="font-bold">End:</span>{" "}
+                                {log.end_date
+                                  ? new Date(
+                                      log.end_date,
+                                    ).toLocaleDateString() +
+                                    " " +
+                                    new Date(log.end_date).toLocaleTimeString(
+                                      [],
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      },
+                                    )
+                                  : "N/A"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-3 mt-4">
+                            <Button
+                              size="sm"
+                              onClick={() => openEditLogDialog(log)}
+                              className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                            >
+                              <Edit3 className="w-4 h-4 mr-1" /> View / Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => {
+                                setDeleteLogId(log.id);
+                                setShowDeleteLogDialog(true);
+                              }}
+                              className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" /> Delete
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
+
         <Dialog open={addMedOpen} onOpenChange={setAddMedOpen}>
           <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -1584,7 +1811,6 @@ export default function HomePage() {
           </DialogContent>
         </Dialog>
 
-        {/* Add Appointment Dialog */}
         <Dialog open={addApptOpen} onOpenChange={setAddApptOpen}>
           <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -1636,7 +1862,6 @@ export default function HomePage() {
           </DialogContent>
         </Dialog>
 
-        {/* Add Health Log Dialog */}
         <Dialog open={addLogOpen} onOpenChange={setAddLogOpen}>
           <DialogContent className="max-w-xl w-full max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -1791,7 +2016,6 @@ export default function HomePage() {
                   onChange={setHlEndTimePicker}
                 />
               </div>
-              {/* Display an error message if end date/time is provided and is not after start date */}
               {hlStartDatePicker &&
                 hlEndDatePicker &&
                 new Date(
@@ -1920,8 +2144,6 @@ export default function HomePage() {
                     </SelectContent>
                   </Select>
                 </div>
-
-                {/* Optional Calendar Sync Token field is commented out */}
               </div>
               <DialogFooter>
                 <Button
@@ -2156,7 +2378,6 @@ export default function HomePage() {
                     onChange={setEditEndTimePicker}
                   />
                 </div>
-                {/* Display an error message if end date is provided and is not after start date */}
                 {editStartDatePicker &&
                   editEndDatePicker &&
                   new Date(

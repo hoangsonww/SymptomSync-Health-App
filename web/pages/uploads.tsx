@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +45,6 @@ type FileRow = {
   tags?: string[];
 };
 
-// Framer Motion variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -80,10 +80,8 @@ export default function DocumentsPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
-
-  useEffect(() => {
-    fetchFiles();
-  }, [currentPage]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const broadcastChannelRef = useRef<any>(null);
 
   useEffect(() => {
     async function checkUserAuth() {
@@ -96,6 +94,37 @@ export default function DocumentsPage() {
     }
     checkUserAuth();
   }, [router]);
+
+  useQuery({
+    queryKey: ["files", currentPage],
+    queryFn: async () => {
+      await fetchFiles();
+      return true;
+    },
+  });
+
+  useEffect(() => {
+    broadcastChannelRef.current = supabase.channel("universal-channel", {
+      config: { broadcast: { self: false } },
+    });
+    const channel = broadcastChannelRef.current;
+
+    channel
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on("broadcast", { event: "*" }, (payload: any) => {
+        toast.success(
+          `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
+        );
+      })
+      .subscribe((status: string) => {
+        console.log("Universal channel status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      broadcastChannelRef.current = null;
+    };
+  }, []);
 
   async function fetchFiles() {
     setLoadingFiles(true);
@@ -127,6 +156,11 @@ export default function DocumentsPage() {
     setLoadingFiles(false);
   }
 
+  /**
+   * Triggered when the user clicks the upload button. Handles the file upload process
+   *
+   * @returns void
+   */
   async function handleUpload() {
     if (!fileToUpload) return;
     const {
@@ -166,6 +200,12 @@ export default function DocumentsPage() {
     }
   }
 
+  /**
+   * Handles the download of a file. Creates a temporary link to download the file
+   *
+   * @param url - The URL of the file to download
+   * @param filename - The name of the file to save as
+   */
   async function handleDownload(url: string, filename: string) {
     try {
       const response = await fetch(url);
@@ -184,6 +224,9 @@ export default function DocumentsPage() {
     }
   }
 
+  /**
+   * Handles the download of all files. Iterates through each file and triggers the download
+   */
   function handleDownloadAll() {
     files.forEach((file) => {
       handleDownload(file.url, file.filename);
@@ -194,6 +237,7 @@ export default function DocumentsPage() {
     file.filename.toLowerCase().includes(search.toLowerCase()),
   );
 
+  // Pagination logic: Ensure only 50 items are shown per page
   const startIndex =
     filteredFiles.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
   const endIndex = (currentPage - 1) * ITEMS_PER_PAGE + filteredFiles.length;
@@ -207,10 +251,11 @@ export default function DocumentsPage() {
           content="View and manage your health documents."
         />
       </Head>
+
       <div className="flex flex-col min-h-screen">
         <main className="flex-1 p-6">
           <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6 pt-2">
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
@@ -228,7 +273,6 @@ export default function DocumentsPage() {
                 </motion.div>
               </motion.div>
               <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mt-4 md:mt-0">
-                {/* Search Bar */}
                 <div className="relative w-full max-w-md">
                   <Search
                     size={18}
@@ -243,9 +287,7 @@ export default function DocumentsPage() {
                   />
                 </div>
 
-                {/* Buttons Container */}
                 <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto justify-center">
-                  {/* Export All Button */}
                   <motion.div
                     variants={fadeInUp}
                     initial="hidden"
@@ -260,7 +302,7 @@ export default function DocumentsPage() {
                       Export All
                     </Button>
                   </motion.div>
-                  {/* New Document & Delete Dialogs */}
+
                   <motion.div
                     variants={fadeInUp}
                     initial="hidden"

@@ -115,7 +115,7 @@ type CalendarEvent = {
  */
 function expandMedication(
   med: MedicationReminder,
-  horizonDays = 90,
+  horizonDays = 90, // For now we'll just do 90 days - since user likely don't provide end dates
 ): CalendarEvent[] {
   const baseTime = new Date(med.reminder_time);
   const events: CalendarEvent[] = [];
@@ -184,7 +184,10 @@ function expandMedication(
  * Converts a raw ICS date string of the form "YYYYMMDDTHHMMSS"
  * into a valid ISO 8601 date string (like "YYYY-MM-DDTHH:MM:SSZ")
  *
- * Asked ChatGPT to help me with the regexs.
+ * Asked ChatGPT to help me with the regexs
+ *
+ * @param dateStr - The raw ICS date string to normalize.
+ * @returns - The normalized date string in ISO 8601 format.
  */
 function normalizeIcsDate(dateStr: string): string {
   const regex = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)$/;
@@ -200,6 +203,9 @@ function normalizeIcsDate(dateStr: string): string {
 
 /**
  * Generates an ICS string from the given events
+ *
+ * @param events - An array of calendar events to include in the ICS file.
+ * @returns - A string representing the ICS file content.
  */
 function generateIcs(events: CalendarEvent[]): string {
   const formatDateUtc = (date: Date) => format(date, "yyyyMMdd'T'HHmmss'Z'");
@@ -275,6 +281,11 @@ function parseIcs(
  * medications or appointments based on the summary. But this is a heuristic
  * and may not be 100% accurate. For events it doesn't recognize, it will
  * treat them as appointments
+ *
+ * @param e - The change event from the file input.
+ * @param userId - The user ID to associate the events with.
+ * @param refresh - A function to refresh the data after import.
+ * @return - A promise that resolves when the import is complete.
  */
 function handleImportIcs(
   e: React.ChangeEvent<HTMLInputElement>,
@@ -337,6 +348,8 @@ export default function CalendarPage() {
   const [newApptTime, setNewApptTime] = useState("00:00");
   const [newMedName, setNewMedName] = useState("");
   const [newMedDate, setNewMedDate] = useState<Date | undefined>(undefined);
+  const [newMedDosage, setNewMedDosage] = useState("");
+  const [newMedDosageUnit, setNewMedDosageUnit] = useState("");
   const [newMedTimePicker, setNewMedTimePicker] = useState("00:00");
   const [newMedRecurrence, setNewMedRecurrence] = useState<null | string>(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
@@ -352,6 +365,11 @@ export default function CalendarPage() {
   );
   const [showIcsDialog, setShowIcsDialog] = useState(false);
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const broadcastChannelRef = useRef<any>(null);
+  const [editMedDosage, setEditMedDosage] = useState("");
+  const [editMedDosageUnit, setEditMedDosageUnit] = useState("mg");
+  const [editMedRecurrence, setEditMedRecurrence] = useState("Daily");
 
   useEffect(() => {
     async function checkUserAuth() {
@@ -366,8 +384,25 @@ export default function CalendarPage() {
   }, [router]);
 
   /**
-   * Supabase Realtime: Subscribe to changes in medication and appointment reminders
-   * and update the UI immediately as changes occur.
+   * Function to send a broadcast message to all connected clients
+   * using the Supabase broadcast channel.
+   *
+   * @param eventName - The name of the event to broadcast
+   * @param message - The message to send with the event
+   */
+  const sendBroadcast = (eventName: string, message: string) => {
+    if (broadcastChannelRef.current) {
+      broadcastChannelRef.current.send({
+        type: "broadcast",
+        event: eventName,
+        payload: { message },
+      });
+    }
+  };
+
+  /**
+   * Supabase Realtime #1: Subscribe to changes in medication and appointment reminders
+   * and update the UI immediately as changes occur
    */
   useEffect(() => {
     let isMounted = true;
@@ -378,40 +413,92 @@ export default function CalendarPage() {
       if (!user || !isMounted) return;
       setUserId(user.id);
       await fetchAllData(user.id);
+
       const medsChannel = supabase
         .channel("medsSub")
         .on(
           "postgres_changes",
           {
-            event: "*",
+            event: "INSERT",
             schema: "public",
             table: "medication_reminders",
             filter: `user_profile_id=eq.${user.id}`,
           },
           async () => {
-            if (isMounted) await fetchAllData(user.id);
+            await fetchAllData(user.id);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "medication_reminders",
+            filter: `user_profile_id=eq.${user.id}`,
+          },
+          async () => {
+            await fetchAllData(user.id);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "medication_reminders",
+            filter: `user_profile_id=eq.${user.id}`,
+          },
+          async () => {
+            await fetchAllData(user.id);
           },
         )
         .subscribe();
       channelRefs.current.push(medsChannel);
+
       const apptsChannel = supabase
         .channel("apptsSub")
         .on(
           "postgres_changes",
           {
-            event: "*",
+            event: "INSERT",
             schema: "public",
             table: "appointment_reminders",
             filter: `user_profile_id=eq.${user.id}`,
           },
           async () => {
-            if (isMounted) await fetchAllData(user.id);
+            await fetchAllData(user.id);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "appointment_reminders",
+            filter: `user_profile_id=eq.${user.id}`,
+          },
+          async () => {
+            await fetchAllData(user.id);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "appointment_reminders",
+            filter: `user_profile_id=eq.${user.id}`,
+          },
+          async () => {
+            await fetchAllData(user.id);
           },
         )
         .subscribe();
       channelRefs.current.push(apptsChannel);
     }
+
     init();
+
     return () => {
       isMounted = false;
       channelRefs.current.forEach((ch) => supabase.removeChannel(ch));
@@ -419,7 +506,46 @@ export default function CalendarPage() {
   }, []);
 
   /**
-   * Retrieve meds & appts and generate the events array.
+   * Supabase Realtime #2: In the above realtime functionality, we already
+   * created postgres changes for meds, appointments, and health logs. However,
+   * that will only update the UI if the user adds a new med, appointment, or log
+   * from another device. But we may also wanna broadcast a message to the user
+   * when a new med, appointment, or log is added from another device as well.
+   * This is where the broadcast channel comes in - it will broadcast a message
+   * to the user when a new med, appointment, or log is added from another device so
+   * that the user knows that something has changed in the UI and the reason
+   * for that change.
+   */
+  useEffect(() => {
+    broadcastChannelRef.current = supabase.channel("universal-channel", {
+      config: { broadcast: { self: false } },
+    });
+    const channel = broadcastChannelRef.current;
+
+    channel
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on("broadcast", { event: "*" }, (payload: any) => {
+        toast.success(
+          `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
+        );
+      })
+      .subscribe((status: string) => {
+        console.log("Universal channel status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      broadcastChannelRef.current = null;
+    };
+  }, []);
+
+  /**
+   * Fetch all data from the server and update the state
+   * This function fetches both medications and appointments
+   * and expands the medications into multiple events based on their recurrence
+   *
+   * @param uid - The user ID to fetch data for
+   * @returns - Appointment and medication reminders data
    */
   async function fetchAllData(uid: string) {
     const [meds, appts] = await Promise.all([
@@ -428,11 +554,13 @@ export default function CalendarPage() {
     ]);
     setMedications(meds);
     setAppointments(appts);
+
     let medEvents: CalendarEvent[] = [];
     meds.forEach((m) => {
       const repeated = expandMedication(m);
       medEvents = medEvents.concat(repeated);
     });
+
     const apptEvents: CalendarEvent[] = appts.map((a) => {
       const startDate = new Date(a.date);
       const endDate = new Date(a.date);
@@ -445,16 +573,27 @@ export default function CalendarPage() {
         type: "appointment",
       };
     });
+
     setEvents([...medEvents, ...apptEvents]);
   }
 
+  /**
+   * Handle slot selection on the calendar
+   * This function sets the selected date and shows the dialog to select type
+   * of reminder to add (appointment or medication)
+   *
+   * @param slotInfo - The information about the selected slot
+   */
   function handleSelectSlot(slotInfo: { start: Date; end: Date }) {
     setSlotDate(slotInfo.start);
     setShowSelectTypeDialog(true);
   }
 
   /**
-   * After picking "appointment" or "medication"
+   * On select type - This function sets the type of reminder to add
+   * and initializes the date and time for the new reminder
+   *
+   * @param type - The type of reminder to add (appointment or medication)
    */
   function onSelectType(type: "appointment" | "medication") {
     setAddType(type);
@@ -466,6 +605,7 @@ export default function CalendarPage() {
       } else {
         setNewMedDate(slotDate);
         setNewMedTimePicker(timeStr);
+        setNewMedRecurrence("As Needed");
       }
     }
     setShowSelectTypeDialog(false);
@@ -474,6 +614,10 @@ export default function CalendarPage() {
 
   /**
    * Add Appointment
+   * This function creates a new appointment reminder and adds it to the events array
+   * It also sets the start and end times for the event
+   *
+   * @returns - A promise that resolves when the appointment is created
    */
   async function handleAddAppointment() {
     if (!userId || !newApptName || !newApptDate) return;
@@ -502,49 +646,76 @@ export default function CalendarPage() {
           type: "appointment",
         },
       ]);
-      toast.success("Appointment created");
+      toast.success("Appointment reminder added successfully!");
+      sendBroadcast(
+        "appt-add",
+        `New appointment reminder ${created.appointment_name} added.`,
+      );
       setShowAddDialog(false);
       setNewApptName("");
       setNewApptDate(undefined);
       setNewApptTime("00:00");
     } catch (err) {
-      toast.error("Error creating appointment");
+      toast.error("Error creating appointment reminder.");
       console.error(err);
     }
   }
 
   /**
    * Add Medication
+   * This function creates a new medication reminder and expands it into multiple events
+   * based on its recurrence
+   *
+   * @returns - A promise that resolves when the medication is created
    */
   async function handleAddMedication() {
     if (!userId || !newMedName || !newMedDate) return;
     try {
+      if (!newMedRecurrence) {
+        setNewMedRecurrence("As Needed");
+      }
       const dateString = format(newMedDate, "yyyy-MM-dd");
       const combined = `${dateString}T${newMedTimePicker}`;
+      const combinedDosage = newMedDosage
+        ? `${newMedDosage} ${newMedDosageUnit}`
+        : "";
       const localDate = new Date(combined);
       const isoString = localDate.toISOString();
       const created = await createMedicationReminder({
         user_profile_id: userId,
         medication_name: newMedName,
-        dosage: null,
+        dosage: combinedDosage,
         reminder_time: isoString,
         recurrence: newMedRecurrence,
         calendar_sync_token: null,
       });
       const repeated = expandMedication(created);
       setEvents((prev) => [...prev, ...repeated]);
-      toast.success("Medication created");
+      toast.success("Medication reminder added successfully!");
+      sendBroadcast(
+        "med-add",
+        `New medication reminder "${newMedName}" added.`,
+      );
       setShowAddDialog(false);
       setNewMedName("");
       setNewMedDate(undefined);
+      setNewMedDosage("");
       setNewMedTimePicker("00:00");
       setNewMedRecurrence(null);
     } catch (err) {
-      toast.error("Error creating medication");
+      toast.error("Error creating medication reminder.");
       console.error(err);
     }
   }
 
+  /**
+   * Handle event selection
+   * If selectMode is true, toggle the selected state of the event
+   * Otherwise, show the edit dialog
+   *
+   * @param ev - The selected event
+   * @returns - A promise that resolves when the event is selected
+   */
   function handleSelectEvent(ev: CalendarEvent) {
     if (selectMode) {
       const newSet = new Set(selectedEventIds);
@@ -577,6 +748,14 @@ export default function CalendarPage() {
     };
   }
 
+  /**
+   * Event style getter
+   * If the event is selected, change the background color to something
+   * lighter
+   *
+   * @param event - The event to style
+   * @return - The style object for the event
+   */
   function eventPropGetter(event: CalendarEvent) {
     const style: React.CSSProperties = {
       cursor: "pointer",
@@ -593,6 +772,8 @@ export default function CalendarPage() {
    * Save event edits
    * For appointments, only update the single event
    * For medications, update the entire series
+   *
+   * @returns - A promise that resolves when the event is saved
    */
   async function handleSaveEventEdits() {
     if (!dialogEvent || !userId || !editDate) return;
@@ -600,6 +781,7 @@ export default function CalendarPage() {
     const dateTimeString = `${dateString}T${editTime}`;
     const localDate = new Date(dateTimeString);
     const isoString = localDate.toISOString();
+
     try {
       const [type, ...rest] = dialogEvent.id.split("-");
       if (type === "appt") {
@@ -628,10 +810,14 @@ export default function CalendarPage() {
         const withoutPrefix = dialogEvent.id.slice(4);
         const lastDash = withoutPrefix.lastIndexOf("-");
         const realIdMed = withoutPrefix.substring(0, lastDash);
+
         const updated = await updateMedicationReminder(realIdMed, {
           medication_name: editTitle,
+          dosage: `${editMedDosage} ${editMedDosageUnit}`,
           reminder_time: isoString,
+          recurrence: editMedRecurrence,
         });
+
         const newEventsForMed = expandMedication(updated);
         setEvents((prev) => {
           const filtered = prev.filter((e) => {
@@ -642,27 +828,48 @@ export default function CalendarPage() {
           });
           return [...filtered, ...newEventsForMed];
         });
-        toast.success("Medication updated");
+        sendBroadcast(
+          "med-update",
+          `Medication reminder "${editTitle}" updated successfully.`,
+        );
+        toast.success("Medication reminder updated successfully!");
       }
       setShowEventDialog(false);
     } catch (err) {
-      toast.error("Error updating event");
+      toast.error("Error updating medication reminder.");
       console.error(err);
     }
   }
 
+  /**
+   * Delete event
+   * For appointments, delete the single event
+   * For medications, delete the entire series
+   */
   function handleDeleteSingle() {
     if (!dialogEvent) return;
     setDeleteTargetIds([dialogEvent.id]);
     setShowConfirmDeleteDialog(true);
   }
 
+  /**
+   * Delete selected events
+   * If no events are selected, do nothing
+   * Otherwise, set the delete target IDs and show the confirmation dialog
+   */
   function handleDeleteSelected() {
     if (selectedEventIds.size === 0) return;
     setDeleteTargetIds(Array.from(selectedEventIds));
     setShowConfirmDeleteDialog(true);
   }
 
+  /**
+   * Delete events
+   * For appointments, delete the single event
+   * For medications, delete the entire series
+   * For both, remove from the events array
+   * and update the state
+   */
   async function doDeleteEvents() {
     try {
       const appointmentIdsToDelete = new Set();
@@ -682,11 +889,19 @@ export default function CalendarPage() {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         await deleteAppointmentReminder(apptId);
+        sendBroadcast(
+          "appt-delete",
+          `Appointment reminder deleted successfully.`,
+        );
       }
       for (const medId of medicationIdsToDelete) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         await deleteMedicationReminder(medId);
+        sendBroadcast(
+          "med-delete",
+          `Medication reminder deleted successfully.`,
+        );
       }
       toast.success("Deleted events");
       setEvents((prev) =>
@@ -713,10 +928,11 @@ export default function CalendarPage() {
     setSelectMode(false);
   }
 
+  /**
+   * Export the entire calendar as an ICS file
+   */
   async function handleExportCalendar() {
-    // Generate the ICS file string from the events in state.
     const icsString = generateIcs(events);
-    // Create a blob and generate a downloadable link.
     const blob = new Blob([icsString], { type: "text/calendar;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -746,7 +962,7 @@ export default function CalendarPage() {
         animate="visible"
         className="w-full h-screen p-4 md:p-6 space-y-4"
       >
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-2 mb-6">
           <motion.div variants={slideInLeft} className="flex flex-col">
             <h1 className="text-3xl font-extrabold">Calendar 📆</h1>
             <motion.p
@@ -838,7 +1054,6 @@ export default function CalendarPage() {
           />
         </motion.div>
 
-        {/* ICS Sync Dialog */}
         <Dialog open={showIcsDialog} onOpenChange={setShowIcsDialog}>
           <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -850,7 +1065,6 @@ export default function CalendarPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6 py-4">
-              {/* Export Section */}
               <div className="p-4 bg-white rounded shadow">
                 <h3 className="text-lg font-semibold mb-2">
                   Export Your Calendar
@@ -869,7 +1083,7 @@ export default function CalendarPage() {
                 </Button>
               </div>
               <div className="border-t border-gray-200"></div>
-              {/* Import Section */}
+
               <div className="p-4 bg-white rounded shadow">
                 <h3 className="text-lg font-semibold mb-2">Import Calendar</h3>
                 <p className="text-sm mb-4">
@@ -988,7 +1202,7 @@ export default function CalendarPage() {
                   <DatePicker value={newApptDate} onChange={setNewApptDate} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Time</Label>
+                  <Label>Time (24h)</Label>
                   <CustomTimePicker
                     value={newApptTime}
                     onChange={setNewApptTime}
@@ -1012,11 +1226,38 @@ export default function CalendarPage() {
                     <DatePicker value={newMedDate} onChange={setNewMedDate} />
                   </div>
                   <div>
-                    <Label className="text-xs">Time</Label>
+                    <Label className="text-xs">Time (24h)</Label>
                     <CustomTimePicker
                       value={newMedTimePicker}
                       onChange={setNewMedTimePicker}
                     />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Dosage</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="1000"
+                      step="0.1"
+                      value={newMedDosage}
+                      onChange={(e) => setNewMedDosage(e.target.value)}
+                      placeholder="e.g. 200"
+                    />
+                    <Select
+                      value={newMedDosageUnit}
+                      onValueChange={setNewMedDosageUnit}
+                    >
+                      <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mg">mg</SelectItem>
+                        <SelectItem value="ml">ml</SelectItem>
+                        <SelectItem value="g">g</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -1090,16 +1331,70 @@ export default function CalendarPage() {
                   <Input
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Enter title"
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label>Date</Label>
                   <DatePicker value={editDate} onChange={setEditDate} />
                 </div>
+
                 <div className="space-y-2">
-                  <Label>Time</Label>
+                  <Label>Time (24h)</Label>
                   <CustomTimePicker value={editTime} onChange={setEditTime} />
                 </div>
+
+                {dialogEvent.type === "medication" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Dosage</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          max="1000"
+                          step="0.1"
+                          value={editMedDosage}
+                          onChange={(e) => setEditMedDosage(e.target.value)}
+                          placeholder="e.g. 200"
+                        />
+                        <Select
+                          value={editMedDosageUnit}
+                          onValueChange={setEditMedDosageUnit}
+                        >
+                          <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                            <SelectValue placeholder="Select unit" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mg">mg</SelectItem>
+                            <SelectItem value="ml">ml</SelectItem>
+                            <SelectItem value="g">g</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Recurrence</Label>
+                      <Select
+                        value={editMedRecurrence}
+                        onValueChange={setEditMedRecurrence}
+                      >
+                        <SelectTrigger className="w-full border border-input rounded px-2 py-1">
+                          <SelectValue placeholder="Select recurrence" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="as-needed">As Needed</SelectItem>
+                          <SelectItem value="Daily">Daily</SelectItem>
+                          <SelectItem value="Weekly">Weekly</SelectItem>
+                          <SelectItem value="Biweekly">Biweekly</SelectItem>
+                          <SelectItem value="Monthly">Monthly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
               </div>
             )}
             <DialogFooter>

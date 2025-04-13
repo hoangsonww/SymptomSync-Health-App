@@ -7,6 +7,9 @@ import { Toaster, toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { fetchUserReminders, Reminder } from "@/lib/reminders";
 import { Analytics } from "@vercel/analytics/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -41,6 +44,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const [userId, setUserId] = useState<string | null>(null);
   const toastedReminderIds = useRef<Set<string>>(new Set());
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const broadcastChannelRef = useRef<any>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -52,6 +57,7 @@ export default function App({ Component, pageProps }: AppProps) {
         setUserId(user.id);
       }
     }
+
     init();
 
     return () => {
@@ -68,13 +74,18 @@ export default function App({ Component, pageProps }: AppProps) {
       try {
         const reminders: Reminder[] = await fetchUserReminders(userId);
         const now = new Date();
+        const MAX_OVERDUE = 1000 * 60 * 60;
 
         reminders.forEach((reminder) => {
+          const reminderDueTime = reminder.dueTime.getTime();
+          const diff = now.getTime() - reminderDueTime;
+
           if (
-            reminder.dueTime.getTime() <= now.getTime() &&
+            diff >= 0 &&
+            diff <= MAX_OVERDUE &&
             !toastedReminderIds.current.has(reminder.id)
           ) {
-            toast(`${reminder.title} is due now!`, {
+            toast(`Reminder: ${reminder.title} is due now!`, {
               description:
                 reminder.type === "appointment"
                   ? "You have an appointment scheduled."
@@ -91,28 +102,62 @@ export default function App({ Component, pageProps }: AppProps) {
     return () => clearInterval(interval);
   }, [userId]);
 
+  /**
+   * Supabase Realtime #2: In the above realtime functionality, we already
+   * created postgres changes for meds, appointments, and health logs. However,
+   * that will only update the UI if the user adds a new med, appointment, or log
+   * from another device. But we may also wanna broadcast a message to the user
+   * when a new med, appointment, or log is added from another device as well.
+   * This is where the broadcast channel comes in - it will broadcast a message
+   * to the user when a new med, appointment, or log is added from another device so
+   * that the user knows that something has changed in the UI and the reason
+   * for that change.
+   */
+  useEffect(() => {
+    broadcastChannelRef.current = supabase.channel("universal-channel", {
+      config: { broadcast: { self: false } },
+    });
+    const channel = broadcastChannelRef.current;
+    channel
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on("broadcast", { event: "*" }, (payload: any) => {
+        if (payload?.payload?.message) {
+          toast.success(`Notification: ${payload.payload.message}`);
+        }
+      })
+      .subscribe((status: string) => {
+        console.log("Universal channel status:", status);
+      });
+    return () => {
+      supabase.removeChannel(channel);
+      broadcastChannelRef.current = null;
+    };
+  }, []);
+
   if (hideNav) {
     return (
-      <>
+      <QueryClientProvider client={queryClient}>
         <Component {...pageProps} />
         <Toaster position="bottom-right" richColors />
         <Analytics />
-      </>
+      </QueryClientProvider>
     );
   }
 
   return (
-    <div>
-      <NavBar
-        isExpanded={navExpanded}
-        setIsExpanded={setNavExpanded}
-        staticNav={false}
-      />
-      <main className="p-4 transition-all duration-300" style={{ marginLeft }}>
-        <Component {...pageProps} />
-      </main>
-      <Toaster position="bottom-right" richColors />
-      <Analytics />
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <div>
+        <NavBar
+          isExpanded={navExpanded}
+          setIsExpanded={setNavExpanded}
+          staticNav={false}
+        />
+        <main className="transition-all duration-300" style={{ marginLeft }}>
+          <Component {...pageProps} />
+        </main>
+        <Toaster position="bottom-right" richColors />
+        <Analytics />
+      </div>
+    </QueryClientProvider>
   );
 }

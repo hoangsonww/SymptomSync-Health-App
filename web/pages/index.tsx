@@ -68,6 +68,12 @@ function NextArrow(props: any) {
   );
 }
 
+/**
+ * An animated component that fades in when it comes into view, for a smoother user experience
+ *
+ * @param param0 - Props for the AnimatedInView component
+ * @returns - A motion.div that animates its children when they come into view
+ */
 function AnimatedInView({
   children,
   className = "",

@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { getMedicationRemindersByUser } from "@/lib/medications";
 import { getAppointmentRemindersByUser } from "@/lib/appointmentReminders";
 import { getHealthLogsByUser } from "@/lib/healthLogs";
+import { toast } from "sonner";
 
 type Role = "user" | "model";
 
@@ -21,7 +22,6 @@ type ChatMessage = {
   text: string;
 };
 
-// Framer Motion animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -55,7 +55,7 @@ const bubbleVariants = {
   },
 };
 
-// Custom markdown components
+// Custom markdown components - necessary for rendering the AI's responses
 const markdownComponents = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   h1: ({ children, ...props }: any) => (
@@ -181,6 +181,11 @@ const markdownComponents = {
   ),
 };
 
+/**
+ * Function to get initial messages from local storage
+ *
+ * @returns Initial messages from local storage or an empty array
+ */
 const getInitialMessages = (): ChatMessage[] => {
   if (typeof window !== "undefined") {
     const stored = localStorage.getItem("symptomSyncChat");
@@ -195,8 +200,9 @@ const getInitialMessages = (): ChatMessage[] => {
   return [];
 };
 
-// Been facing hydration issues for ages lol... So trying this workaround
+// Been facing hydration issues for ages... So trying this workaround
 // to ensure the component only mounts on the client side
+// We don't need the entire chat to be server-rendered anyway...
 const ClientOnly: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mounted, setMounted] = useState(false);
 
@@ -216,6 +222,8 @@ export default function AIChatPage() {
   const hasSentMessageRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const broadcastChannelRef = useRef<any>(null);
 
   useEffect(() => {
     async function checkUserAuth() {
@@ -236,6 +244,34 @@ export default function AIChatPage() {
     }
   }, [messages]);
 
+  useEffect(() => {
+    broadcastChannelRef.current = supabase.channel("universal-channel", {
+      config: { broadcast: { self: false } },
+    });
+    const channel = broadcastChannelRef.current;
+
+    channel
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on("broadcast", { event: "*" }, (payload: any) => {
+        toast.success(
+          `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
+        );
+      })
+      .subscribe((status: string) => {
+        console.log("Universal channel status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      broadcastChannelRef.current = null;
+    };
+  }, []);
+
+  /**
+   * This function handles sending the user's input to the AI and receiving a response
+   *
+   * @returns The AI's response to the user's input
+   */
   async function handleSend() {
     if (!userInput.trim() || loading) return;
     setLoading(true);
@@ -312,6 +348,9 @@ export default function AIChatPage() {
     }
   }
 
+  /**
+   * This function clears the chat messages in UI and local storage
+   */
   const handleClear = () => {
     setMessages([]);
     localStorage.removeItem("symptomSyncChat");
@@ -327,12 +366,12 @@ export default function AIChatPage() {
 
       <ClientOnly>
         <motion.div
-          className="min-h-screen bg-background text-foreground p-4 sm:p-6 overflow-hidden"
+          className="h-screen bg-background text-foreground p-4 sm:p-6 overflow-hidden"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-4xl mx-auto space-y-6 pt-2">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6">
               <motion.div
                 variants={containerVariants}
@@ -394,7 +433,7 @@ export default function AIChatPage() {
                         <div
                           className={`
                             rounded-lg p-2 pb-0 shadow 
-                            ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}
+                            ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-primary"}
                             max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg
                             overflow-x-auto hover:shadow-lg transition-shadow duration-300
                           `}
