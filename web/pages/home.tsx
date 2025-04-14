@@ -1547,9 +1547,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm pb-4 ">
                 {logs.length === 0 ? (
-                  <p className="text-muted-foreground text-center">
-                    No health logs added.
-                  </p>
+                  <p className="text-muted-foreground">No health logs added.</p>
                 ) : (
                   [...logs]
                     .sort(
