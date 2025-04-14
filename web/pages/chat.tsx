@@ -357,6 +357,37 @@ export default function AIChatPage() {
     hasSentMessageRef.current = false;
   };
 
+  /**
+   * Animated dots for loading state - like 1, 2, 3 dots...
+   *
+   * @returns Animated dots for loading state
+   */
+  const AnimatedDots: React.FC = () => {
+    const [dots, setDots] = useState("");
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setDots((prev) => (prev.length < 3 ? prev + "." : ""));
+      }, 500);
+      return () => clearInterval(interval);
+    }, []);
+
+    return <span>{dots}</span>;
+  };
+
+  /**
+   * Scroll to the bottom of the chat when new messages are added or on initial load
+   * since the messages are loaded from local storage
+   */
+  useEffect(() => {
+    if (messages.length > 0) {
+      const timeout = setTimeout(() => {
+        scrollRef.current?.scrollIntoView({ behavior: "auto" });
+      }, 50);
+      return () => clearTimeout(timeout);
+    }
+  }, []);
+
   return (
     <>
       <Head>
@@ -459,7 +490,10 @@ export default function AIChatPage() {
                     >
                       <div className="bg-muted text-muted-foreground p-2 rounded-lg max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg shadow overflow-x-auto flex items-center gap-2">
                         <Loader2 className="animate-spin w-5 h-5" />
-                        <span>Thinking…</span>
+                        <span>
+                          Thinking
+                          <AnimatedDots />
+                        </span>
                       </div>
                     </motion.div>
                   )}
