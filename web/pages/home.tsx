@@ -276,18 +276,6 @@ export default function HomePage() {
   const [showDeleteApptDialog, setShowDeleteApptDialog] = useState(false);
   const [deleteApptId, setDeleteApptId] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function checkUserAuth() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/auth/login");
-      }
-    }
-    checkUserAuth();
-  }, [router]);
-
   /**
    * This function fetches all data for the user, including medications, appointments, and health logs
    * from the database. It uses Promise.all to fetch all data concurrently to improve performance
@@ -501,27 +489,41 @@ export default function HomePage() {
    * for that change.
    */
   useEffect(() => {
-    broadcastChannelRef.current = supabase.channel("universal-channel", {
-      config: { broadcast: { self: false } },
-    });
-    const channel = broadcastChannelRef.current;
+    async function subscribeToUserChannel() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    channel
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .on("broadcast", { event: "*" }, (payload: any) => {
-        toast.success(
-          `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
-        );
-      })
-      .subscribe((status: string) => {
-        console.log("Universal channel status:", status);
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
+
+      const userChannelName = `user-channel-${user.id}`;
+      broadcastChannelRef.current = supabase.channel(userChannelName, {
+        config: { broadcast: { self: false } },
       });
+      const channel = broadcastChannelRef.current;
 
-    return () => {
-      supabase.removeChannel(channel);
-      broadcastChannelRef.current = null;
-    };
-  }, []);
+      channel
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .on("broadcast", { event: "*" }, (payload: any) => {
+          toast.success(
+            `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
+          );
+        })
+        .subscribe((status: string) => {
+          console.log("User-specific channel status:", status);
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+        broadcastChannelRef.current = null;
+      };
+    }
+
+    subscribeToUserChannel();
+  }, [router]);
 
   /**
    * Adds a new medication reminder for the user
@@ -1392,7 +1394,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm pb-4">
                 {medications.length === 0 ? (
-                  <p className="text-muted-foreground">No medications yet.</p>
+                  <p className="text-muted-foreground">No medications added.</p>
                 ) : (
                   [...medications]
                     .sort(
@@ -1476,9 +1478,11 @@ export default function HomePage() {
               <CardHeader className="text-xl mt-8">
                 <CardTitle>Appointments</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-md pb-4">
+              <CardContent className="space-y-2 text-sm pb-4">
                 {appointments.length === 0 ? (
-                  <p className="text-muted-foreground">No appointments yet.</p>
+                  <p className="text-muted-foreground">
+                    No appointments added.
+                  </p>
                 ) : (
                   [...appointments]
                     .sort(
@@ -1544,7 +1548,7 @@ export default function HomePage() {
               <CardContent className="space-y-2 text-sm pb-4 ">
                 {logs.length === 0 ? (
                   <p className="text-muted-foreground text-center">
-                    No health logs yet.
+                    No health logs added.
                   </p>
                 ) : (
                   [...logs]

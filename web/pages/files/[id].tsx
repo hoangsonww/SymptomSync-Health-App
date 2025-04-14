@@ -45,41 +45,45 @@ export default function FileViewPage() {
   });
 
   useEffect(() => {
-    async function checkUserAuth() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) router.push("/auth/login");
-    }
-    checkUserAuth();
-  }, [router]);
-
-  useEffect(() => {
     if (error) toast.error(error.message);
   }, [error]);
 
   useEffect(() => {
-    broadcastChannelRef.current = supabase.channel("universal-channel", {
-      config: { broadcast: { self: false } },
-    });
-    const channel = broadcastChannelRef.current;
+    async function subscribeToUserChannel() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    channel
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .on("broadcast", { event: "*" }, (payload: any) => {
-        toast.success(
-          `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
-        );
-      })
-      .subscribe((status: string) => {
-        console.log("Universal channel status:", status);
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
+
+      const userChannelName = `user-channel-${user.id}`;
+      broadcastChannelRef.current = supabase.channel(userChannelName, {
+        config: { broadcast: { self: false } },
       });
+      const channel = broadcastChannelRef.current;
 
-    return () => {
-      supabase.removeChannel(channel);
-      broadcastChannelRef.current = null;
-    };
-  }, []);
+      channel
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .on("broadcast", { event: "*" }, (payload: any) => {
+          toast.success(
+            `Notification: ${payload.payload.message.replace(/\./g, "")} from another device or tab.`,
+          );
+        })
+        .subscribe((status: string) => {
+          console.log("User-specific channel status:", status);
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+        broadcastChannelRef.current = null;
+      };
+    }
+
+    subscribeToUserChannel();
+  }, [router]);
 
   return (
     <>
