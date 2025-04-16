@@ -212,3 +212,27 @@
 .dark .rbc-button-link.rbc-show-more {
   background: none;
 }
+
+.rbc-agenda-event-cell {
+  background-color: var(--background);
+}
+
+.dark .rbc-agenda-event-cell {
+  background-color: var(--background);
+}
+
+.rbc-agenda-time-cell {
+  background-color: var(--background);
+}
+
+.dark .rbc-agenda-time-cell {
+  background-color: var(--background);
+}
+
+.rbc-agenda-date-cell {
+  background-color: var(--background);
+}
+
+.dark .rbc-agenda-date-cell {
+  background-color: var(--background);
+}
