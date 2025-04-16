@@ -116,7 +116,8 @@ type CalendarEvent = {
  */
 function expandMedication(
   med: MedicationReminder,
-  horizonDays = 90, // For now we'll just do 90 days - since user likely don't provide end dates
+  // For now we'll just do 90 days - since we don't ask the user for the end date when they add a med
+  horizonDays = 90,
 ): CalendarEvent[] {
   const baseTime = new Date(med.reminder_time);
   const events: CalendarEvent[] = [];
@@ -979,10 +980,8 @@ export default function CalendarPage() {
       >
         {isLoading && (
           <>
-            {/* dim only this container */}
-            <div className="absolute inset-0 z-50 bg-black bg-opacity-50" />
+            <div className="absolute inset-0 z-50 bg-background bg-opacity-50" />
 
-            {/* spinner: 50vh down viewport, centered horizontally */}
             <div
               className="absolute left-1/2 z-50"
               style={{ top: "50vh", transform: "translateX(-50%)" }}

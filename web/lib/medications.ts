@@ -41,6 +41,38 @@ export async function getMedicationRemindersByUser(
 }
 
 /**
+ * Retrieves one page of medication reminders for a given user.
+ * Returns up to `pageSize` items, plus the total count.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
+ * @param userId   - The id of the user.
+ * @param page     - 1‑based page number (defaults to 1).
+ * @param pageSize - Number of items per page (defaults to 50).
+ * @returns An object with `data` (current page) and `count` (total across all pages).
+ */
+export async function getPaginatedMedicationRemindersByUser(
+  userId: string,
+  page = 1,
+  pageSize = 30,
+): Promise<{ data: MedicationReminder[]; count: number }> {
+  const from = (page - 1) * pageSize;
+  const to = page * pageSize - 1;
+
+  const { data, error, count } = await supabase
+    .from("medication_reminders")
+    .select("*", { count: "exact" })
+    .eq("user_profile_id", userId)
+    .order("reminder_time", { ascending: true })
+    .range(from, to);
+
+  if (error) throw error;
+  return {
+    data: MedicationReminderSchema.array().parse(data || []),
+    count: count ?? 0,
+  };
+}
+
+/**
  * Creates a new medication reminder.
  * Note: Supabase RLS will block this operation if the user is not the owner of the record.
  *

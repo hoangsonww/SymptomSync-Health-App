@@ -43,6 +43,35 @@ export async function getHealthLogsByUser(
 }
 
 /**
+ * Retrieves a paginated list of health logs for a given user.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
+ * @param userId   The id of the user.
+ * @param page     1‑based page number.
+ * @param pageSize Number of items per page (default 50).
+ */
+export async function getPaginatedHealthLogsByUser(
+  userId: string,
+  page: number,
+  pageSize = 20,
+): Promise<{ data: HealthLog[]; count: number }> {
+  const from = (page - 1) * pageSize;
+  const to = page * pageSize - 1;
+  const { data, error, count } = await supabase
+    .from("health_logs")
+    .select("*", { count: "exact" })
+    .eq("user_profile_id", userId)
+    .order("start_date", { ascending: false })
+    .range(from, to);
+
+  if (error) throw error;
+  return {
+    data: HealthLogSchema.array().parse(data),
+    count: count ?? 0,
+  };
+}
+
+/**
  * Creates a new health log record.
  * Note: Supabase RLS will block this operation if the user is not the owner of the record.
  *

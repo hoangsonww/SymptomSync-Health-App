@@ -11,21 +11,21 @@ import {
 } from "lucide-react";
 import {
   MedicationReminder,
-  getMedicationRemindersByUser,
+  getPaginatedMedicationRemindersByUser,
   createMedicationReminder,
   updateMedicationReminder,
   deleteMedicationReminder,
 } from "@/lib/medications";
 import {
   AppointmentReminder,
-  getAppointmentRemindersByUser,
+  getPaginatedAppointmentRemindersByUser,
   createAppointmentReminder,
   updateAppointmentReminder,
   deleteAppointmentReminder,
 } from "@/lib/appointmentReminders";
 import {
   HealthLog,
-  getHealthLogsByUser,
+  getPaginatedHealthLogsByUser,
   createHealthLog,
   updateHealthLog,
   deleteHealthLog,
@@ -278,6 +278,9 @@ export default function HomePage() {
   const [showDeleteApptDialog, setShowDeleteApptDialog] = useState(false);
   const [deleteApptId, setDeleteApptId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [medPage, setMedPage] = useState(1);
+  const [apptPage, setApptPage] = useState(1);
+  const [logPage, setLogPage] = useState(1);
 
   /**
    * This function fetches all data for the user, including medications, appointments, and health logs
@@ -287,18 +290,18 @@ export default function HomePage() {
    */
   async function fetchAllData(uid: string) {
     try {
-      const [meds, appts, userLogs] = await Promise.all([
-        getMedicationRemindersByUser(uid),
-        getAppointmentRemindersByUser(uid),
-        getHealthLogsByUser(uid),
+      const [medRes, apptsRes, userLogs] = await Promise.all([
+        getPaginatedMedicationRemindersByUser(uid, medPage),
+        getPaginatedAppointmentRemindersByUser(uid, apptPage),
+        getPaginatedHealthLogsByUser(uid, logPage),
       ]);
 
-      setMedications(meds);
-      setAppointments(appts);
-      setLogs(userLogs);
-      setTotalMeds(meds.length);
-      setTotalAppointments(appts.length);
-      setTotalLogs(userLogs.length);
+      setMedications(medRes.data);
+      setAppointments(apptsRes.data);
+      setLogs(userLogs.data);
+      setTotalMeds(medRes.count);
+      setTotalAppointments(apptsRes.count);
+      setTotalLogs(userLogs.count);
       setIsLoading(false);
     } catch (err) {
       toast.error("Error fetching data.");
@@ -308,6 +311,10 @@ export default function HomePage() {
       setIsLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (userId) fetchAllData(userId);
+  }, [userId, medPage, apptPage, logPage]);
 
   /**
    * This function sends a broadcast message to all connected clients using the Supabase
@@ -1193,7 +1200,7 @@ export default function HomePage() {
       >
         {isLoading && (
           <>
-            <div className="absolute inset-0 z-50 bg-black bg-opacity-50" />
+            <div className="absolute inset-0 z-50 bg-background bg-opacity-50" />
 
             <div
               className="absolute left-1/2 z-50"
@@ -1529,6 +1536,34 @@ export default function HomePage() {
                       </div>
                     ))
                 )}
+
+                <div className="flex items-center justify-between py-2">
+                  <Button
+                    size="sm"
+                    onClick={() => setMedPage((p) => Math.max(p - 1, 1))}
+                    disabled={medPage <= 1}
+                    className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                  >
+                    Previous
+                  </Button>
+
+                  <span>
+                    Page {medPage} of {Math.ceil(totalMeds / 50)}
+                  </span>
+
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      setMedPage((p) =>
+                        p < Math.ceil(totalMeds / 50) ? p + 1 : p,
+                      )
+                    }
+                    disabled={medPage >= Math.ceil(totalMeds / 50)}
+                    className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                  >
+                    Next
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -1596,6 +1631,34 @@ export default function HomePage() {
                       </div>
                     ))
                 )}
+
+                <div className="flex items-center justify-between py-2">
+                  <Button
+                    size="sm"
+                    onClick={() => setApptPage((p) => Math.max(p - 1, 1))}
+                    disabled={apptPage <= 1}
+                    className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                  >
+                    Previous
+                  </Button>
+
+                  <span>
+                    Page {apptPage} of {Math.ceil(totalAppointments / 50)}
+                  </span>
+
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      setApptPage((p) =>
+                        p < Math.ceil(totalAppointments / 50) ? p + 1 : p,
+                      )
+                    }
+                    disabled={apptPage >= Math.ceil(totalAppointments / 50)}
+                    className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                  >
+                    Next
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -1764,6 +1827,34 @@ export default function HomePage() {
                       );
                     })
                 )}
+
+                <div className="flex items-center justify-between py-2">
+                  <Button
+                    size="sm"
+                    onClick={() => setLogPage((p) => Math.max(p - 1, 1))}
+                    disabled={logPage <= 1}
+                    className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                  >
+                    Previous
+                  </Button>
+
+                  <span>
+                    Page {logPage} of {Math.ceil(totalLogs / 50)}
+                  </span>
+
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      setLogPage((p) =>
+                        p < Math.ceil(totalLogs / 50) ? p + 1 : p,
+                      )
+                    }
+                    disabled={logPage >= Math.ceil(totalLogs / 50)}
+                    className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                  >
+                    Next
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </motion.div>

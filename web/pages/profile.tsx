@@ -300,7 +300,7 @@ export default function ProfilePage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-2 border border-gray-300 rounded-md p-2 max-h-60 overflow-y-auto bg-white text-gray-900 shadow-lg"
               >
-                {searchResults.map((usr) => (
+                {searchResults.slice(0, 5).map((usr) => (
                   <motion.li
                     key={usr.id}
                     className="p-2 cursor-pointer flex items-center space-x-3 rounded hover:bg-gray-200 transition-colors"

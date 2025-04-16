@@ -37,6 +37,38 @@ export async function getAppointmentRemindersByUser(
 }
 
 /**
+ * Retrieves one page of appointment reminders for a given user.
+ * Returns up to pageSize items, plus the total count.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
+ * @param userId   - The id of the user.
+ * @param page     - 1‑based page number (defaults to 1).
+ * @param pageSize - Number of items per page (defaults to 50).
+ * @returns An object with data (current page) and count (total across all pages).
+ */
+export async function getPaginatedAppointmentRemindersByUser(
+  userId: string,
+  page = 1,
+  pageSize = 50,
+): Promise<{ data: AppointmentReminder[]; count: number }> {
+  const from = (page - 1) * pageSize;
+  const to = page * pageSize - 1;
+
+  const { data, error, count } = await supabase
+    .from("appointment_reminders")
+    .select("*", { count: "exact" })
+    .eq("user_profile_id", userId)
+    .order("date", { ascending: true })
+    .range(from, to);
+
+  if (error) throw error;
+  return {
+    data: AppointmentReminderSchema.array().parse(data || []),
+    count: count ?? 0,
+  };
+}
+
+/**
  * Creates a new appointment reminder.
  * Note: Supabase RLS will block this operation if the user is not the owner of the record.
  *

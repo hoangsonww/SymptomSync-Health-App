@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { supabase } from "@/lib/supabaseClient";
+import { getPaginatedMedicationRemindersByUser } from "@/lib/medications";
 import { Bell, Pencil, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,6 +82,9 @@ export default function MedicationReminders() {
   const [editMedTimePicker, setEditMedTimePicker] = useState("00:00");
   const [editMedRecurrence, setEditMedRecurrence] = useState("Daily");
   const [editMedCalendarSync, setEditMedCalendarSync] = useState("");
+  const [medPage, setMedPage] = useState(1);
+  const [totalMeds, setTotalMeds] = useState(0);
+
   const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const broadcastChannelRef = useRef<any>(null);
@@ -152,7 +156,7 @@ export default function MedicationReminders() {
 
   useEffect(() => {
     fetchReminders();
-  }, []);
+  }, [medPage]);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -214,27 +218,36 @@ export default function MedicationReminders() {
 
   // Retrieves the medication reminders for the authenticated user
   async function fetchReminders() {
+    setLoading(true);
     const { data: userData, error: userError } = await supabase.auth.getUser();
 
     if (userError || !userData?.user) {
       console.error("User not authenticated");
+      setLoading(false);
       return;
     }
 
     const userId = userData.user.id;
 
-    const { data, error } = await supabase
-      .from("medication_reminders")
-      .select("*")
-      .eq("user_profile_id", userId)
-      .order("reminder_time", { ascending: true });
-
-    if (error) {
+    try {
+      const { data, count } = await getPaginatedMedicationRemindersByUser(
+        userId,
+        medPage,
+        50,
+      );
+      const uiReminders: Reminder[] = data.map((r) => ({
+        ...r,
+        dosage: r.dosage ?? "",
+        recurrence: r.recurrence ?? "",
+      }));
+      setReminders(uiReminders);
+      setTotalMeds(count);
+    } catch (error) {
       console.error("Error fetching reminders:", error);
-    } else {
-      setReminders(data);
+      toast.error("Failed to load medication reminders.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   function openEditMedDialog(med: Reminder) {
@@ -308,6 +321,8 @@ export default function MedicationReminders() {
     );
   }
 
+  const totalPages = Math.ceil(totalMeds / 50);
+
   return (
     <>
       <Head>
@@ -339,59 +354,84 @@ export default function MedicationReminders() {
             <Loader2 className="animate-spin h-12 w-12 text-gray-600" />
           </div>
         ) : (
-          <motion.div
-            variants={cardContainerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
-          >
-            {reminders.map((reminder) => (
-              <motion.div
-                key={reminder.id}
-                variants={fadeInUp}
-                whileHover={{
-                  scale: 1.02,
-                  boxShadow: "0px 8px 16px rgba(0,0,0,0.2)",
-                }}
-                className="bg-[#2F3C56] text-white p-6 rounded-xl shadow-lg flex justify-between items-start transition-transform"
+          <>
+            <motion.div
+              variants={cardContainerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 md:grid-cols-2 gap-8"
+            >
+              {reminders.map((reminder) => (
+                <motion.div
+                  key={reminder.id}
+                  variants={fadeInUp}
+                  whileHover={{
+                    scale: 1.02,
+                    boxShadow: "0px 8px 16px rgba(0,0,0,0.2)",
+                  }}
+                  className="bg-[#2F3C56] text-white p-6 rounded-xl shadow-lg flex justify-between items-start transition-transform"
+                >
+                  <div className="flex-1">
+                    <h2 className="text-xl font-bold mb-1">
+                      {reminder.medication_name}
+                    </h2>
+                    <p className="text-sm mb-2">
+                      {format(new Date(reminder.reminder_time), "PPP, h:mm a")}
+                    </p>
+                    <p className="italic text-sm mb-2">
+                      Dosage: {reminder.dosage || "N/A"}
+                    </p>
+                    <p className="text-sm">
+                      Recurrence: {reminder.recurrence || "N/A"}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 items-end text-white opacity-80">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Remind"
+                      onClick={() => handleBellClick(reminder)}
+                    >
+                      <Bell size={16} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Edit"
+                      onClick={() => openEditMedDialog(reminder)}
+                    >
+                      <Pencil size={16} />
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Pagination Controls */}
+            <div className="flex items-center justify-between mt-8 px-4">
+              <Button
+                size="sm"
+                onClick={() => setMedPage((p) => Math.max(p - 1, 1))}
+                disabled={medPage <= 1}
+                className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
               >
-                <div className="flex-1">
-                  <h2 className="text-xl font-bold mb-1">
-                    {reminder.medication_name}
-                  </h2>
-                  <p className="text-sm mb-2">
-                    {format(new Date(reminder.reminder_time), "PPP, h:mm a")}
-                  </p>
-                  <p className="italic text-sm mb-2">
-                    Dosage: {reminder.dosage || "N/A"}
-                  </p>
-                  <p className="text-sm">
-                    Recurrence: {reminder.recurrence || "N/A"}
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 items-end text-white opacity-80">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Remind"
-                    onClick={() => handleBellClick(reminder)}
-                    className="cursor-pointer"
-                  >
-                    <Bell size={16} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Edit"
-                    onClick={() => openEditMedDialog(reminder)}
-                    className="cursor-pointer"
-                  >
-                    <Pencil size={16} />
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                Previous
+              </Button>
+
+              <span>
+                Page {medPage} of {totalPages}
+              </span>
+
+              <Button
+                size="sm"
+                onClick={() => setMedPage((p) => Math.min(p + 1, totalPages))}
+                disabled={medPage >= totalPages}
+                className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+              >
+                Next
+              </Button>
+            </div>
+          </>
         )}
 
         {/* Edit Medication Dialog */}
