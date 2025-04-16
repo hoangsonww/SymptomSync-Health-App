@@ -101,6 +101,8 @@ _Remember to delete this section before submission!_
 
 ---
 
+### SymptomSync UI
+
 <p align="center">
   <img src="docs/img/dashboard.png" alt="SymptomSync Logo" width="100%"/>
 </p>
