@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 /**
  * Fetches files associated with a specific user profile from the Supabase database.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
  *
  * @param userProfileId - The ID of the user profile whose files we want to fetch.
  * @param page - The page number to fetch (50 items per page; default is 1).
@@ -22,6 +23,7 @@ export async function fetchUserFiles(userProfileId: string, page: number = 1) {
 
 /**
  * Uploads a file to the "documents" storage bucket and inserts a record into the "files" table.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
  *
  * @param file - The file to be uploaded.
  * @param userProfileId - The ID of the user profile to which the file belongs.
@@ -31,7 +33,7 @@ export async function fetchUserFiles(userProfileId: string, page: number = 1) {
 export async function uploadUserFile(
   file: File,
   userProfileId: string,
-  tags?: string[],
+  tags?: string[]
 ) {
   const fileExt = file.name.split(".").pop();
   const fileName = `${Date.now()}.${fileExt}`;
@@ -62,3 +64,7 @@ export async function uploadUserFile(
   if (error) throw error;
   return data;
 }
+
+// Supabase RLS Policy: Table is only accessible to authenticated users.
+// Only the user who uploaded the file can access, update, or delete it.
+// They cannot access, update, or delete files uploaded by other users.
