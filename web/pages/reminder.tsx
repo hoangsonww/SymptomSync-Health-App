@@ -328,7 +328,7 @@ export default function MedicationReminders() {
           variants={slideInLeft}
           className="text-center md:text-left mb-8 p-2"
         >
-          <h1 className="text-3xl font-bold text-gray-800">Medications 💊</h1>
+          <h1 className="text-3xl font-bold text-foreground">Medications 💊</h1>
           <p className="text-muted-foreground mt-2 text-center md:text-left">
             Here are all your medications. Remember to take your meds on time!
           </p>

@@ -441,7 +441,7 @@ export default function DocumentsPage() {
                           filteredFiles.map((file) => (
                             <tr
                               key={file.id}
-                              className="border-b hover:bg-gray-100 transition-all duration-150 ease-in-out m-0"
+                              className="border-b transition-all duration-150 ease-in-out m-0"
                             >
                               <td className="p-4 whitespace-nowrap">
                                 <div className="font-medium">
@@ -566,7 +566,7 @@ export default function DocumentsPage() {
                   <span>Previous</span>
                 </Button>
               </motion.div>
-              <div className="text-gray-700">
+              <div className="text-foreground">
                 {startIndex} - {endIndex} of {totalDocuments}
               </div>
               <motion.div

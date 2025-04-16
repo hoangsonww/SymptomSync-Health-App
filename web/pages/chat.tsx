@@ -478,7 +478,7 @@ export default function AIChatPage() {
                         <div
                           className={`
                             rounded-lg p-2 pb-0 shadow 
-                            ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-primary"}
+                            ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}
                             max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg
                             overflow-x-auto hover:shadow-lg transition-shadow duration-300
                           `}

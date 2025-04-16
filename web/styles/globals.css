@@ -60,6 +60,8 @@
   --shadow-xl:
     0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  --current-day-bg-light: rgba(0, 0, 0, 0.05);
+  --current-day-bg-dark: rgba(255, 255, 255, 0.1);
 }
 
 .dark {
@@ -69,15 +71,15 @@
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.14 0 285.82);
   --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.98 0 0);
-  --primary-foreground: oklch(0.21 0.01 285.88);
-  --secondary: oklch(0.27 0.01 286.03);
-  --secondary-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.4 0.06 256.6);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.66 0.1 143.14);
+  --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.27 0.01 286.03);
   --muted-foreground: oklch(0.71 0.01 286.07);
-  --accent: oklch(0.27 0.01 286.03);
+  --accent: oklch(0.4 0.06 256.6);
   --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.4 0.13 25.72);
+  --destructive: oklch(0.62 0.21 25.77);
   --destructive-foreground: oklch(0.97 0.01 17.38);
   --border: oklch(0.27 0.01 286.03);
   --input: oklch(0.27 0.01 286.03);
@@ -95,9 +97,25 @@
   --sidebar-accent-foreground: oklch(0.97 0 286.38);
   --sidebar-border: oklch(0.27 0.01 286.03);
   --sidebar-ring: oklch(0.87 0.01 286.29);
-  --font-sans: undefined;
-  --font-serif: undefined;
-  --font-mono: undefined;
+  -font-sans:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
   --radius: 0.625rem;
   --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
@@ -164,4 +182,33 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+}
+
+.rbc-toolbar,
+.rbc-toolbar button,
+.rbc-toolbar .rbc-btn-group > * {
+  color: var(--text-foreground, #000000) !important;
+  background-color: transparent !important;
+}
+
+.dark .rbc-toolbar,
+.dark .rbc-toolbar button,
+.dark .rbc-toolbar .rbc-btn-group > * {
+  color: #ffffff !important;
+}
+
+.rbc-day-bg.rbc-today {
+  background-color: var(--current-day-bg-light) !important;
+}
+
+.dark .rbc-day-bg.rbc-today {
+  background-color: var(--current-day-bg-dark) !important;
+}
+
+.rbc-button-link.rbc-show-more {
+  background: none;
+}
+
+.dark .rbc-button-link.rbc-show-more {
+  background: none;
 }

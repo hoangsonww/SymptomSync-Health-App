@@ -142,7 +142,7 @@ export default function TermsAndConditions() {
                 please contact us at{" "}
                 <a
                   href="mailto:support@symptomsync.com"
-                  className="text-accent underline"
+                  className="text-foreground underline"
                 >
                   support@symptomsync.com
                 </a>

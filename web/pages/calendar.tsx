@@ -53,6 +53,7 @@ import {
   Download,
   Calendar as CalendarIcon,
   Pill,
+  Loader2,
 } from "lucide-react";
 import Head from "next/head";
 import { motion } from "framer-motion";
@@ -370,6 +371,7 @@ export default function CalendarPage() {
   const [editMedDosage, setEditMedDosage] = useState("");
   const [editMedDosageUnit, setEditMedDosageUnit] = useState("mg");
   const [editMedRecurrence, setEditMedRecurrence] = useState("Daily");
+  const [isLoading, setIsLoading] = useState(true);
 
   /**
    * Function to send a broadcast message to all connected clients
@@ -550,33 +552,44 @@ export default function CalendarPage() {
    * @returns - Appointment and medication reminders data
    */
   async function fetchAllData(uid: string) {
-    const [meds, appts] = await Promise.all([
-      getMedicationRemindersByUser(uid),
-      getAppointmentRemindersByUser(uid),
-    ]);
-    setMedications(meds);
-    setAppointments(appts);
+    setIsLoading(true);
 
-    let medEvents: CalendarEvent[] = [];
-    meds.forEach((m) => {
-      const repeated = expandMedication(m);
-      medEvents = medEvents.concat(repeated);
-    });
+    try {
+      const [meds, appts] = await Promise.all([
+        getMedicationRemindersByUser(uid),
+        getAppointmentRemindersByUser(uid),
+      ]);
+      setMedications(meds);
+      setAppointments(appts);
 
-    const apptEvents: CalendarEvent[] = appts.map((a) => {
-      const startDate = new Date(a.date);
-      const endDate = new Date(a.date);
-      endDate.setHours(endDate.getHours() + 1);
-      return {
-        id: `appt-${a.id}`,
-        title: `🗓️ Appt: ${a.appointment_name}`,
-        start: startDate,
-        end: endDate,
-        type: "appointment",
-      };
-    });
+      let medEvents: CalendarEvent[] = [];
+      meds.forEach((m) => {
+        const repeated = expandMedication(m);
+        medEvents = medEvents.concat(repeated);
+      });
 
-    setEvents([...medEvents, ...apptEvents]);
+      const apptEvents: CalendarEvent[] = appts.map((a) => {
+        const startDate = new Date(a.date);
+        const endDate = new Date(a.date);
+        endDate.setHours(endDate.getHours() + 1);
+        return {
+          id: `appt-${a.id}`,
+          title: `🗓️ Appt: ${a.appointment_name}`,
+          start: startDate,
+          end: endDate,
+          type: "appointment",
+        };
+      });
+
+      setEvents([...medEvents, ...apptEvents]);
+      setIsLoading(false);
+    } catch (error) {
+      toast.error("Error fetching data");
+      console.error("Error fetching data", error);
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   /**
@@ -962,8 +975,23 @@ export default function CalendarPage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="w-full h-screen p-4 md:p-6 space-y-4"
+        className="relative w-full h-screen p-4 md:p-6 space-y-4"
       >
+        {isLoading && (
+          <>
+            {/* dim only this container */}
+            <div className="absolute inset-0 z-50 bg-black bg-opacity-50" />
+
+            {/* spinner: 50vh down viewport, centered horizontally */}
+            <div
+              className="absolute left-1/2 z-50"
+              style={{ top: "50vh", transform: "translateX(-50%)" }}
+            >
+              <Loader2 className="w-16 h-16 text-primary animate-spin" />
+            </div>
+          </>
+        )}
+
         <div className="flex flex-wrap items-center justify-between gap-4 p-2 mb-6">
           <motion.div variants={slideInLeft} className="flex flex-col">
             <h1 className="text-3xl font-extrabold">Calendar 📆</h1>

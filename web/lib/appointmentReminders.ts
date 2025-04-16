@@ -18,6 +18,8 @@ export type AppointmentReminder = z.infer<typeof AppointmentReminderSchema>;
 
 /**
  * Retrieves all appointment reminders for a given user.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param userId - The id of the user.
  * @returns An array of appointment reminders.
  * @throws An error if the query fails.
@@ -36,6 +38,8 @@ export async function getAppointmentRemindersByUser(
 
 /**
  * Creates a new appointment reminder.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param params - The appointment reminder details.
  * @returns The created appointment reminder.
  * @throws An error if the insert fails.
@@ -63,6 +67,8 @@ export async function createAppointmentReminder(params: {
 
 /**
  * Updates an existing appointment reminder.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param id - The id of the appointment reminder.
  * @param updatePayload - The fields to update.
  * @returns The updated appointment reminder.
@@ -85,6 +91,8 @@ export async function updateAppointmentReminder(
 
 /**
  * Deletes an appointment reminder.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param id - The id of the appointment reminder to delete.
  * @returns The deleted appointment reminder.
  * @throws An error if the deletion fails.
@@ -102,3 +110,7 @@ export async function deleteAppointmentReminder(
   if (error) throw error;
   return AppointmentReminderSchema.parse(data);
 }
+
+// Supabase RLS Policy: Table is only accessible to authenticated users.
+// Only the user who created the reminder can access, update, or delete it.
+// They cannot access, update, or delete reminders created by other users.

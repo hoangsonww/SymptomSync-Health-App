@@ -24,6 +24,7 @@ import {
   Tag,
   CalendarDays,
   Loader2,
+  ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -257,18 +258,18 @@ export default function ProfilePage() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-4xl mx-auto space-y-8 pt-2"
+          className="max-w-4xl mx-auto space-y-8 pt-2 bg-background"
         >
           <motion.header
             variants={slideInLeft}
             className="text-center md:text-left"
           >
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-3xl text-foreground font-bold">
               {profileToDisplay?.id === profile?.id
                 ? "Your Profile 🙋‍♂️"
                 : `Viewing ${profileToDisplay?.full_name || profileToDisplay?.email}'s Profile 🧐`}
             </h1>
-            <p className="text-lg text-gray-600 mt-1">
+            <p className="text-lg text-foreground mt-1">
               {profileToDisplay?.email}
             </p>
           </motion.header>
@@ -317,7 +318,7 @@ export default function ProfilePage() {
                         />
                       ) : (
                         <AvatarFallback>
-                          <User className="w-5 h-5" />
+                          <User className="w-5 h-5 text-foreground" />
                         </AvatarFallback>
                       )}
                     </Avatar>
@@ -331,7 +332,7 @@ export default function ProfilePage() {
           </motion.div>
 
           <motion.div variants={fadeInUp}>
-            <Card className="p-6 flex flex-col sm:flex-row items-center shadow-2xl rounded-xl bg-white gap-0 overflow-hidden">
+            <Card className="p-6 flex flex-col sm:flex-row items-center shadow-2xl rounded-xl bg-background gap-0 overflow-hidden">
               <Avatar className="ml-2 w-24 h-24">
                 {profileToDisplay?.avatar_url ? (
                   <AvatarImage
@@ -348,10 +349,10 @@ export default function ProfilePage() {
                 <h2 className="text-3xl font-bold truncate">
                   {profileToDisplay?.full_name || "Unnamed User"}
                 </h2>
-                <p className="text-md text-gray-600 truncate">
+                <p className="text-md text-foreground truncate">
                   {profileToDisplay?.email}
                 </p>
-                <p className="text-sm text-gray-500 flex items-center mt-1 truncate">
+                <p className="text-sm text-foreground flex items-center mt-1 truncate">
                   <CalendarDays className="w-4 h-4 mr-1" /> Joined:{" "}
                   {profileToDisplay?.created_at
                     ? new Date(profileToDisplay.created_at).toLocaleDateString()
@@ -384,16 +385,31 @@ export default function ProfilePage() {
                 </div>
               )}
             </Card>
+
+            {profileToDisplay?.id !== profile?.id && (
+              <div className="mt-4 flex justify-center items-center">
+                <Button
+                  variant="outline"
+                  className="mt-4 cursor-pointer"
+                  onClick={() => {
+                    setSelectedProfile(null);
+                    setSearchQuery("");
+                  }}
+                >
+                  <ChevronLeft className="mr-2 w-4 h-4" /> Back to Your Profile
+                </Button>
+              </div>
+            )}
           </motion.div>
 
           {profileToDisplay?.id === profile?.id && (
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-              <DialogContent className="bg-white p-8 rounded-xl shadow-2xl max-w-lg mx-auto">
+              <DialogContent className="bg-background p-8 rounded-xl shadow-2xl max-w-lg mx-auto">
                 <DialogHeader>
-                  <DialogTitle className="text-gray-900">
+                  <DialogTitle className="text-foreground">
                     Edit Your Profile
                   </DialogTitle>
-                  <DialogDescription className="text-gray-600">
+                  <DialogDescription className="text-foreground">
                     Update your full name, avatar, and condition tags.
                   </DialogDescription>
                 </DialogHeader>
@@ -421,7 +437,7 @@ export default function ProfilePage() {
                     <div className="flex-1">
                       <Label
                         htmlFor="avatar"
-                        className="mb-1 block text-gray-700"
+                        className="mb-1 block text-foreground"
                       >
                         Change Avatar
                       </Label>
@@ -444,7 +460,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="fullName" className="mb-2 text-gray-700">
+                    <Label htmlFor="fullName" className="mb-2 text-foreground">
                       Full Name
                     </Label>
                     <Input
@@ -459,7 +475,7 @@ export default function ProfilePage() {
                   <div>
                     <Label
                       htmlFor="conditionTags"
-                      className="mb-2 text-gray-700"
+                      className="mb-2 text-foreground"
                     >
                       Conditions (comma separated)
                     </Label>

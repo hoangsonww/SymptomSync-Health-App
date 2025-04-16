@@ -667,7 +667,7 @@ export default function Home() {
           </AnimatedInView>
         </section>
 
-        <footer className="bg-background text-muted-foreground py-8 px-4 text-center shadow-lg">
+        <footer className="bg-background text-foreground py-8 px-4 text-center shadow-lg">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between">
             <p className="text-sm">
               © {new Date().getFullYear()}{" "}

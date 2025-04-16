@@ -137,9 +137,9 @@ export default function PrivacyPolicy() {
                 data. To exercise these rights, please contact us at{" "}
                 <a
                   href="mailto:privacy@symptomsync.com"
-                  className="text-accent underline"
+                  className="text-foreground underline"
                 >
-                  privacy@symptomsync.com
+                  support@symptomsync.com
                 </a>
                 .
               </p>
@@ -162,9 +162,9 @@ export default function PrivacyPolicy() {
                 email us at{" "}
                 <a
                   href="mailto:privacy@symptomsync.com"
-                  className="text-accent underline"
+                  className="text-foreground underline"
                 >
-                  privacy@symptomsync.com
+                  support@symptomsync.com
                 </a>
                 .
               </p>

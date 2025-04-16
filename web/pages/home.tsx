@@ -7,6 +7,7 @@ import {
   Heart,
   Edit3,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import {
   MedicationReminder,
@@ -71,6 +72,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { CustomTimePicker } from "@/components/ui/time-picker";
+import { useTheme } from "next-themes";
 
 ChartJS.register(
   CategoryScale,
@@ -275,6 +277,7 @@ export default function HomePage() {
   const [deleteMedId, setDeleteMedId] = useState<string | null>(null);
   const [showDeleteApptDialog, setShowDeleteApptDialog] = useState(false);
   const [deleteApptId, setDeleteApptId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   /**
    * This function fetches all data for the user, including medications, appointments, and health logs
@@ -283,18 +286,27 @@ export default function HomePage() {
    * @param uid - The user ID
    */
   async function fetchAllData(uid: string) {
-    const [meds, appts, userLogs] = await Promise.all([
-      getMedicationRemindersByUser(uid),
-      getAppointmentRemindersByUser(uid),
-      getHealthLogsByUser(uid),
-    ]);
+    try {
+      const [meds, appts, userLogs] = await Promise.all([
+        getMedicationRemindersByUser(uid),
+        getAppointmentRemindersByUser(uid),
+        getHealthLogsByUser(uid),
+      ]);
 
-    setMedications(meds);
-    setAppointments(appts);
-    setLogs(userLogs);
-    setTotalMeds(meds.length);
-    setTotalAppointments(appts.length);
-    setTotalLogs(userLogs.length);
+      setMedications(meds);
+      setAppointments(appts);
+      setLogs(userLogs);
+      setTotalMeds(meds.length);
+      setTotalAppointments(appts.length);
+      setTotalLogs(userLogs.length);
+      setIsLoading(false);
+    } catch (err) {
+      toast.error("Error fetching data.");
+      console.error("Error fetching data:", err);
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   /**
@@ -1113,9 +1125,44 @@ export default function HomePage() {
     ],
   };
 
+  const { theme, resolvedTheme } = useTheme();
+  const effectiveTheme = theme === "system" ? resolvedTheme : theme;
+  const tickColor = effectiveTheme === "dark" ? "#ffffff" : "#000000";
+  const gridColor =
+    effectiveTheme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+
   const defaultChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: {
+          color: tickColor,
+        },
+      },
+      tooltip: {
+        titleColor: tickColor,
+        bodyColor: tickColor,
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: tickColor,
+        },
+        grid: {
+          color: gridColor,
+        },
+      },
+      y: {
+        ticks: {
+          color: tickColor,
+        },
+        grid: {
+          color: gridColor,
+        },
+      },
+    },
   };
 
   /**
@@ -1142,8 +1189,21 @@ export default function HomePage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="p-6 md:p-8 flex-1 overflow-y-auto space-y-8"
+        className="relative p-6 md:p-8 flex-1 overflow-y-auto space-y-8"
       >
+        {isLoading && (
+          <>
+            <div className="absolute inset-0 z-50 bg-black bg-opacity-50" />
+
+            <div
+              className="absolute left-1/2 z-50"
+              style={{ top: "50vh", transform: "translateX(-50%)" }}
+            >
+              <Loader2 className="w-16 h-16 text-primary animate-spin" />
+            </div>
+          </>
+        )}
+
         <motion.div variants={slideInLeft}>
           <h1 className="text-3xl font-bold mb-2">
             {greeting}, {userName} {emoji}!
@@ -1405,15 +1465,15 @@ export default function HomePage() {
                     .map((med, idx) => (
                       <div
                         key={med.id}
-                        className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
+                        className="p-4 rounded-lg border border-gray-200 bg-background text-foreground shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
                         style={getStaggerStyle(idx)}
                       >
                         <div className="mb-3">
-                          <h3 className="text-lg font-semibold text-gray-800">
+                          <h3 className="text-lg font-semibold text-foreground0">
                             💊 {safeDisplay(med.medication_name)}
                           </h3>
                         </div>
-                        <div className="text-sm text-gray-600 space-y-1">
+                        <div className="text-sm text-foreground space-y-1">
                           <p>
                             <strong>Dosage:</strong> {safeDisplay(med.dosage)}
                           </p>
@@ -1492,15 +1552,15 @@ export default function HomePage() {
                     .map((appt, idx) => (
                       <div
                         key={appt.id}
-                        className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
+                        className="p-4 rounded-lg border border-gray-200 bg-background shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
                         style={getStaggerStyle(idx)}
                       >
                         <div className="mb-3">
-                          <h3 className="text-lg font-semibold text-gray-800">
+                          <h3 className="text-lg font-semibold text-foreground">
                             🗓️ {safeDisplay(appt.appointment_name)}
                           </h3>
                         </div>
-                        <div className="mb-4 text-sm text-gray-600 flex flex-wrap items-center gap-2">
+                        <div className="mb-4 text-sm text-foreground flex flex-wrap items-center gap-2">
                           <p className="font-bold inline">Date:</p>
                           <p className="inline">
                             {new Date(appt.date).toLocaleDateString()}
@@ -1545,7 +1605,7 @@ export default function HomePage() {
               <CardHeader className="mt-8 text-xl">
                 <CardTitle>Health Logs</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm pb-4 ">
+              <CardContent className="space-y-2 text-sm pb-4 text-foreground">
                 {logs.length === 0 ? (
                   <p className="text-muted-foreground">No health logs added.</p>
                 ) : (
@@ -1572,16 +1632,16 @@ export default function HomePage() {
                       return (
                         <div
                           key={log.id}
-                          className="p-6 rounded-xl border border-gray-200 bg-white shadow hover:shadow-xl transition-transform duration-300 cursor-pointer mb-6"
+                          className="p-6 rounded-xl border border-gray-200 bg-background shadow hover:shadow-xl transition-transform duration-300 cursor-pointer mb-6"
                           style={getStaggerStyle(idx)}
                         >
                           <div className="mb-2">
-                            <h3 className="text-lg font-semibold text-gray-800">
+                            <h3 className="text-lg font-semibold text-foreground">
                               Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
                             </h3>
                           </div>
 
-                          <div className="space-y-2 text-sm text-gray-600">
+                          <div className="space-y-2 text-sm text-foreground">
                             <div>
                               <p className="mb-2">
                                 <span className="font-bold">Severity:</span>{" "}

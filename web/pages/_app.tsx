@@ -5,9 +5,9 @@ import { useEffect, useState, useRef } from "react";
 import NavBar from "@/components/NavBar";
 import { Toaster, toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
-import { fetchUserReminders, Reminder } from "@/lib/reminders";
 import { Analytics } from "@vercel/analytics/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const queryClient = new QueryClient();
 
@@ -41,9 +41,7 @@ export default function App({ Component, pageProps }: AppProps) {
   // Push content to the right when nav is expanded. This is kinda a
   // hacky way to do it, but it works
   const marginLeft = isMobile ? "0" : navExpanded ? "16rem" : "5rem";
-
   const [userId, setUserId] = useState<string | null>(null);
-  const toastedReminderIds = useRef<Set<string>>(new Set());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const broadcastChannelRef = useRef<any>(null);
 
@@ -65,41 +63,61 @@ export default function App({ Component, pageProps }: AppProps) {
     };
   }, []);
 
-  // Poll for reminders only if a user is authenticated
+  /**
+   * Supabase Realtime #3: Reminder notifications.
+   * This will be used to notify the user when a reminder is due.
+   * How it works: Supabase CRON is set up in Supbase Dashboard to
+   * call a function every second. This function will check if
+   * there are any reminders due and if so, it will insert
+   * a new row in the user_notifications table. This will
+   * trigger the realtime subscription in this file and the
+   * user will be notified via a toast notification, immediately
+   * after the row is inserted (i.e. when their reminder is due).
+   *
+   * Something I'm so proud of too lol :>
+   */
   useEffect(() => {
     if (!userId) return;
-    const interval = setInterval(async () => {
-      if (!userId) return;
 
-      try {
-        const reminders: Reminder[] = await fetchUserReminders(userId);
-        const now = new Date();
-        const MAX_OVERDUE = 1000 * 60 * 60;
+    // We only wanna show due reminders that have passed for not too long
+    // If you see a reminder has already been toasted, it's intentional
+    // and it's because the reminder is overdue.
+    const MAX_OVERDUE_THRESHOLD = 1000 * 60 * 60;
 
-        reminders.forEach((reminder) => {
-          const reminderDueTime = reminder.dueTime.getTime();
-          const diff = now.getTime() - reminderDueTime;
-
-          if (
-            diff >= 0 &&
-            diff <= MAX_OVERDUE &&
-            !toastedReminderIds.current.has(reminder.id)
-          ) {
-            toast(`Reminder: ${reminder.title} is due now!`, {
+    const subscription = supabase
+      .channel(`user-notifications-${userId}`, {
+        config: { broadcast: { self: false } },
+      })
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "user_notifications",
+          filter: `user_profile_id=eq.${userId}`,
+        },
+        (payload) => {
+          if (payload?.new) {
+            const notification = payload.new;
+            const dueTime = new Date(notification.due_time);
+            const now = new Date();
+            if (now.getTime() - dueTime.getTime() > MAX_OVERDUE_THRESHOLD) {
+              return;
+            }
+            toast(`Reminder: ${notification.title} is due now!`, {
               description:
-                reminder.type === "appointment"
+                notification.type === "appointment"
                   ? "You have an appointment scheduled."
                   : "Time to take your medication.",
             });
-            toastedReminderIds.current.add(reminder.id);
           }
-        });
-      } catch (err) {
-        console.error("Error polling reminders:", err);
-      }
-    }, 1000);
+        },
+      )
+      .subscribe();
 
-    return () => clearInterval(interval);
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, [userId]);
 
   /**
@@ -146,18 +164,25 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div>
-        <NavBar
-          isExpanded={navExpanded}
-          setIsExpanded={setNavExpanded}
-          staticNav={false}
-        />
-        <main className="transition-all duration-300" style={{ marginLeft }}>
-          <Component {...pageProps} />
-        </main>
-        <Toaster position="bottom-right" richColors />
-        <Analytics />
-      </div>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <div>
+          <NavBar
+            isExpanded={navExpanded}
+            setIsExpanded={setNavExpanded}
+            staticNav={false}
+          />
+          <main className="transition-all duration-300" style={{ marginLeft }}>
+            <Component {...pageProps} />
+          </main>
+          <Toaster position="bottom-right" richColors />
+          <Analytics />
+        </div>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

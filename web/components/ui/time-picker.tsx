@@ -62,7 +62,7 @@ export function CustomTimePicker({
         <PopoverTrigger asChild>
           <Button
             className={cn(
-              "w-full border border-white cursor-pointer",
+              "w-full border cursor-pointer bg-background",
               className,
             )}
           >
@@ -77,7 +77,7 @@ export function CustomTimePicker({
               onChange={handleHourChange}
               onBlur={handleHourBlur}
               maxLength={2}
-              className="border border-white rounded p-2 w-16 text-center"
+              className="border rounded p-2 w-16 text-center"
               placeholder="HH"
             />
             <span>:</span>
@@ -87,7 +87,7 @@ export function CustomTimePicker({
               onChange={handleMinuteChange}
               onBlur={handleMinuteBlur}
               maxLength={2}
-              className="border border-white rounded p-2 w-16 text-center"
+              className="border rounded p-2 w-16 text-center"
               placeholder="MM"
             />
           </div>

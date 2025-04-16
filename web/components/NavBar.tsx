@@ -17,14 +17,15 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { signOut } from "@/lib/auth";
+import { ModeToggle } from "@/components/ModeToggle";
 
-interface NavItemProps {
+type NavItemProps = {
   href: string;
   icon: React.ReactNode;
   label: string;
   isExpanded: boolean;
   onClick?: () => void;
-}
+};
 
 function NavItem({ href, icon, label, isExpanded, onClick }: NavItemProps) {
   const router = useRouter();
@@ -50,11 +51,11 @@ function NavItem({ href, icon, label, isExpanded, onClick }: NavItemProps) {
   );
 }
 
-interface NavBarProps {
+type NavBarProps = {
   staticNav?: boolean;
   isExpanded: boolean;
   setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
-}
+};
 
 export default function NavBar({
   staticNav = false,
@@ -220,6 +221,7 @@ export default function NavBar({
                 isExpanded={isExpanded}
               />
             )}
+            <ModeToggle isExpanded={isExpanded} />
           </div>
         </div>
         <div className="p-0 border-t border-white/20">

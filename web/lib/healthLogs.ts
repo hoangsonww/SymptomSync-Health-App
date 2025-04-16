@@ -24,6 +24,8 @@ export type HealthLog = z.infer<typeof HealthLogSchema>;
 
 /**
  * Retrieves all health logs for a given user.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param userId - The id of the user.
  * @returns An array of health log records.
  * @throws An error if the query fails.
@@ -42,6 +44,8 @@ export async function getHealthLogsByUser(
 
 /**
  * Creates a new health log record.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param params - The health log details.
  * @returns The created health log.
  * @throws An error if the insert fails.
@@ -82,6 +86,8 @@ export async function createHealthLog(params: {
 
 /**
  * Updates an existing health log record.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param id - The id of the health log to update.
  * @param updatePayload - The fields to update.
  * @returns The updated health log.
@@ -114,6 +120,8 @@ export async function updateHealthLog(
 
 /**
  * Deletes a health log record.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param id - The id of the health log record to delete.
  * @returns The deleted health log.
  * @throws An error if the deletion fails.
@@ -129,3 +137,8 @@ export async function deleteHealthLog(id: string): Promise<HealthLog> {
   if (error) throw error;
   return HealthLogSchema.parse(data);
 }
+
+// Supabase RLS Policy: Only allow authenticated users to access their own health logs.
+// Only the user who created the health log can access, update, or delete it.
+// They cannot access, update, or delete health logs created by other users.
+// Ensure that the user is authenticated before performing any operations.

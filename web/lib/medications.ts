@@ -22,6 +22,8 @@ export type MedicationReminder = z.infer<typeof MedicationReminderSchema>;
 
 /**
  * Retrieves all medication reminders for a given user.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param userId - The id of the user.
  * @returns An array of medication reminders.
  * @throws An error if the query fails.
@@ -40,6 +42,8 @@ export async function getMedicationRemindersByUser(
 
 /**
  * Creates a new medication reminder.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param params - The medication reminder details.
  * @returns The created medication reminder.
  * @throws An error if the insert fails.
@@ -73,6 +77,8 @@ export async function createMedicationReminder(params: {
 
 /**
  * Updates an existing medication reminder.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param id - The id of the medication reminder.
  * @param updatePayload - The fields to update.
  * @returns The updated medication reminder.
@@ -101,6 +107,8 @@ export async function updateMedicationReminder(
 
 /**
  * Deletes a medication reminder.
+ * Note: Supabase RLS will block this operation if the user is not the owner of the record.
+ *
  * @param id - The id of the medication reminder to delete.
  * @returns The deleted medication reminder.
  * @throws An error if the deletion fails.
@@ -118,3 +126,7 @@ export async function deleteMedicationReminder(
   if (error) throw error;
   return MedicationReminderSchema.parse(data);
 }
+
+// Supabase RLS Policy: Table is only accessible to authenticated users.
+// Only the user who created the reminder can access, update, or delete it.
+// They cannot access, update, or delete reminders created by other users.
