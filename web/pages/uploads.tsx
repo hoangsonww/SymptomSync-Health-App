@@ -268,7 +268,7 @@ export default function DocumentsPage() {
                   <h1 className="text-3xl font-extrabold">Your Documents 📝</h1>
                   <motion.p
                     variants={fadeInUp}
-                    className="text-muted-foreground mt-2 text-center md:text-left"
+                    className="text-foreground mt-2 text-center md:text-left"
                   >
                     All Your Health Files, In One Place!
                   </motion.p>

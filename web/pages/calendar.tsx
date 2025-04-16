@@ -996,7 +996,7 @@ export default function CalendarPage() {
             <h1 className="text-3xl font-extrabold">Calendar 📆</h1>
             <motion.p
               variants={fadeInUp}
-              className="text-muted-foreground mt-2 text-center md:text-left"
+              className="text-foreground mt-2 text-center md:text-left"
             >
               Manage your appointments & medications easily
             </motion.p>

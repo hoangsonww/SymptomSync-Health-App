@@ -1217,7 +1217,7 @@ export default function HomePage() {
           </h1>
           <motion.p
             variants={fadeInUp}
-            className="text-sm md:text-base text-muted-foreground"
+            className="text-sm md:text-base text-foreground"
           >
             Let&apos;s make today a little healther ~
           </motion.p>

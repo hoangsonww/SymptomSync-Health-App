@@ -430,7 +430,7 @@ export default function AIChatPage() {
                   </h1>
                   <motion.p
                     variants={cardVariants}
-                    className="text-muted-foreground mt-2 text-center md:text-left"
+                    className="text-foreground mt-2 text-center md:text-left"
                   >
                     Ask our AI anything about your health. It’s like having a
                     doctor in your pocket!

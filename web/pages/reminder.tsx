@@ -216,7 +216,6 @@ export default function MedicationReminders() {
     };
   }, []);
 
-  // Retrieves the medication reminders for the authenticated user
   async function fetchReminders() {
     setLoading(true);
     const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -272,7 +271,6 @@ export default function MedicationReminders() {
     setEditMedCalendarSync("");
   }
 
-  // Saves the updated medication reminder to Supabase
   async function handleUpdateMed() {
     if (!editingMed || !editMedDate) return;
     const dateString = format(editMedDate, "yyyy-MM-dd");
@@ -313,7 +311,6 @@ export default function MedicationReminders() {
     }
   }
 
-  // Triggers a toast notification for a reminder when the bell icon is clicked
   function handleBellClick(reminder: Reminder) {
     const takeTime = format(new Date(reminder.reminder_time), "PPP, h:mm a");
     toast(
@@ -344,7 +341,7 @@ export default function MedicationReminders() {
           className="text-center md:text-left mb-8 p-2"
         >
           <h1 className="text-3xl font-bold text-foreground">Medications 💊</h1>
-          <p className="text-muted-foreground mt-2 text-center md:text-left">
+          <p className="text-foreground mt-2 text-center md:text-left">
             Here are all your medications. Remember to take your meds on time!
           </p>
         </motion.header>

@@ -19,13 +19,14 @@ export function ModeToggle({ isExpanded = true }: ModeToggleProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <div
+        <button
           onClick={(e) => e.stopPropagation()}
           className={`w-full flex items-center transition-colors cursor-pointer rounded ${
             isExpanded
               ? "items-center gap-3 px-4 py-3 hover:bg-white/10"
               : "justify-center p-3 hover:bg-white/10"
           }`}
+          aria-label="Toggle theme menu"
         >
           <div className="flex-shrink-0 flex justify-center items-center w-5 h-5 relative">
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -36,7 +37,7 @@ export function ModeToggle({ isExpanded = true }: ModeToggleProps) {
               Theme
             </span>
           )}
-        </div>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
         <DropdownMenuItem

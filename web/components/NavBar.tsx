@@ -231,11 +231,13 @@ export default function NavBar({
               setIsExpanded((prev) => !prev);
             }}
             className="w-full flex items-center justify-center p-4 hover:bg-white/20 rounded transition-colors cursor-pointer"
+            aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+            aria-expanded={isExpanded}
           >
             {isExpanded ? (
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
             ) : (
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
             )}
           </button>
         </div>
