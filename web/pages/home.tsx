@@ -291,9 +291,9 @@ export default function HomePage() {
   async function fetchAllData(uid: string) {
     try {
       const [medRes, apptsRes, userLogs] = await Promise.all([
-        getPaginatedMedicationRemindersByUser(uid, medPage),
-        getPaginatedAppointmentRemindersByUser(uid, apptPage),
-        getPaginatedHealthLogsByUser(uid, logPage),
+        getPaginatedMedicationRemindersByUser(uid, medPage, 30),
+        getPaginatedAppointmentRemindersByUser(uid, apptPage, 50),
+        getPaginatedHealthLogsByUser(uid, logPage, 20),
       ]);
 
       setMedications(medRes.data);
@@ -1548,17 +1548,17 @@ export default function HomePage() {
                   </Button>
 
                   <span>
-                    Page {medPage} of {Math.ceil(totalMeds / 50)}
+                    Page {medPage} of {Math.ceil(totalMeds / 30)}
                   </span>
 
                   <Button
                     size="sm"
                     onClick={() =>
                       setMedPage((p) =>
-                        p < Math.ceil(totalMeds / 50) ? p + 1 : p,
+                        p < Math.ceil(totalMeds / 30) ? p + 1 : p,
                       )
                     }
-                    disabled={medPage >= Math.ceil(totalMeds / 50)}
+                    disabled={medPage >= Math.ceil(totalMeds / 30)}
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
                     Next
@@ -1839,17 +1839,17 @@ export default function HomePage() {
                   </Button>
 
                   <span>
-                    Page {logPage} of {Math.ceil(totalLogs / 50)}
+                    Page {logPage} of {Math.ceil(totalLogs / 20)}
                   </span>
 
                   <Button
                     size="sm"
                     onClick={() =>
                       setLogPage((p) =>
-                        p < Math.ceil(totalLogs / 50) ? p + 1 : p,
+                        p < Math.ceil(totalLogs / 20) ? p + 1 : p,
                       )
                     }
-                    disabled={logPage >= Math.ceil(totalLogs / 50)}
+                    disabled={logPage >= Math.ceil(totalLogs / 20)}
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
                     Next
