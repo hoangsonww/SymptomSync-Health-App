@@ -43,6 +43,7 @@ export default function UpdatePassword() {
 
       toast.success("Password updated! Redirecting...");
       router.push("/home");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Something went wrong.");
     } finally {
