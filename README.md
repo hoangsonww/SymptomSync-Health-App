@@ -97,7 +97,7 @@ const event = {
 };
 ```
 
-_Remember to delete this section before submission!_
+_Remember to delete this section before final submission!_
 
 ---
 
