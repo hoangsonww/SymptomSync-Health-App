@@ -26,6 +26,7 @@ export default function ForgotPassword() {
       if (error) throw error;
 
       toast.success("Reset link sent! Check your email.");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || "Failed to send reset link.");
     } finally {
