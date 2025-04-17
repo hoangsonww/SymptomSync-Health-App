@@ -14,7 +14,7 @@ const queryClient = new QueryClient();
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   // Wanna hide the nav bar on auth pages and landing page and 404
-  const authPaths = ["/", "/auth/signUp", "/auth/login", "/404", "/auth/forgotPassword"];
+  const authPaths = ["/", "/auth/signUp", "/auth/login", "/404", "/auth/forgotPassword", "/auth/updatePassword"];
   const hideNav = authPaths.includes(router.pathname);
 
   const [navExpanded, setNavExpanded] = useState<boolean>(true);
