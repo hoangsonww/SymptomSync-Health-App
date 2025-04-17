@@ -105,6 +105,17 @@ export default function LoginPage() {
                 {isSubmitting && <Loader className="animate-spin w-5 h-5" />}
                 {isSubmitting ? "Logging in..." : "Log In"}
               </Button>
+
+              <div className="text-right mb-4 mt-4 flex items-center justify-center gap-2">
+                <Button>
+                <Link
+                  href="/auth/forgotPassword"
+                  className="text-sm hover:underline cursor-pointer"
+                >
+                  Forgot Password?
+                </Link>
+                </Button>
+              </div>
             </form>
 
             <p className="text-sm text-center mt-3 text-black/90">
