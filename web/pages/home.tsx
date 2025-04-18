@@ -957,7 +957,7 @@ export default function HomePage() {
 
   const { greeting, emoji } = getGreetingParts();
 
-  // Color palette
+  // Color palette for the charts
   const colorSet = [
     "#344966",
     "#F97F51",
@@ -965,6 +965,12 @@ export default function HomePage() {
     "#4CD137",
     "#FF577F",
     "#9A6AFF",
+    "#00BDA5",
+    "#FF8C00",
+    "#00A8E8",
+    "#9B5DE5",
+    "#F15BB5",
+    "#7D7D7D",
   ];
 
   const sortedLogs = [...logs].sort(
@@ -1135,73 +1141,73 @@ export default function HomePage() {
   const { theme, resolvedTheme } = useTheme();
   const effectiveTheme = theme === "system" ? resolvedTheme : theme;
   const tickColor = effectiveTheme === "dark" ? "#ffffff" : "#000000";
-    const gridColor =
+  const gridColor =
     effectiveTheme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
 
-const basePlugins = {
-  legend: {
-    labels: {
-      color: tickColor,
-    },
-  },
-  tooltip: {
-    titleColor: effectiveTheme === "light" ? "#ffffff" : tickColor,
-    bodyColor:  effectiveTheme === "light" ? "#ffffff" : tickColor,
-  },
-};
-
-const doughnutOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: basePlugins,
-  scales: {},
-};
-
-const radarOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: basePlugins,
-  scales: {
-    r: {
-      grid: {
-        display: true,
-        color: gridColor,
-        circular: false,
-      },
-      angleLines: {
-        display: true,
-        color: gridColor,
-      },
-      ticks: {
-        display: false,
-      },
-      pointLabels: {
+  const basePlugins = {
+    legend: {
+      labels: {
         color: tickColor,
       },
     },
-  },
-};
+    tooltip: {
+      titleColor: effectiveTheme === "light" ? "#ffffff" : tickColor,
+      bodyColor: effectiveTheme === "light" ? "#ffffff" : tickColor,
+    },
+  };
 
-const polarAreaOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: basePlugins,
-  scales: {
-    r: {
-      grid: {
-        display: true,
-        color: gridColor,
-        circular: true,
-      },
-      angleLines: {
-        display: false,
-      },
-      ticks: {
-        display: false,
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: basePlugins,
+    scales: {},
+  };
+
+  const radarOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: basePlugins,
+    scales: {
+      r: {
+        grid: {
+          display: true,
+          color: gridColor,
+          circular: false,
+        },
+        angleLines: {
+          display: true,
+          color: gridColor,
+        },
+        ticks: {
+          display: false,
+        },
+        pointLabels: {
+          color: tickColor,
+        },
       },
     },
-  },
-};
+  };
+
+  const polarAreaOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: basePlugins,
+    scales: {
+      r: {
+        grid: {
+          display: true,
+          color: gridColor,
+          circular: true,
+        },
+        angleLines: {
+          display: false,
+        },
+        ticks: {
+          display: false,
+        },
+      },
+    },
+  };
 
   const defaultChartOptions = {
     responsive: true,
@@ -1408,7 +1414,10 @@ const polarAreaOptions = {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <Doughnut data={symptomDoughnutData} options={doughnutOptions} />
+                    <Doughnut
+                      data={symptomDoughnutData}
+                      options={doughnutOptions}
+                    />
                   </div>
                 )}
               </CardContent>
@@ -1446,7 +1455,10 @@ const polarAreaOptions = {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <PolarArea data={severityPolarData} options={polarAreaOptions} />
+                    <PolarArea
+                      data={severityPolarData}
+                      options={polarAreaOptions}
+                    />
                   </div>
                 )}
               </CardContent>
