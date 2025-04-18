@@ -62,7 +62,7 @@ export function CustomTimePicker({
         <PopoverTrigger asChild>
           <Button
             className={cn(
-              "w-full border cursor-pointer bg-background",
+              "w-full border cursor-pointer bg-background text-foreground hover:text-white",
               className,
             )}
           >
