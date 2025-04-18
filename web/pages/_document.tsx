@@ -2,7 +2,7 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
-    <Html lang="en">
+    <Html lang="en" className="transition-colors duration-500 ease-in-out">
       <Head>
         {/* Basic Meta Tags */}
         <meta charSet="utf-8" />
@@ -70,7 +70,7 @@ export default function Document() {
           rel="stylesheet"
         />
       </Head>
-      <body className="antialiased">
+      <body className="antialiased transition-colors duration-500 ease-in-out">
         <Main />
         <NextScript />
         <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -1135,23 +1135,78 @@ export default function HomePage() {
   const { theme, resolvedTheme } = useTheme();
   const effectiveTheme = theme === "system" ? resolvedTheme : theme;
   const tickColor = effectiveTheme === "dark" ? "#ffffff" : "#000000";
-  const gridColor =
+    const gridColor =
     effectiveTheme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+
+const basePlugins = {
+  legend: {
+    labels: {
+      color: tickColor,
+    },
+  },
+  tooltip: {
+    titleColor: effectiveTheme === "light" ? "#ffffff" : tickColor,
+    bodyColor:  effectiveTheme === "light" ? "#ffffff" : tickColor,
+  },
+};
+
+const doughnutOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: basePlugins,
+  scales: {},
+};
+
+const radarOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: basePlugins,
+  scales: {
+    r: {
+      grid: {
+        display: true,
+        color: gridColor,
+        circular: false,
+      },
+      angleLines: {
+        display: true,
+        color: gridColor,
+      },
+      ticks: {
+        display: false,
+      },
+      pointLabels: {
+        color: tickColor,
+      },
+    },
+  },
+};
+
+const polarAreaOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: basePlugins,
+  scales: {
+    r: {
+      grid: {
+        display: true,
+        color: gridColor,
+        circular: true,
+      },
+      angleLines: {
+        display: false,
+      },
+      ticks: {
+        display: false,
+      },
+    },
+  },
+};
 
   const defaultChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        labels: {
-          color: tickColor,
-        },
-      },
-      tooltip: {
-        titleColor: tickColor,
-        bodyColor: tickColor,
-      },
-    },
+    plugins: basePlugins,
     scales: {
       x: {
         ticks: {
@@ -1353,10 +1408,7 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <Doughnut
-                      data={symptomDoughnutData}
-                      options={defaultChartOptions}
-                    />
+                    <Doughnut data={symptomDoughnutData} options={doughnutOptions} />
                   </div>
                 )}
               </CardContent>
@@ -1375,7 +1427,7 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <Radar data={moodRadarData} options={defaultChartOptions} />
+                    <Radar data={moodRadarData} options={radarOptions} />
                   </div>
                 )}
               </CardContent>
@@ -1394,10 +1446,7 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <PolarArea
-                      data={severityPolarData}
-                      options={defaultChartOptions}
-                    />
+                    <PolarArea data={severityPolarData} options={polarAreaOptions} />
                   </div>
                 )}
               </CardContent>
