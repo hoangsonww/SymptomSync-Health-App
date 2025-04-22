@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/router";
@@ -28,20 +30,29 @@ export default function FileViewPage() {
     data: file,
     isLoading,
     error,
-  } = useQuery<FileRow, Error>({
+  } = useQuery<FileRow | null, Error>({
     queryKey: ["file", id],
     queryFn: async () => {
-      if (!id || Array.isArray(id)) throw new Error("Invalid file id");
+      if (!id || Array.isArray(id))
+        throw new Error("Invalid file id - File not found");
+
       const { file, error } = await fetchFileDetails(id);
+
       if (error) {
         if (error.message === "User not authenticated") {
           router.push("/auth/login");
+          return null;
         }
-        throw new Error("Failed to fetch file");
+        if (error.message.toLowerCase().includes("no rows")) {
+          return null;
+        }
+        throw new Error("Failed to fetch file - File not found");
       }
+
       return file!;
     },
     enabled: !!id,
+    retry: false,
   });
 
   useEffect(() => {
@@ -92,6 +103,16 @@ export default function FileViewPage() {
         <meta name="description" content="View your uploaded files" />
       </Head>
       <div className="flex flex-col min-h-screen">
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+
+          html,
+          body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
             <Button
@@ -101,7 +122,8 @@ export default function FileViewPage() {
               <ChevronLeft />
               Back
             </Button>
-            {isLoading ? (
+
+            {!id || isLoading ? (
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="animate-spin h-8 w-8" />
               </div>
