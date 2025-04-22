@@ -1,6 +1,8 @@
 # SymptomSync
 
-> Developed by Caroline Bryan, Kathryn Brown, David Nguyen, and Erica Ocbu for COMP 426: Modern Web Programming at UNC–Chapel Hill.
+Build with patient care in mind, SymptomSync is a web application designed to help users manage their health and wellness. It provides a comprehensive dashboard for tracking medications, appointments, and health logs, all while ensuring real-time synchronization across devices. With features like medication reminders, appointment tracking, and an AI-powered chatbot, SymptomSync empowers users to take control of their health journey.
+
+> Developed by David Nguyen, Erica Ocbu, Caroline Bryan, and Kathryn Brown for COMP 426: Modern Web Programming at UNC–Chapel Hill.
 
 ![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript)  
 ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs)  
@@ -11,6 +13,8 @@
 ---
 
 ## SymptomSync UI
+
+The UI of the app was designed with Figma and Tailwind CSS. The design is responsive and mobile-first, ensuring a seamless experience across devices. Below are some screenshots of the app in action:
 
 ### Home Dashboard
 
@@ -51,6 +55,8 @@
 ---
 
 ## Features
+
+SymptomSync offers a range of features to help users manage their health effectively:
 
 - **Medication Reminders**: Schedule, edit, and delete recurring or one‑off med alerts.
 - **Appointment Tracking**: Log upcoming appointments with date/time and manage them.
@@ -93,7 +99,8 @@
 ┌──────────────────┐                   ┌───────────────────────┐
 │  Next.js Client  │ <––– WebSocket –> │   Supabase Realtime   │
 │ - React Pages    │                   │ - postgres_changes    │
-│ - UI Components  │                   └───────────────────────┘
+│ - UI Components  │                   │ - broadcast channels  │
+│ - TailwindCSS    │                   └───────────────────────┘
 │ - React Query    │
 └──────────────────┘
          │
@@ -109,7 +116,7 @@
 ```
 
 - **Realtime Broadcast**: Any create/update/delete triggers both a `postgres_changes` subscription and a broadcast message so all open clients show a toast notification.
-- **Cron Jobs**: Scheduled nightly jobs (via Supabase Cron) scan upcoming reminders and dispatch notifications.
+- **Cron Jobs**: Scheduled jobs (via Supabase Cron) that scan upcoming reminders and dispatch notifications every second.
 
 ---
 
@@ -158,17 +165,24 @@
 1. Sign up / log in via Supabase Auth.
 2. On the **Home** dashboard, add new medications, appointments, or health logs.
 3. View interactive charts—severity trends, symptom distribution, appointment patterns.
-4. Navigate to **Calendar** to see a month/week/day/agenda view of all events, import/export ICS.
+4. Navigate to **Calendar** to see a month/week/day/agenda view of all events, add events, or even import/export ICS.
 5. All changes sync in real‑time across open tabs/devices; cron‑driven reminders notify you via in-app notifications.
+6. Use the **Documents** page to upload/export health records, prescriptions, etc.
+7. Chat with the **AI Chatbot** for symptom analysis and health insights.
+8. Toggle between light and dark mode for better accessibility.
+9. View and manage your **profile**. You can also vies other users' profiles.
+10. Visit the **Medication Schedules** page to view/edit a complete list of your medications and their schedules.
 
 ---
 
 ## Roadmap
 
+If we had more time, we would have added:
 - 🔄 Two‑way Calendar Sync (Google, Outlook)
 - 🔔 Push notifications via Web Push / FCM
-- 🔍 Advanced search & filter on logs
-- 🤖 AI‑powered health insights & suggestions
+- 🔍 Advanced search & filter on health logs
+- 🤖 AI‑powered health insights & suggestions based on
+user data and uploaded documents
 
 ---
 
@@ -182,10 +196,10 @@
 
 ## Authors
 
-- Caroline Bryan
-- Kathryn Brown
 - David Nguyen
 - Erica Ocbu
+- Caroline Bryan
+- Kathryn Brown
 
 ---
 
