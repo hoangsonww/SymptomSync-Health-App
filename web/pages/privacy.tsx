@@ -40,8 +40,9 @@ export default function PrivacyPolicy() {
           html {
             scroll-behavior: smooth;
           }
-          
-          html, body {
+
+          html,
+          body {
             overscroll-behavior: none;
           }
         `}</style>

@@ -341,8 +341,9 @@ export default function MedicationReminders() {
           html {
             scroll-behavior: smooth;
           }
-          
-          html, body {
+
+          html,
+          body {
             overscroll-behavior: none;
           }
         `}</style>

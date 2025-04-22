@@ -14,8 +14,9 @@ export default function Custom404() {
           html {
             scroll-behavior: smooth;
           }
-          
-          html, body {
+
+          html,
+          body {
             overscroll-behavior: none;
           }
         `}</style>

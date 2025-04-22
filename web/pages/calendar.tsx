@@ -982,8 +982,9 @@ export default function CalendarPage() {
           html {
             scroll-behavior: smooth;
           }
-          
-          html, body {
+
+          html,
+          body {
             overscroll-behavior: none;
           }
         `}</style>

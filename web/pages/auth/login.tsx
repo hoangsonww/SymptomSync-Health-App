@@ -50,8 +50,9 @@ export default function LoginPage() {
           html {
             scroll-behavior: smooth;
           }
-          
-          html, body {
+
+          html,
+          body {
             overscroll-behavior: none;
           }
         `}</style>

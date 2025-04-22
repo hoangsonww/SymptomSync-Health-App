@@ -61,7 +61,16 @@ export default function UpdatePassword() {
         />
       </Head>
       <div className="h-screen flex flex-col sm:flex-row">
-        {/* On the Left side */}
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+
+          html,
+          body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <div className="bg-secondary w-full sm:w-1/2 flex-1 p-8 sm:py-12 sm:px-10 flex flex-col relative">
           <div className="absolute top-4 left-4">
             <Link
@@ -143,7 +152,6 @@ export default function UpdatePassword() {
           </div>
         </div>
 
-        {/* On the Right side */}
         <div className="bg-primary w-full sm:w-1/2 flex-1 p-8 sm:py-12 sm:px-10 flex flex-col">
           <div className="flex flex-col justify-between h-full">
             <div className="text-right mb-8">

@@ -420,8 +420,9 @@ export default function AIChatPage() {
             html {
               scroll-behavior: smooth;
             }
-            
-            html, body {
+
+            html,
+            body {
               overscroll-behavior: none;
             }
           `}</style>
