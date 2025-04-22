@@ -10,6 +10,15 @@ export default function Custom404() {
         <meta name="description" content="Page not found" />
       </Head>
       <div className="min-h-screen flex flex-col items-center justify-center bg-primary text-primary-foreground px-4">
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}

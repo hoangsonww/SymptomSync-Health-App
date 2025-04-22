@@ -340,6 +340,15 @@ export default function DocumentsPage() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <main className="flex-1 p-6">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 pt-2">

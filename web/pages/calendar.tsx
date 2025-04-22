@@ -978,6 +978,15 @@ export default function CalendarPage() {
         animate="visible"
         className="relative w-full h-screen p-4 md:p-6 space-y-4"
       >
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         {isLoading && (
           <>
             <div className="absolute inset-0 z-50 bg-background bg-opacity-50" />

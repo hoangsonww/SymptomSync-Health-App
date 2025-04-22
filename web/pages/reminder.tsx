@@ -337,6 +337,15 @@ export default function MedicationReminders() {
         initial="hidden"
         animate="visible"
       >
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <motion.header
           variants={slideInLeft}
           className="text-center md:text-left mb-8 p-2"

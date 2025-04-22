@@ -36,6 +36,15 @@ export default function PrivacyPolicy() {
         animate="visible"
         variants={containerVariants}
       >
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <div className="max-w-4xl mx-auto">
           <motion.header variants={slideInLeft} className="mb-12 text-center">
             <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">

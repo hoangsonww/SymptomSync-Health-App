@@ -44,6 +44,15 @@ export default function ForgotPassword() {
         />
       </Head>
       <div className="h-screen flex flex-col sm:flex-row">
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <div className="bg-secondary w-full sm:w-1/2 flex-1 p-8 sm:py-12 sm:px-10 flex flex-col relative">
           <div className="absolute top-4 left-4">
             <Link

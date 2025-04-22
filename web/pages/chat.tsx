@@ -416,6 +416,15 @@ export default function AIChatPage() {
           initial="hidden"
           animate="visible"
         >
+          <style jsx global>{`
+            html {
+              scroll-behavior: smooth;
+            }
+            
+            html, body {
+              overscroll-behavior: none;
+            }
+          `}</style>
           <div className="max-w-4xl mx-auto space-y-6 pt-2">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6">
               <motion.div

@@ -254,6 +254,15 @@ export default function ProfilePage() {
       </Head>
 
       <div className="min-h-screen bg-background text-foreground p-4 sm:p-6">
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <motion.div
           variants={containerVariants}
           initial="hidden"

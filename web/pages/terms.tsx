@@ -46,6 +46,15 @@ export default function TermsAndConditions() {
         animate="visible"
         variants={containerVariants}
       >
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <div className="max-w-4xl mx-auto">
           <motion.header className="mb-12 text-center" variants={slideInLeft}>
             <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">
