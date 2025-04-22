@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -412,6 +413,7 @@ export default function MedicationReminders() {
                 disabled={medPage <= 1}
                 className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
               >
+                <ChevronLeft />
                 Previous
               </Button>
 
@@ -426,6 +428,7 @@ export default function MedicationReminders() {
                 className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
               >
                 Next
+                <ChevronRight />
               </Button>
             </div>
           </>

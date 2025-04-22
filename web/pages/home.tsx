@@ -8,6 +8,8 @@ import {
   Edit3,
   Trash2,
   Loader2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import {
   MedicationReminder,
@@ -1605,6 +1607,7 @@ export default function HomePage() {
                     disabled={medPage <= 1}
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
+                    <ChevronLeft />
                     Previous
                   </Button>
 
@@ -1623,6 +1626,7 @@ export default function HomePage() {
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
                     Next
+                    <ChevronRight />
                   </Button>
                 </div>
               </CardContent>
@@ -1700,6 +1704,7 @@ export default function HomePage() {
                     disabled={apptPage <= 1}
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
+                    <ChevronLeft />
                     Previous
                   </Button>
 
@@ -1718,6 +1723,7 @@ export default function HomePage() {
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
                     Next
+                    <ChevronRight />
                   </Button>
                 </div>
               </CardContent>
@@ -1896,6 +1902,7 @@ export default function HomePage() {
                     disabled={logPage <= 1}
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
+                    <ChevronLeft />
                     Previous
                   </Button>
 
@@ -1914,6 +1921,7 @@ export default function HomePage() {
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
                     Next
+                    <ChevronRight />
                   </Button>
                 </div>
               </CardContent>
