@@ -102,6 +102,7 @@ export default function FileViewPage() {
         <title>SymptomSync | File View</title>
         <meta name="description" content="View your uploaded files" />
       </Head>
+
       <div className="flex flex-col min-h-screen">
         <style jsx global>{`
           html {
@@ -113,6 +114,7 @@ export default function FileViewPage() {
             overscroll-behavior: none;
           }
         `}</style>
+
         <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
             <Button
@@ -129,7 +131,7 @@ export default function FileViewPage() {
               </div>
             ) : file ? (
               <>
-                <h1 className="text-4xl font-extrabold text-gray-800 mb-2">
+                <h1 className="text-4xl font-extrabold text-foreground mb-2">
                   {file.filename}
                 </h1>
                 {file.tags && file.tags.length > 0 && (

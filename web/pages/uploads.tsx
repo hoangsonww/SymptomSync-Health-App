@@ -24,6 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
   HeartPulse,
+  Edit3
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -87,6 +88,10 @@ export default function DocumentsPage() {
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const broadcastChannelRef = useRef<any>(null);
+const [editDialogOpen, setEditDialogOpen] = useState(false);
+const [editingFile, setEditingFile] = useState<FileRow | null>(null);
+const [editFilename, setEditFilename] = useState("");
+const [editTagsInput, setEditTagsInput] = useState("");
 
   useQuery({
     queryKey: ["files", currentPage],
@@ -241,6 +246,51 @@ export default function DocumentsPage() {
   }
 
   /**
+   * Opens the edit dialog for a specific file. Sets the editing file and its current values
+   * in the state, so they can be modified by the user.
+   * 
+   * @param file - The file object to be edited
+   */
+function openEditDialog(file: FileRow) {
+  setEditingFile(file);
+  setEditFilename(file.filename);
+  setEditTagsInput(file.tags?.join(", ") || "");
+  setEditDialogOpen(true);
+}
+
+  /**
+   * Handles saving the edited file metadata. Updates the file's name and tags in the database
+   * and updates the local state to reflect the changes.
+   */
+async function handleSaveEdit() {
+  if (!editingFile) return;
+  const newTags = editTagsInput
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  try {
+    const { error } = await supabase
+      .from("files")
+      .update({ filename: editFilename.trim(), tags: newTags })
+      .eq("id", editingFile.id);
+    if (error) throw error;
+
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.id === editingFile.id
+          ? { ...f, filename: editFilename.trim(), tags: newTags }
+          : f
+      )
+    );
+    toast.success("Metadata updated");
+    setEditDialogOpen(false);
+  } catch (e) {
+    console.error(e);
+    toast.error("Failed to update");
+  }
+}
+
+  /**
    * Handles exporting a consolidated health report PDF. Creates a new PDF
    * document, adds a title page, and appends selected files to it.
    * The user can select which files to include in the report.
@@ -324,7 +374,7 @@ export default function DocumentsPage() {
     file.filename.toLowerCase().includes(search.toLowerCase()),
   );
 
-  // Pagination logic: Ensure only 50 items are shown per page
+  // Pagination logic: Ensure that only 50 items or fewer are shown per page
   const startIndex =
     filteredFiles.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
   const endIndex = (currentPage - 1) * ITEMS_PER_PAGE + filteredFiles.length;
@@ -623,6 +673,18 @@ export default function DocumentsPage() {
                                     <TooltipContent>View</TooltipContent>
                                   </Tooltip>
                                   <Tooltip>
+    <TooltipTrigger asChild>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => openEditDialog(file)}
+      >
+        <Edit3 size={18} />
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>Edit</TooltipContent>
+  </Tooltip>
+                                  <Tooltip>
                                     <TooltipTrigger asChild>
                                       <motion.div
                                         variants={fadeInUp}
@@ -715,6 +777,35 @@ export default function DocumentsPage() {
                 </Button>
               </motion.div>
             </div>
+
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+  <DialogContent className="max-w-sm w-full">
+    <DialogHeader>
+      <DialogTitle>Edit File Info</DialogTitle>
+      <DialogDescription>
+        Update filename and tags (comma‑separated).
+      </DialogDescription>
+    </DialogHeader>
+    <div className="flex flex-col gap-4 mt-4">
+      <Input
+        value={editFilename}
+        onChange={(e) => setEditFilename(e.target.value)}
+        placeholder="Filename"
+      />
+      <Input
+        value={editTagsInput}
+        onChange={(e) => setEditTagsInput(e.target.value)}
+        placeholder="Tags, comma‑separated"
+      />
+    </div>
+    <div className="flex justify-end gap-4 mt-6">
+      <Button variant="secondary" onClick={() => setEditDialogOpen(false)}>
+        Cancel
+      </Button>
+      <Button onClick={handleSaveEdit}>Save</Button>
+    </div>
+  </DialogContent>
+</Dialog>
 
             <Dialog
               open={confirmDeleteDialogOpen}
