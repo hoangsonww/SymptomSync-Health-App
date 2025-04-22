@@ -48,6 +48,15 @@ export default function SignUp() {
         />
       </Head>
       <div className="h-screen flex flex-col sm:flex-row">
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         <div className="bg-primary text-white w-full sm:w-1/2 flex-1 flex flex-col p-8 sm:py-12 sm:px-10">
           <div className="flex flex-col justify-between h-full">
             <div className="mb-8">
