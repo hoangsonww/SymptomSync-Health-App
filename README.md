@@ -1,4 +1,4 @@
-# SymptomSync
+# SymptomSync - A Health Management Web App 💊
 
 Build with patient care in mind, SymptomSync is a web application designed to help users manage their health and wellness. It provides a comprehensive dashboard for tracking medications, appointments, and health logs, all while ensuring real-time synchronization across devices. With features like medication reminders, appointment tracking, and an AI-powered chatbot, SymptomSync empowers users to take control of their health journey.
 
@@ -52,6 +52,14 @@ The UI of the app was designed with Figma and Tailwind CSS. The design is respon
   <img src="docs/img/login.png" alt="Auth Screenshot" width="100%"/>
 </p>
 
+### Dark Mode
+
+<p align="center">
+  <img src="docs/img/darkmode.png" alt="Dark Mode Screenshot" width="100%"/>
+</p>
+
+... and many more!
+
 ---
 
 ## Features
@@ -88,7 +96,8 @@ SymptomSync offers a range of features to help users manage their health effecti
 - **Back End / Data**
   - Supabase (Auth, Postgres, Realtime, Storage, Cron)
 - **Notifications & Sync**
-  - Supabase Postgres Triggers & Cron Jobs for scheduled reminders
+  - Supabase Postgres Triggers for real-time updates
+  - Supabase Cron Jobs for scheduled reminders
   - Supabase Broadcast Channels & `postgres_changes` for live updates & notifications
 
 ---
@@ -115,8 +124,13 @@ SymptomSync offers a range of features to help users manage their health effecti
 └──────────────────┘
 ```
 
+- **Supabase**: The backend is powered by Supabase, which provides a Postgres database, authentication, and real-time capabilities.
+  - Each table is protected by **Row Level Security (RLS)** policies to ensure user data isolation, so that users can only access/update/delete their own data.
 - **Realtime Broadcast**: Any create/update/delete triggers both a `postgres_changes` subscription and a broadcast message so all open clients show a toast notification.
 - **Cron Jobs**: Scheduled jobs (via Supabase Cron) that scan upcoming reminders and dispatch notifications every second.
+- **Postgres Triggers**: Database triggers that listen for changes in the `medication_reminders`, `appointment_reminders`, and `health_logs` tables, and send messages to the broadcast channel.
+  - There is also a trigger on the `auth.users` table to create a corresponding `user_profiles` entry when a new user signs up.
+- **AI Chatbot**: The chatbot uses the Google AI API to analyze user symptoms and provide health insights.
 
 ---
 
@@ -149,11 +163,24 @@ SymptomSync offers a range of features to help users manage their health effecti
 ## Configuration
 
 - **Supabase**
-  - Configure **Auth**
-  - Create tables: `user_profiles`, `medication_reminders`, `appointment_reminders`, `health_logs`
-  - Add RLS policies for user isolation
-  - Set up **Cron** jobs to run `send_reminders()` stored procedure daily/hourly
-  - Define **Database Triggers** to write to broadcast channels on insert/update/delete
+  - Configure **Auth** settings in the Supabase dashboard
+    - Enable email/password signups
+    - Uncheck the confirmation email option for now
+  - Create tables: `user_profiles`, `medication_reminders`, `appointment_reminders`, `health_logs`, `files`, and `user_notifications` and enable Realtime for all of them.
+    - Set relationships between tables using Foreign Keys.
+  - Add RLS policies for user isolation to the tables. All tables should have the following policies or similar:
+    - `select`: `auth.uid() = user_profile_id`
+    - `insert`: `auth.uid() = user_profile_id`
+    - `update`: `auth.uid() = user_profile_id`
+    - `delete`: `auth.uid() = user_profile_id`
+  - Set up **Cron** jobs to run `send_reminders()` stored procedure daily/hourly or even every second.
+    - To do so, you might need to enable the `pg_cron` extension in your Supabase project.
+  - Create **Postgres Functions** to handle the logic for sending notifications and reminders
+    - `send_reminders()`: Check for upcoming reminders and send notifications
+    - `create_user_profile()`: Create a new user profile when a user signs up
+  - Define **Database Triggers** to write to broadcast channels on insert/update/delete and to create a new user profile on signup
+  - Set up **Storage** for file uploads. Create 2 buckets: `avatars` and `documents`
+
 - **Environment**
   - `.env.local` holds all keys (refer to `.env.example`)
   - Default port: `3000`
@@ -206,3 +233,13 @@ user data and uploaded documents
 ## License
 
 [MIT License](LICENSE)
+
+--
+
+## Acknowledgements
+
+Sincere thanks to the 426 team for their support and guidance throughout the project!
+
+---
+
+Thank you for checking out SymptomSync! We hope it helps you manage your health and wellness effectively. If you have any questions or feedback, feel free to reach out! 💊
