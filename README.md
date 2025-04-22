@@ -4,11 +4,9 @@ Build with patient care in mind, SymptomSync is a web application designed to he
 
 > Developed by David Nguyen, Erica Ocbu, Caroline Bryan, and Kathryn Brown for COMP 426: Modern Web Programming at UNC–Chapel Hill.
 
-![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript)  
-![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs)  
-![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui)  
-![Tailwind](https://img.shields.io/badge/-Tailwind-05122A?style=flat&logo=tailwindcss)  
-![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase)
+![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google)
+
+Currently live on Vercel at [https://symptomsync.vercel.app](https://symptomsync.vercel.app)!
 
 ---
 
@@ -143,7 +141,7 @@ SymptomSync offers a range of features to help users manage their health effecti
    cd final-project-team-16
    ```
 
-2. Install dependencies
+2. Install dependencies (Remember to use `--legacy-peer-deps` if you encounter issues with React versions being incompatible with Shadcn/ui)
    ```bash
    npm install --legacy-peer-deps
    ```
@@ -216,8 +214,10 @@ user data and uploaded documents
 ## Contributing
 
 1. Fork & branch: `git checkout -b feature/awesome`
-2. Install & format: `npm install && npm run format`
-3. Commit & PR with description
+2. Develop something awesome
+3. Install & format: `npm install && npm run format`
+4. Commit & PR with description
+5. Wait for review and merge
 
 ---
 
@@ -234,11 +234,11 @@ user data and uploaded documents
 
 [MIT License](LICENSE)
 
---
+---
 
 ## Acknowledgements
 
-Sincere thanks to the 426 team for their support and guidance throughout the project!
+Huge thanks to the 426 team for their support and guidance throughout the project!
 
 ---
 
