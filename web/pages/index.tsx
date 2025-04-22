@@ -326,13 +326,13 @@ export default function Home() {
             <Slider {...sliderSettings}>
               <div className="px-4">
                 <AnimatedInView>
-                  <Card className="h-64 shadow-lg">
+                  <Card className="h-38 shadow-lg">
                     <CardContent className="flex flex-col justify-evenly text-center">
                       <p className="italic">
                         &quot;SymptomSync transformed my health journey. I can
                         finally track my progress!&quot;
                       </p>
-                      <div className="flex items-center justify-center space-x-2">
+                      <div className="flex items-center justify-center space-x-2 mt-2">
                         <Smile className="w-6 h-6 text-primary" />
                         <span className="font-bold">— Alex</span>
                       </div>
@@ -342,13 +342,13 @@ export default function Home() {
               </div>
               <div className="px-4">
                 <AnimatedInView>
-                  <Card className="h-64 shadow-lg">
+                  <Card className="h-38 shadow-lg">
                     <CardContent className="flex flex-col justify-evenly text-center">
                       <p className="italic">
                         &quot;The medication reminders keep me on track – life
                         changing!&quot;
                       </p>
-                      <div className="flex items-center justify-center space-x-2">
+                      <div className="flex items-center justify-center space-x-2 mt-2">
                         <HeartPulse className="w-6 h-6 text-primary" />
                         <span className="font-bold">— Jamie</span>
                       </div>
@@ -358,13 +358,13 @@ export default function Home() {
               </div>
               <div className="px-4">
                 <AnimatedInView>
-                  <Card className="h-64 shadow-lg">
+                  <Card className="h-38 shadow-lg">
                     <CardContent className="flex flex-col justify-evenly text-center">
                       <p className="italic">
                         &quot;The detailed reports pinpoint exactly where I need
                         to improve.&quot;
                       </p>
-                      <div className="flex items-center justify-center space-x-2">
+                      <div className="flex items-center justify-center space-x-2 mt-2">
                         <Star className="w-6 h-6 text-primary" />
                         <span className="font-bold">— Pat</span>
                       </div>
@@ -374,13 +374,13 @@ export default function Home() {
               </div>
               <div className="px-4">
                 <AnimatedInView>
-                  <Card className="h-64 shadow-lg">
+                  <Card className="h-38 shadow-lg">
                     <CardContent className="flex flex-col justify-evenly text-center">
                       <p className="italic">
                         &quot;The custom alerts and insights truly set
                         SymptomSync apart.&quot;
                       </p>
-                      <div className="flex items-center justify-center space-x-2">
+                      <div className="flex items-center justify-center space-x-2 mt-2">
                         <CheckSquare className="w-6 h-6 text-primary" />
                         <span className="font-bold">— Morgan</span>
                       </div>

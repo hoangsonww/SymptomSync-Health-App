@@ -1,116 +1,194 @@
 # SymptomSync
 
-> Developed by Caroline Bryan, Kathryn Brown, David Nguyen, and Erica Ocbu for COMP 426: Modern Web Programming at UNC-Chapel Hill.
+> Developed by Caroline Bryan, Kathryn Brown, David Nguyen, and Erica Ocbu for COMP 426: Modern Web Programming at UNC–Chapel Hill.
 
-![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript)
-![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs)
-![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui)
-![Tailwind](https://img.shields.io/badge/-Tailwind-05122A?style=flat&logo=tailwindcss)
+![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript)  
+![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs)  
+![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui)  
+![Tailwind](https://img.shields.io/badge/-Tailwind-05122A?style=flat&logo=tailwindcss)  
 ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase)
 
-**Supabase Features Used**
-
-1. Authentication
-2. Database
-3. File Storage
-4. Realtime (primarily `postgres_changes`)
-5. Cron Jobs (to send meds & appts reminders to users)
-6. Triggers
-
 ---
 
-## DEVELOPMENT NOTES: (TO BE REMOVED BEFORE SUBMISSION)
+## SymptomSync UI
 
-### Getting Started
-
-To install the dependencies:
-
-```bash
-npm install --legacy-peer-deps
-```
-
-This is of utmost importance because the `@shadcn/ui` package has a peer dependency on `react@^18.0.0`, and the latest version of `react` is `19.0.0`. If you do not use the `--legacy-peer-deps` flag, you will get an error.
-
-Also, remember to create a `.env.local` file in the `web` directory of the project and add your Supabase URL and Anon Key. You can find these in our Supabase project settings.
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-NEXT_PUBLIC_GOOGLE_AI_API_KEY=your_google_ai_api_key
-```
-
-> Note: Get the Google AI API key from [https://aistudio.google.com/prompts/new_chat](https://aistudio.google.com/prompts/new_chat) and create a new project. You can find the API key in the project settings.
-
-> For now, instead of the regular chat feature, I'm just introducing a simple chatbot for users to ask about their health.
-
-### Next Issues
-
-If you run into some issues during development, e.g. reloading and it is showing a blank page, try running the following command:
-
-```bash
-rm -rf .next
-```
-
-This will remove the `.next` folder and force Next.js to rebuild the project.
-
-Then, run the development server again:
-
-```bash
-npm run dev
-```
-
-### Test User Credentials
-
-Email: newemail@example.com1
-Password: 09112004@
-
-### Code Formatting with Prettier
-
-I also added a `format` script in `package.json` for you to easily run to format the entire
-project according to the Prettier configuration. You can run it with:
-
-```bash
-npm run format
-```
-
-This is recommended to be run before committing your changes to ensure that the code is formatted consistently.
-
-### Known Issues
-
-#### 1. React Big Calendar
-
-If you navigate client-side from another page to the Calendar page,
-some buttons on the calendar won't work (e.g. Agenda, Day, Week, Month). Simply refreshing the page will fix this issue. Also, this does not happen in production, only in development mode.
-
-#### 2. Timezone Misalignments
-
-The calendar is set to UTC timezone, but the events are created in the user's local timezone. This can cause some misalignments in the calendar view. We can fix this by converting the event times to UTC before saving them to the database.
-
-So, before you save the event to the database (i.e. before passing to the Supabase helpers), you must convert the event times to UTC. You can do this by using `Date` object with the `toISOString()` method. For example:
-
-```javascript
-const event = {
-  start: new Date(event.start).toISOString(),
-  end: new Date(event.end).toISOString(),
-  title: event.title,
-  allDay: event.allDay,
-};
-```
-
-_Remember to delete this section before final submission!_
-
----
-
-### SymptomSync UI
+### Home Dashboard
 
 <p align="center">
-  <img src="docs/img/dashboard.png" alt="SymptomSync Logo" width="100%"/>
+  <img src="docs/img/dashboard.png" alt="Dashboard Screenshot" width="100%"/>
 </p>
+
+### Calendar View
+
+<p align="center">
+  <img src="docs/img/calendar.png" alt="Calendar Screenshot" width="100%"/>
+</p>
+
+### Documents Page
+
+<p align="center">
+  <img src="docs/img/documents.png" alt="Health Logs Screenshot" width="100%"/>
+</p>
+
+### Medication Reminders
+
+<p align="center">
+  <img src="docs/img/meds.png" alt="Medication Reminders Screenshot" width="100%"/>
+</p>
+
+### Chatbot UI
+
+<p align="center">
+  <img src="docs/img/chat.png" alt="Chatbot Screenshot" width="100%"/>
+</p>
+
+### Auth
+
+<p align="center">
+  <img src="docs/img/login.png" alt="Auth Screenshot" width="100%"/>
+</p>
+
+---
 
 ## Features
 
-_Describe the features of your app here._
+- **Medication Reminders**: Schedule, edit, and delete recurring or one‑off med alerts.
+- **Appointment Tracking**: Log upcoming appointments with date/time and manage them.
+- **Health Logs**: Record symptoms, mood, vitals, and notes; visualize trends over time.
+- **Dashboard Visualizations**: Interactive charts for severity trends, symptom & mood distribution, and more.
+- **Real‑Time Updates**: Broadcast channel notifications and Supabase Realtime keep all devices in sync instantly.
+- **Pagination**: Efficient paginated fetching for large datasets (meds, appts, logs).
+- **Notifications**: In-app reminders for due medications and appointments.
+- **ICS Export/Import**: Export all events as an ICS calendar file or import from external calendars.
+- **Calendar View**: Month/week/day/agenda views for all events, with drag-and-drop support.
+- **Documents Page**: Upload/export and manage documents related to health records, prescriptions, etc.
+- **Chatbot**: AI-powered chatbot for symptom analysis and health insights.
+- **User Profiles**: Create and manage user profiles with personalized settings.
+- **Medication Schedules**: Set up complex medication schedules with reminders.
+- **Login/Signup**: Secure authentication via Supabase Auth.
+- **Reset Password**: Password reset functionality for user accounts.
+- **Dark Mode**: Toggle between light and dark themes for better accessibility.
+- **Responsive Design**: Mobile-first design with a focus on usability across devices.
 
-## ...
+---
 
-Feel free to add other sections as you see fit!
+## Tech Stack
+
+- **Front End**
+  - Next.js & React (TypeScript)
+  - Tailwind CSS & Shadcn/ui components
+  - Framer Motion for animations
+  - react-chartjs-2 & Chart.js for charts
+- **Back End / Data**
+  - Supabase (Auth, Postgres, Realtime, Storage, Cron)
+- **Notifications & Sync**
+  - Supabase Postgres Triggers & Cron Jobs for scheduled reminders
+  - Supabase Broadcast Channels & `postgres_changes` for live updates & notifications
+
+---
+
+## Architecture Overview
+
+```
+┌──────────────────┐                   ┌───────────────────────┐
+│  Next.js Client  │ <––– WebSocket –> │   Supabase Realtime   │
+│ - React Pages    │                   │ - postgres_changes    │
+│ - UI Components  │                   └───────────────────────┘
+│ - React Query    │
+└──────────────────┘
+         │
+         │ REST
+         ↓
+┌──────────────────┐
+│   Supabase API   │
+│ - Auth           │
+│ - Functions (RPC)│
+│ - Database       │
+│ - Storage        │
+└──────────────────┘
+```
+
+- **Realtime Broadcast**: Any create/update/delete triggers both a `postgres_changes` subscription and a broadcast message so all open clients show a toast notification.
+- **Cron Jobs**: Scheduled nightly jobs (via Supabase Cron) scan upcoming reminders and dispatch notifications.
+
+---
+
+## Installation
+
+1. Clone the repo
+
+   ```bash
+   git clone https://github.com/comp426-25s/final-project-team-16.git
+   cd final-project-team-16
+   ```
+
+2. Install dependencies
+   ```bash
+   npm install --legacy-peer-deps
+   ```
+3. Copy `.env.example` → `.env.local` and fill in your Supabase credentials
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=…
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=…
+   NEXT_PUBLIC_GOOGLE_AI_API_KEY=…
+   ```
+4. Run the dev server
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## Configuration
+
+- **Supabase**
+  - Configure **Auth**
+  - Create tables: `user_profiles`, `medication_reminders`, `appointment_reminders`, `health_logs`
+  - Add RLS policies for user isolation
+  - Set up **Cron** jobs to run `send_reminders()` stored procedure daily/hourly
+  - Define **Database Triggers** to write to broadcast channels on insert/update/delete
+- **Environment**
+  - `.env.local` holds all keys (refer to `.env.example`)
+  - Default port: `3000`
+
+---
+
+## Usage
+
+1. Sign up / log in via Supabase Auth.
+2. On the **Home** dashboard, add new medications, appointments, or health logs.
+3. View interactive charts—severity trends, symptom distribution, appointment patterns.
+4. Navigate to **Calendar** to see a month/week/day/agenda view of all events, import/export ICS.
+5. All changes sync in real‑time across open tabs/devices; cron‑driven reminders notify you via in-app notifications.
+
+---
+
+## Roadmap
+
+- 🔄 Two‑way Calendar Sync (Google, Outlook)
+- 🔔 Push notifications via Web Push / FCM
+- 🔍 Advanced search & filter on logs
+- 🤖 AI‑powered health insights & suggestions
+
+---
+
+## Contributing
+
+1. Fork & branch: `git checkout -b feature/awesome`
+2. Install & format: `npm install && npm run format`
+3. Commit & PR with description
+
+---
+
+## Authors
+
+- Caroline Bryan
+- Kathryn Brown
+- David Nguyen
+- Erica Ocbu
+
+---
+
+## License
+
+[MIT License](LICENSE)

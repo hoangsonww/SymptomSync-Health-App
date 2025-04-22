@@ -23,6 +23,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  HeartPulse,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -35,6 +36,7 @@ import { toast } from "sonner";
 import { fetchUserFiles, uploadUserFile } from "@/lib/files";
 import { motion } from "framer-motion";
 import Head from "next/head";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 type FileRow = {
   id: string;
@@ -75,6 +77,9 @@ export default function DocumentsPage() {
   const [tagsInput, setTagsInput] = useState("");
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [healthDialogOpen, setHealthDialogOpen] = useState(false);
+  const [selectedForReport, setSelectedForReport] = useState<string[]>([]);
+  const [reportProcessing, setReportProcessing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -235,6 +240,86 @@ export default function DocumentsPage() {
     });
   }
 
+  /**
+   * Handles exporting a consolidated health report PDF. Creates a new PDF
+   * document, adds a title page, and appends selected files to it.
+   * The user can select which files to include in the report.
+   */
+  async function handleExportHealthReport() {
+    if (selectedForReport.length === 0) {
+      toast.error("Please select at least one document.");
+      return;
+    }
+    setReportProcessing(true);
+    try {
+      const mergedPdf = await PDFDocument.create();
+      const titlePage = mergedPdf.addPage();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { width, height } = titlePage.getSize();
+      const font = await mergedPdf.embedFont(StandardFonts.HelveticaBold);
+      const fontSize = 24;
+      titlePage.drawText("SymptomSync - Your Health Report", {
+        x: 50,
+        y: height - 4 * fontSize,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0),
+      });
+
+      for (const fileId of selectedForReport) {
+        const file = files.find((f) => f.id === fileId);
+        if (!file) continue;
+        const ext = file.filename.split(".").pop()?.toLowerCase();
+        const arrayBuffer = await fetch(file.url).then((res) =>
+          res.arrayBuffer(),
+        );
+
+        if (ext === "pdf") {
+          const donorPdf = await PDFDocument.load(arrayBuffer);
+          const pages = await mergedPdf.copyPages(
+            donorPdf,
+            donorPdf.getPageIndices(),
+          );
+          pages.forEach((p) => mergedPdf.addPage(p));
+        } else if (["png", "jpg", "jpeg"].includes(ext || "")) {
+          let img;
+          if (ext === "png") {
+            img = await mergedPdf.embedPng(arrayBuffer);
+          } else {
+            img = await mergedPdf.embedJpg(arrayBuffer);
+          }
+          const dims = img.scale(1);
+          const imgPage = mergedPdf.addPage([dims.width, dims.height]);
+          imgPage.drawImage(img, {
+            x: 0,
+            y: 0,
+            width: dims.width,
+            height: dims.height,
+          });
+        }
+      }
+
+      const pdfBytes = await mergedPdf.save();
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Health_Report.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      setHealthDialogOpen(false);
+      setSelectedForReport([]);
+      toast.success("Health report exported successfully");
+    } catch (error) {
+      console.error("Error creating health report:", error);
+      toast.error("Failed to export health report");
+    } finally {
+      setReportProcessing(false);
+    }
+  }
+
   const filteredFiles = files.filter((file) =>
     file.filename.toLowerCase().includes(search.toLowerCase()),
   );
@@ -274,6 +359,7 @@ export default function DocumentsPage() {
                   </motion.p>
                 </motion.div>
               </motion.div>
+
               <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mt-4 md:mt-0">
                 <div className="relative w-full max-w-md">
                   <Search
@@ -303,6 +389,89 @@ export default function DocumentsPage() {
                       <Download size={18} />
                       Export All
                     </Button>
+                  </motion.div>
+
+                  <motion.div
+                    variants={fadeInUp}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    <Button
+                      onClick={() => setHealthDialogOpen(true)}
+                      className="whitespace-nowrap flex items-center gap-2 cursor-pointer"
+                      variant="secondary"
+                    >
+                      <HeartPulse size={18} />
+                      Export Health Report
+                    </Button>
+
+                    <Dialog
+                      open={healthDialogOpen}
+                      onOpenChange={setHealthDialogOpen}
+                    >
+                      <DialogContent className="max-w-lg w-full">
+                        <DialogHeader>
+                          <DialogTitle>Export Health Report</DialogTitle>
+                          <DialogDescription>
+                            Select which PDF or image documents you would like
+                            to include in your consolidated health report.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="mt-4 max-h-64 overflow-y-auto">
+                          {filteredFiles
+                            .filter((file) =>
+                              /\.(pdf|png|jpe?g)$/i.test(file.filename),
+                            )
+                            .map((file) => (
+                              <label
+                                key={file.id}
+                                className="flex items-center gap-2 mb-2"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedForReport.includes(file.id)}
+                                  onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    setSelectedForReport((prev) =>
+                                      checked
+                                        ? [...prev, file.id]
+                                        : prev.filter((id) => id !== file.id),
+                                    );
+                                  }}
+                                />
+                                <span>{file.filename}</span>
+                              </label>
+                            ))}
+                          {filteredFiles.filter((file) =>
+                            /\.(pdf|png|jpe?g)$/i.test(file.filename),
+                          ).length === 0 && (
+                            <p className="text-gray-500">
+                              No PDF or image documents available.
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex justify-end gap-4 mt-4">
+                          <Button
+                            variant="secondary"
+                            onClick={() => setHealthDialogOpen(false)}
+                            className="cursor-pointer"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleExportHealthReport}
+                            disabled={reportProcessing}
+                            className="cursor-pointer"
+                          >
+                            {reportProcessing ? (
+                              <Loader2 className="animate-spin h-4 w-4" />
+                            ) : (
+                              "Export"
+                            )}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </motion.div>
 
                   <motion.div
@@ -350,55 +519,6 @@ export default function DocumentsPage() {
                             ) : (
                               "Upload"
                             )}
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-
-                    <Dialog
-                      open={confirmDeleteDialogOpen}
-                      onOpenChange={setConfirmDeleteDialogOpen}
-                    >
-                      <DialogContent className="max-w-sm w-full">
-                        <DialogHeader>
-                          <DialogTitle>Confirm Deletion</DialogTitle>
-                          <DialogDescription>
-                            Are you sure you want to delete this file?
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="flex justify-end gap-4 mt-4">
-                          <Button
-                            variant="secondary"
-                            onClick={() => {
-                              setConfirmDeleteDialogOpen(false);
-                              setFileToDelete(null);
-                            }}
-                            className="cursor-pointer"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={async () => {
-                              if (fileToDelete) {
-                                try {
-                                  await supabase
-                                    .from("files")
-                                    .delete()
-                                    .eq("id", fileToDelete);
-                                  toast.success("File deleted successfully");
-                                  fetchFiles();
-                                } catch (error) {
-                                  console.error("Error deleting file:", error);
-                                  toast.error("Failed to delete file");
-                                }
-                              }
-                              setConfirmDeleteDialogOpen(false);
-                              setFileToDelete(null);
-                            }}
-                            className="cursor-pointer"
-                          >
-                            Yes, Delete
                           </Button>
                         </div>
                       </DialogContent>
@@ -585,6 +705,55 @@ export default function DocumentsPage() {
                 </Button>
               </motion.div>
             </div>
+
+            <Dialog
+              open={confirmDeleteDialogOpen}
+              onOpenChange={setConfirmDeleteDialogOpen}
+            >
+              <DialogContent className="max-w-sm w-full">
+                <DialogHeader>
+                  <DialogTitle>Confirm Deletion</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to delete this file?
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end gap-4 mt-4">
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setConfirmDeleteDialogOpen(false);
+                      setFileToDelete(null);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={async () => {
+                      if (fileToDelete) {
+                        try {
+                          await supabase
+                            .from("files")
+                            .delete()
+                            .eq("id", fileToDelete);
+                          toast.success("File deleted successfully");
+                          fetchFiles();
+                        } catch (error) {
+                          console.error("Error deleting file:", error);
+                          toast.error("Failed to delete file");
+                        }
+                      }
+                      setConfirmDeleteDialogOpen(false);
+                      setFileToDelete(null);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    Yes, Delete
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </main>
       </div>
