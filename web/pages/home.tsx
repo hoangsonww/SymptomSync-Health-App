@@ -1261,6 +1261,15 @@ export default function HomePage() {
         animate="visible"
         className="relative p-6 md:p-8 flex-1 overflow-y-auto space-y-8"
       >
+        <style jsx global>{`
+          html {
+            scroll-behavior: smooth;
+          }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
+        `}</style>
         {isLoading && (
           <>
             <div className="absolute inset-0 z-50 bg-background bg-opacity-50" />

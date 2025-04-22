@@ -156,6 +156,10 @@ export default function Home() {
           html {
             scroll-behavior: smooth;
           }
+          
+          html, body {
+            overscroll-behavior: none;
+          }
         `}</style>
 
         <section className="bg-primary text-primary-foreground min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
