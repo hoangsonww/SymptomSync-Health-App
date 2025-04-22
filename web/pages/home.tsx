@@ -9,7 +9,7 @@ import {
   Trash2,
   Loader2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import {
   MedicationReminder,
