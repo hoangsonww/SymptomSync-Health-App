@@ -821,7 +821,11 @@ export default function CalendarPage() {
             return e;
           }),
         );
-        toast.success("Appointment updated");
+        sendBroadcast(
+          "appt-update",
+          `Appointment reminder "${editTitle}" updated successfully.`,
+        );
+        toast.success("Appointment updated successfully!");
       } else {
         const withoutPrefix = dialogEvent.id.slice(4);
         const lastDash = withoutPrefix.lastIndexOf("-");

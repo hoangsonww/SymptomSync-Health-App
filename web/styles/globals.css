@@ -236,3 +236,11 @@
 .dark .rbc-agenda-date-cell {
   background-color: var(--background);
 }
+
+.rbc-header.rbc-today {
+  color: var(--text-foreground, #000000);
+}
+
+.dark .rbc-header.rbc-today {
+  color: #000 !important;
+}
