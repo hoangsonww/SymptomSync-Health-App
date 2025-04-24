@@ -113,15 +113,19 @@ SymptomSync offers a range of features to help users manage their health effecti
 │ - TailwindCSS    │                   └───────────────────────┘
 │ - React Query    │
 └──────────────────┘
+         ↑
          │
          │ REST
          ↓
 ┌──────────────────┐
 │   Supabase API   │
 │ - Auth           │
-│ - Functions (RPC)│
+│ - Functions      │
 │ - Database       │
 │ - Storage        │
+│ - Cron Jobs      │
+│ - Triggers       │
+│ - RLS Policies   │
 └──────────────────┘
 ```
 
@@ -228,16 +232,16 @@ If we had more time, we would have added:
 
 ## Authors
 
+A big thank you to our team members for their hard work and dedication:
+
 - David Nguyen
 - Erica Ocbu
-- Caroline Bryan
-- Kathryn Brown
 
 ---
 
 ## License
 
-[MIT License](LICENSE)
+[MIT License](LICENSE) - Feel free to use, modify, and distribute this code as you wish. Contributions are welcome!
 
 ---
 
