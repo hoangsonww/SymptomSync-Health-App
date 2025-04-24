@@ -85,6 +85,10 @@ const ChartBlock: React.FC<{ spec: ChartConfiguration }> = memo(({ spec }) => {
     const mount = () => {
       const cfg = structuredClone(spec) as ChartConfiguration;
 
+      const canvas = canvasRef.current!;
+      const old = Chart.getChart(canvas);
+      if (old) old.destroy();
+
       // normalize labels
       if (cfg.data?.labels) {
         cfg.data.labels = cfg.data.labels.map((lbl) =>
@@ -156,6 +160,11 @@ const ChartBlock: React.FC<{ spec: ChartConfiguration }> = memo(({ spec }) => {
     } else {
       setTimeout(mount, 200);
     }
+
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
   }, [visible, spec, isDark]);
 
   // update only colors on theme change
