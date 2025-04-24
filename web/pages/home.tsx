@@ -1070,7 +1070,7 @@ export default function HomePage() {
     labels: trendDates,
     datasets: [
       {
-        label: "Avg. Symptom Severity",
+        label: "Avg. Symptom Severity (lower is better)",
         data: avgSeverity,
         borderColor: colorSet[0],
         backgroundColor: colorSet[0],

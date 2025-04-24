@@ -86,15 +86,8 @@ export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     if (!userId) return;
 
-    // We only wanna show due reminders that have passed for not too long
-    // If you see a reminder has already been toasted, it's intentional
-    // and it's because the reminder is overdue.
-    const MAX_OVERDUE_THRESHOLD = 1000 * 60 * 60;
-
-    const subscription = supabase
-      .channel(`user-notifications-${userId}`, {
-        config: { broadcast: { self: false } },
-      })
+    const channel = supabase
+      .channel(`reminders-${userId}`)
       .on(
         "postgres_changes",
         {
@@ -104,26 +97,17 @@ export default function App({ Component, pageProps }: AppProps) {
           filter: `user_profile_id=eq.${userId}`,
         },
         (payload) => {
-          if (payload?.new) {
-            const notification = payload.new;
-            const dueTime = new Date(notification.due_time);
-            const now = new Date();
-            if (now.getTime() - dueTime.getTime() > MAX_OVERDUE_THRESHOLD) {
-              return;
-            }
-            toast(`Reminder: ${notification.title} is due now!`, {
-              description:
-                notification.type === "appointment"
-                  ? "You have an appointment scheduled."
-                  : "Time to take your medication.",
-            });
-          }
+          const { title, body } = payload.new as {
+            title: string;
+            body: string;
+          };
+          toast.info(title, { description: body });
         },
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(subscription);
+      supabase.removeChannel(channel);
     };
   }, [userId]);
 
