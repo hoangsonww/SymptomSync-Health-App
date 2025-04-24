@@ -52,13 +52,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,7 +71,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import ChartBlock from "@/components/ChartBlock";
+import { Line, Bar, Doughnut, Radar, PolarArea } from "react-chartjs-2";
 import Head from "next/head";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -99,6 +93,71 @@ ChartJS.register(
   Tooltip,
   Legend,
 );
+
+/**
+ * This hook checks if an element is in the viewport using the Intersection Observer API.
+ * It sets up an observer on the provided ref and updates the visibility state
+ * when the element comes into view.
+ *
+ * @param ref - The ref of the element to observe
+ * @param rootMargin - The margin around the root element
+ * @returns - A boolean indicating whether the element is in view
+ */
+function useInView(
+  ref: React.RefObject<Element>,
+  rootMargin = "0px 0px -20% 0px",
+): boolean {
+  const [visible, setVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!ref.current || visible) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { root: null, rootMargin },
+    );
+
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [ref, rootMargin, visible]);
+
+  return visible;
+}
+
+/**
+ * This component lazily loads its children when it comes into view.
+ * It uses the useInView hook to determine if the element is in the viewport.
+ *
+ * @param param0 - The props for the LazyChart component
+ * @returns - A div that lazily loads its children when in view
+ */
+function LazyChart({
+  height = "250px",
+  children,
+}: {
+  height?: string | number;
+  children: React.ReactNode;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const show = useInView(ref);
+
+  return (
+    <div
+      ref={ref}
+      style={{ minHeight: typeof height === "number" ? `${height}px` : height }}
+      className="w-full h-full flex items-center justify-center"
+    >
+      {show ? children : null}
+    </div>
+  );
+}
 
 const containerVariants = {
   hidden: { opacity: 0, pointerEvents: "none" },
@@ -210,8 +269,10 @@ function AnimatedCounter({
 export default function HomePage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState("User");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [medications, setMedications] = useState<MedicationReminder[]>([]);
   const [appointments, setAppointments] = useState<AppointmentReminder[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [logs, setLogs] = useState<HealthLog[]>([]);
   const [totalMeds, setTotalMeds] = useState(0);
   const [totalAppointments, setTotalAppointments] = useState(0);
@@ -300,42 +361,36 @@ export default function HomePage() {
     [],
   );
   const [allLogs, setAllLogs] = useState<HealthLog[]>([]);
+
   const [medSearch, setMedSearch] = useState("");
   const [debouncedMedSearch, setDebouncedMedSearch] = useState("");
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedMedSearch(medSearch), 300);
-    return () => clearTimeout(handler);
+    const t = setTimeout(() => setDebouncedMedSearch(medSearch), 300);
+    return () => clearTimeout(t);
   }, [medSearch]);
+  useEffect(() => {
+    setMedPage(1);
+  }, [debouncedMedSearch]);
 
   const [apptSearch, setApptSearch] = useState("");
   const [debouncedApptSearch, setDebouncedApptSearch] = useState("");
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedApptSearch(apptSearch), 300);
-    return () => clearTimeout(handler);
+    const t = setTimeout(() => setDebouncedApptSearch(apptSearch), 300);
+    return () => clearTimeout(t);
   }, [apptSearch]);
+  useEffect(() => {
+    setApptPage(1);
+  }, [debouncedApptSearch]);
 
   const [logSearch, setLogSearch] = useState("");
   const [debouncedLogSearch, setDebouncedLogSearch] = useState("");
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedLogSearch(logSearch), 300);
-    return () => clearTimeout(handler);
+    const t = setTimeout(() => setDebouncedLogSearch(logSearch), 300);
+    return () => clearTimeout(t);
   }, [logSearch]);
-
-  async function fetchAllRecords(uid: string) {
-    try {
-      const [meds, appts, logs] = await Promise.all([
-        getMedicationRemindersByUser(uid),
-        getAppointmentRemindersByUser(uid),
-        getHealthLogsByUser(uid),
-      ]);
-      setAllMedications(meds);
-      setAllAppointments(appts);
-      setAllLogs(logs);
-    } catch (err) {
-      console.error("Error fetching all records:", err);
-      toast.error("Error loading chart data.");
-    }
-  }
+  useEffect(() => {
+    setLogPage(1);
+  }, [debouncedLogSearch]);
 
   /**
    * This function fetches all data for the user, including medications, appointments, and health logs
@@ -357,23 +412,43 @@ export default function HomePage() {
       setTotalMeds(medRes.count);
       setTotalAppointments(apptsRes.count);
       setTotalLogs(userLogs.count);
+
+      await fetchAllRecords(uid);
+
       setIsLoading(false);
     } catch (err) {
       toast.error("Error fetching data.");
       console.error("Error fetching data:", err);
       setIsLoading(false);
-    } finally {
-      setIsLoading(false);
+    }
+  }
+
+  /**
+   * Fetches all records (medications, appointments, and health logs) for the user
+   * from the database. This is used to update the state when a new record is added
+   * from another device or tab.
+   *
+   * @param uid - The user ID
+   */
+  async function fetchAllRecords(uid: string) {
+    try {
+      const [meds, appts, logs] = await Promise.all([
+        getMedicationRemindersByUser(uid),
+        getAppointmentRemindersByUser(uid),
+        getHealthLogsByUser(uid),
+      ]);
+      setAllMedications(meds);
+      setAllAppointments(appts);
+      setAllLogs(logs);
+    } catch (err) {
+      console.error("Error fetching all records:", err);
+      toast.error("Error loading chart data.");
     }
   }
 
   useEffect(() => {
     if (userId) fetchAllData(userId);
   }, [userId, medPage, apptPage, logPage]);
-
-  useEffect(() => {
-    if (userId) fetchAllRecords(userId);
-  }, [userId]);
 
   /**
    * This function sends a broadcast message to all connected clients using the Supabase
@@ -423,7 +498,6 @@ export default function HomePage() {
       }
 
       await fetchAllData(user.id);
-      await fetchAllRecords(user.id);
 
       const medsChannel = supabase.channel("medicationChanges");
       medsChannel
@@ -1015,9 +1089,61 @@ export default function HomePage() {
     }
   }
 
+  /**
+   * Filters the medications, appointments, and health logs based on the search input
+   * and pagination
+   */
+  const filteredMeds = allMedications.filter((m) =>
+    m.medication_name
+      .toLowerCase()
+      .includes(debouncedMedSearch.trim().toLowerCase()),
+  );
+
+  const medsForDisplay = debouncedMedSearch.trim()
+    ? filteredMeds
+    : allMedications;
+  const medsTotalPages = Math.max(1, Math.ceil(medsForDisplay.length / 30));
+  const medsPageItems = medsForDisplay
+    .slice((medPage - 1) * 30, medPage * 30)
+    .sort(
+      (a, b) =>
+        new Date(a.reminder_time).getTime() -
+        new Date(b.reminder_time).getTime(),
+    );
+
+  const filteredAppts = allAppointments.filter((a) =>
+    a.appointment_name
+      .toLowerCase()
+      .includes(debouncedApptSearch.trim().toLowerCase()),
+  );
+
+  const apptsForDisplay = debouncedApptSearch.trim()
+    ? filteredAppts
+    : allAppointments;
+  const apptTotalPages = Math.max(1, Math.ceil(apptsForDisplay.length / 50));
+  const apptPageItems = apptsForDisplay
+    .slice((apptPage - 1) * 50, apptPage * 50)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const filteredLogs = allLogs.filter((l) => {
+    const t = debouncedLogSearch.trim().toLowerCase();
+    return (
+      l.symptom_type?.toLowerCase().includes(t) ||
+      l.notes?.toLowerCase().includes(t)
+    );
+  });
+
+  const logsForDisplay = debouncedLogSearch.trim() ? filteredLogs : allLogs;
+  const logsTotalPages = Math.max(1, Math.ceil(logsForDisplay.length / 20));
+  const logsPageItems = logsForDisplay
+    .slice((logPage - 1) * 20, logPage * 20)
+    .sort(
+      (a, b) =>
+        new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+    );
+
   const { greeting, emoji } = getGreetingParts();
 
-  // Color palette for the charts
   const colorSet = [
     "#344966",
     "#F97F51",
@@ -1033,45 +1159,57 @@ export default function HomePage() {
     "#7D7D7D",
   ];
 
-  const sortedLogs = [...allLogs].sort(
-    (a, b) =>
-      new Date(a.start_date).valueOf() - new Date(b.start_date).valueOf(),
-  );
+  /**
+   * For the Health Trends charts, sometimes there are too many data points
+   * which makes the chart unreadable. So, this logic takes every health log,
+   * groups them by calendar day, sums and counts the severities for each day
+   * to obtain a daily average, orders those days chronologically. If the
+   * series would exceed a readability threshold (50 data points) then we
+   * compresses it by slicing the timeline into equal windows and
+   * replacing each window with a single representative point
+   * (which is its first date and the window’s average severity).
+   */
+  const severityBucket: Record<string, { sum: number; n: number }> = {};
 
-  const severityLabels = sortedLogs.map((log) =>
-    format(new Date(log.start_date), "yyyy-MM-dd"),
-  );
-
-  // ─── Group by day & average severity ───
-  interface DayAgg {
-    sum: number;
-    count: number;
-  }
-
-  const dailyAgg: Record<string, DayAgg> = {};
-  allLogs.forEach((log) => {
-    const day = format(new Date(log.start_date), "yyyy-MM-dd");
-    const sev = log.severity ?? 0;
-    if (!dailyAgg[day]) dailyAgg[day] = { sum: 0, count: 0 };
-    dailyAgg[day].sum += sev;
-    dailyAgg[day].count += 1;
+  allLogs.forEach((l) => {
+    const d = format(new Date(l.start_date), "yyyy-MM-dd");
+    const sev = l.severity ?? 0;
+    if (!severityBucket[d]) severityBucket[d] = { sum: 0, n: 0 };
+    severityBucket[d].sum += sev;
+    severityBucket[d].n += 1;
   });
 
-  // Sort the days
-  const trendDates = Object.keys(dailyAgg).sort();
-
-  // Build labels & averaged data
-  const avgSeverity = trendDates.map(
-    (day) => dailyAgg[day].sum / dailyAgg[day].count,
+  const dayLabels = Object.keys(severityBucket).sort();
+  const dayValues = dayLabels.map(
+    (d) => +(severityBucket[d].sum / severityBucket[d].n).toFixed(2),
   );
 
-  // Now feed these into your line chart:
+  const MAX_POINTS = 50;
+  if (dayLabels.length > MAX_POINTS) {
+    const step = Math.ceil(dayLabels.length / MAX_POINTS);
+    const sampledLabels: string[] = [];
+    const sampledValues: number[] = [];
+
+    for (let i = 0; i < dayLabels.length; i += step) {
+      const slice = dayValues.slice(i, i + step);
+      const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
+      sampledLabels.push(dayLabels[i]);
+      sampledValues.push(+avg.toFixed(2));
+    }
+
+    // overwrite with the sampled arrays
+    dayLabels.splice(0, dayLabels.length, ...sampledLabels);
+    dayValues.splice(0, dayValues.length, ...sampledValues);
+  }
+
+  const severityLabels = dayLabels;
+
   const severityLineData = {
-    labels: trendDates,
+    labels: dayLabels,
     datasets: [
       {
-        label: "Avg. Symptom Severity (lower is better)",
-        data: avgSeverity,
+        label: "Avg. Symptom Severity (lower = better)",
+        data: dayValues,
         borderColor: colorSet[0],
         backgroundColor: colorSet[0],
         tension: 0.2,
@@ -1081,13 +1219,12 @@ export default function HomePage() {
   };
 
   const apptsCountMap: Record<string, number> = {};
-  allAppointments.forEach((appt) => {
-    const day = format(new Date(appt.date), "yyyy-MM-dd");
-    apptsCountMap[day] = (apptsCountMap[day] || 0) + 1;
+  allAppointments.forEach((a) => {
+    const d = format(new Date(a.date), "yyyy-MM-dd");
+    apptsCountMap[d] = (apptsCountMap[d] || 0) + 1;
   });
-
   const apptLabels = Object.keys(apptsCountMap).sort();
-  const apptValues = apptLabels.map((day) => apptsCountMap[day]);
+  const apptValues = apptLabels.map((d) => apptsCountMap[d]);
   const appointmentsBarData = {
     labels: apptLabels,
     datasets: [
@@ -1102,15 +1239,15 @@ export default function HomePage() {
   };
 
   const symptomFreqMap: Record<string, number> = {};
-  allLogs.forEach((log) => {
-    (log.symptom_type || "")
+  allLogs.forEach((l) =>
+    (l.symptom_type || "")
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean)
-      .forEach((sym) => (symptomFreqMap[sym] = (symptomFreqMap[sym] || 0) + 1));
-  });
+      .forEach((s) => (symptomFreqMap[s] = (symptomFreqMap[s] || 0) + 1)),
+  );
   const doughnutLabels = Object.keys(symptomFreqMap);
-  const doughnutValues = doughnutLabels.map((l) => symptomFreqMap[l]);
+  const doughnutValues = doughnutLabels.map((k) => symptomFreqMap[k]);
   const symptomDoughnutData = {
     labels: doughnutLabels,
     datasets: [
@@ -1125,16 +1262,14 @@ export default function HomePage() {
   };
 
   const moodCountMap: Record<string, number> = {};
-  allLogs.forEach((log) => {
-    const m = (log.mood || "").toLowerCase();
+  allLogs.forEach((l) => {
+    const m = (l.mood || "").toLowerCase();
     if (m) moodCountMap[m] = (moodCountMap[m] || 0) + 1;
   });
   const moodLabels = Object.keys(moodCountMap).map(
-    (m) => m[0].toUpperCase() + m.slice(1),
+    (m) => m.charAt(0).toUpperCase() + m.slice(1),
   );
-  const moodValues = moodLabels.map(
-    (label) => moodCountMap[label.toLowerCase()],
-  );
+  const moodValues = moodLabels.map((m) => moodCountMap[m.toLowerCase()]);
   const moodRadarData = {
     labels: moodLabels,
     datasets: [
@@ -1147,15 +1282,13 @@ export default function HomePage() {
     ],
   };
 
-  const severityCountMap: Record<string, number> = {};
-  allLogs.forEach((log) => {
-    const s = (log.severity ?? 0).toString();
-    severityCountMap[s] = (severityCountMap[s] || 0) + 1;
+  const sevCount: Record<number, number> = {};
+  allLogs.forEach((l) => {
+    const s = l.severity ?? 0;
+    sevCount[s] = (sevCount[s] || 0) + 1;
   });
-  const polarSeverityLabels = Object.keys(severityCountMap).sort();
-  const polarSeverityValues = polarSeverityLabels.map(
-    (k) => severityCountMap[k],
-  );
+  const polarSeverityLabels = Object.keys(sevCount).sort();
+  const polarSeverityValues = polarSeverityLabels.map((k) => sevCount[+k]);
   const severityPolarData = {
     labels: polarSeverityLabels.map((l) => `Severity ${l}`),
     datasets: [
@@ -1170,14 +1303,12 @@ export default function HomePage() {
   };
 
   const apptHourMap: Record<number, number> = {};
-  allAppointments.forEach((appt) => {
-    const hr = new Date(appt.date).getHours();
+  allAppointments.forEach((a) => {
+    const hr = new Date(a.date).getHours();
     apptHourMap[hr] = (apptHourMap[hr] || 0) + 1;
   });
   const hourLabels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
-  const hourValues = hourLabels.map(
-    (lbl) => apptHourMap[+lbl.slice(0, lbl.indexOf(":"))] || 0,
-  );
+  const hourValues = hourLabels.map((l) => apptHourMap[+l.split(":")[0]] || 0);
   const appointmentsHourBarData = {
     labels: hourLabels,
     datasets: [
@@ -1191,13 +1322,13 @@ export default function HomePage() {
     ],
   };
 
-  const recurrenceFreqMap: Record<string, number> = {};
-  allMedications.forEach((med) => {
-    const r = med.recurrence || "N/A";
-    recurrenceFreqMap[r] = (recurrenceFreqMap[r] || 0) + 1;
+  const recMap: Record<string, number> = {};
+  allMedications.forEach((m) => {
+    const r = m.recurrence || "N/A";
+    recMap[r] = (recMap[r] || 0) + 1;
   });
-  const recurrenceLabels = Object.keys(recurrenceFreqMap);
-  const recurrenceValues = recurrenceLabels.map((l) => recurrenceFreqMap[l]);
+  const recurrenceLabels = Object.keys(recMap);
+  const recurrenceValues = recurrenceLabels.map((k) => recMap[k]);
   const medicationRecurrenceData = {
     labels: recurrenceLabels,
     datasets: [
@@ -1451,13 +1582,7 @@ export default function HomePage() {
                 </p>
               ) : (
                 <div className="w-full h-[380px]">
-                  <ChartBlock
-                    spec={{
-                      type: "line",
-                      data: severityLineData,
-                      options: defaultChartOptions,
-                    }}
-                  />
+                  <Line data={severityLineData} options={defaultChartOptions} />
                 </div>
               )}
             </CardContent>
@@ -1481,13 +1606,12 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <ChartBlock
-                      spec={{
-                        type: "bar",
-                        data: appointmentsBarData,
-                        options: defaultChartOptions,
-                      }}
-                    />
+                    <LazyChart>
+                      <Bar
+                        data={appointmentsBarData}
+                        options={defaultChartOptions}
+                      />
+                    </LazyChart>
                   </div>
                 )}
               </CardContent>
@@ -1506,13 +1630,12 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <ChartBlock
-                      spec={{
-                        type: "doughnut",
-                        data: symptomDoughnutData,
-                        options: doughnutOptions,
-                      }}
-                    />
+                    <LazyChart>
+                      <Doughnut
+                        data={symptomDoughnutData}
+                        options={doughnutOptions}
+                      />
+                    </LazyChart>
                   </div>
                 )}
               </CardContent>
@@ -1531,13 +1654,9 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <ChartBlock
-                      spec={{
-                        type: "radar",
-                        data: moodRadarData,
-                        options: radarOptions,
-                      }}
-                    />
+                    <LazyChart>
+                      <Radar data={moodRadarData} options={radarOptions} />
+                    </LazyChart>
                   </div>
                 )}
               </CardContent>
@@ -1556,13 +1675,12 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <ChartBlock
-                      spec={{
-                        type: "polarArea",
-                        data: severityPolarData,
-                        options: polarAreaOptions,
-                      }}
-                    />
+                    <LazyChart>
+                      <PolarArea
+                        data={severityPolarData}
+                        options={polarAreaOptions}
+                      />
+                    </LazyChart>
                   </div>
                 )}
               </CardContent>
@@ -1581,13 +1699,12 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <ChartBlock
-                      spec={{
-                        type: "bar",
-                        data: appointmentsHourBarData,
-                        options: defaultChartOptions,
-                      }}
-                    />
+                    <LazyChart>
+                      <Bar
+                        data={appointmentsHourBarData}
+                        options={defaultChartOptions}
+                      />
+                    </LazyChart>
                   </div>
                 )}
               </CardContent>
@@ -1606,13 +1723,12 @@ export default function HomePage() {
                   </p>
                 ) : (
                   <div className="w-full h-[250px]">
-                    <ChartBlock
-                      spec={{
-                        type: "bar",
-                        data: medicationRecurrenceData,
-                        options: defaultChartOptions,
-                      }}
-                    />
+                    <LazyChart>
+                      <Bar
+                        data={medicationRecurrenceData}
+                        options={defaultChartOptions}
+                      />
+                    </LazyChart>
                   </div>
                 )}
               </CardContent>
@@ -1629,10 +1745,6 @@ export default function HomePage() {
             <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
               <CardHeader className="mt-8 text-xl">
                 <CardTitle>Medications</CardTitle>
-                <CardDescription>
-                  Here are all your medication reminders. Remember to take them
-                  on time!
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 text-sm pb-4">
                 <div className="relative mb-4 mt-0">
@@ -1645,81 +1757,70 @@ export default function HomePage() {
                   />
                 </div>
 
-                {medications
-                  .filter((med) =>
-                    med.medication_name
-                      .toLowerCase()
-                      .includes(debouncedMedSearch.trim().toLowerCase()),
-                  )
-                  .sort(
-                    (a, b) =>
-                      new Date(a.reminder_time).getTime() -
-                      new Date(b.reminder_time).getTime(),
-                  )
-                  .map((med, idx) => (
-                    <div
-                      key={med.id}
-                      className="p-4 rounded-lg border border-gray-200 bg-background text-foreground shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
-                      style={getStaggerStyle(idx)}
-                    >
-                      <div className="mb-3">
-                        <h3 className="text-lg font-semibold text-foreground0">
-                          💊 {safeDisplay(med.medication_name)}
-                        </h3>
-                      </div>
-                      <div className="text-sm text-foreground space-y-1">
-                        <p>
-                          <strong>Dosage:</strong> {safeDisplay(med.dosage)}
-                        </p>
-                        <div className="flex items-center flex-wrap">
-                          <p className="font-bold mr-1 inline">Schedule:</p>
-                          <span className="inline-flex items-center gap-1">
-                            <span>
-                              {new Date(med.reminder_time).toLocaleDateString()}
-                            </span>
-                            <span>at</span>
-                            <span>
-                              {new Date(med.reminder_time).toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )}
-                            </span>
-                          </span>
-                        </div>
-                        <p>
-                          <strong>Recurrence:</strong>{" "}
-                          {safeDisplay(med.recurrence)}
-                        </p>
-                        <p>
-                          <strong>Created:</strong>{" "}
-                          {new Date(med.created_at).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-4">
-                        <Button
-                          size="sm"
-                          onClick={() => openEditMedDialog(med)}
-                          className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          <Edit3 className="w-4 h-4 mr-1" /> View / Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            setDeleteMedId(med.id);
-                            setShowDeleteMedDialog(true);
-                          }}
-                          className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" /> Delete
-                        </Button>
-                      </div>
+                {medsPageItems.map((med, idx) => (
+                  <div
+                    key={med.id}
+                    className="p-4 rounded-lg border border-gray-200 bg-background text-foreground shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
+                    style={getStaggerStyle(idx)}
+                  >
+                    <div className="mb-3">
+                      <h3 className="text-lg font-semibold text-foreground0">
+                        💊 {safeDisplay(med.medication_name)}
+                      </h3>
                     </div>
-                  ))}
+                    <div className="text-sm text-foreground space-y-1">
+                      <p>
+                        <strong>Dosage:</strong> {safeDisplay(med.dosage)}
+                      </p>
+                      <div className="flex items-center flex-wrap">
+                        <p className="font-bold mr-1 inline">Schedule:</p>
+                        <span className="inline-flex items-center gap-1">
+                          <span>
+                            {new Date(med.reminder_time).toLocaleDateString()}
+                          </span>
+                          <span>at</span>
+                          <span>
+                            {new Date(med.reminder_time).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </span>
+                        </span>
+                      </div>
+                      <p>
+                        <strong>Recurrence:</strong>{" "}
+                        {safeDisplay(med.recurrence)}
+                      </p>
+                      <p>
+                        <strong>Created:</strong>{" "}
+                        {new Date(med.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      <Button
+                        size="sm"
+                        onClick={() => openEditMedDialog(med)}
+                        className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                      >
+                        <Edit3 className="w-4 h-4 mr-1" /> View / Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setDeleteMedId(med.id);
+                          setShowDeleteMedDialog(true);
+                        }}
+                        className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
 
                 <div className="flex items-center justify-between py-2">
                   <Button
@@ -1733,7 +1834,7 @@ export default function HomePage() {
                   </Button>
 
                   <span>
-                    Page {medPage} of {Math.ceil(totalMeds / 30)}
+                    Page {medPage} of {medsTotalPages}
                   </span>
 
                   <Button
@@ -1758,10 +1859,6 @@ export default function HomePage() {
             <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
               <CardHeader className="text-xl mt-8">
                 <CardTitle>Appointments</CardTitle>
-                <CardDescription>
-                  Here are all your appointment reminders. Don&apos;t forget
-                  them!
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 text-sm pb-4">
                 <div className="relative mb-4 mt-0">
@@ -1774,62 +1871,52 @@ export default function HomePage() {
                   />
                 </div>
 
-                {appointments
-                  .filter((appt) =>
-                    appt.appointment_name
-                      .toLowerCase()
-                      .includes(debouncedApptSearch.trim().toLowerCase()),
-                  )
-                  .sort(
-                    (a, b) =>
-                      new Date(a.date).getTime() - new Date(b.date).getTime(),
-                  )
-                  .map((appt, idx) => (
-                    <div
-                      key={appt.id}
-                      className="p-4 rounded-lg border border-gray-200 bg-background shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
-                      style={getStaggerStyle(idx)}
-                    >
-                      <div className="mb-3">
-                        <h3 className="text-lg font-semibold text-foreground">
-                          🗓️ {safeDisplay(appt.appointment_name)}
-                        </h3>
-                      </div>
-                      <div className="mb-4 text-sm text-foreground flex flex-wrap items-center gap-2">
-                        <p className="font-bold inline">Date:</p>
-                        <p className="inline">
-                          {new Date(appt.date).toLocaleDateString()}
-                        </p>
-                        <p className="font-bold inline ml-4">Time:</p>
-                        <p className="inline">
-                          {new Date(appt.date).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-3">
-                        <Button
-                          size="sm"
-                          onClick={() => openEditApptDialog(appt)}
-                          className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          <Edit3 className="w-4 h-4 mr-1" /> View / Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            setDeleteApptId(appt.id);
-                            setShowDeleteApptDialog(true);
-                          }}
-                          className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" /> Delete
-                        </Button>
-                      </div>
+                {apptPageItems.map((appt, idx) => (
+                  <div
+                    key={appt.id}
+                    className="p-4 rounded-lg border border-gray-200 bg-background shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
+                    style={getStaggerStyle(idx)}
+                  >
+                    <div className="mb-3">
+                      <h3 className="text-lg font-semibold text-foreground">
+                        🗓️ {safeDisplay(appt.appointment_name)}
+                      </h3>
                     </div>
-                  ))}
+                    <div className="mb-4 text-sm text-foreground flex flex-wrap items-center gap-2">
+                      <p className="font-bold inline">Date:</p>
+                      <p className="inline">
+                        {new Date(appt.date).toLocaleDateString()}
+                      </p>
+                      <p className="font-bold inline ml-4">Time:</p>
+                      <p className="inline">
+                        {new Date(appt.date).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        size="sm"
+                        onClick={() => openEditApptDialog(appt)}
+                        className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                      >
+                        <Edit3 className="w-4 h-4 mr-1" /> View / Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setDeleteApptId(appt.id);
+                          setShowDeleteApptDialog(true);
+                        }}
+                        className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
 
                 <div className="flex items-center justify-between py-2">
                   <Button
@@ -1843,7 +1930,7 @@ export default function HomePage() {
                   </Button>
 
                   <span>
-                    Page {apptPage} of {Math.ceil(totalAppointments / 50)}
+                    Page {apptPage} of {apptTotalPages}
                   </span>
 
                   <Button
@@ -1868,9 +1955,6 @@ export default function HomePage() {
             <Card className="bg-card border border-border rounded-lg min-w-[280px] transition-all hover:shadow-xl p-0">
               <CardHeader className="mt-8 text-xl">
                 <CardTitle>Health Logs</CardTitle>
-                <CardDescription>
-                  Here are all your health logs. Keep track of your symptoms!
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 text-sm pb-4 text-foreground">
                 <div className="relative mb-4">
@@ -1883,141 +1967,146 @@ export default function HomePage() {
                   />
                 </div>
 
-                {logs
-                  .filter((log) => {
-                    const term = debouncedLogSearch.trim().toLowerCase();
-                    return (
-                      log.symptom_type?.toLowerCase().includes(term) ||
-                      log.notes?.toLowerCase().includes(term)
-                    );
-                  })
-                  .sort(
-                    (a, b) =>
-                      new Date(a.start_date).getTime() -
-                      new Date(b.start_date).getTime(),
-                  )
-                  .map((log, idx) => {
-                    let vitalsData = null;
-                    if (log.vitals) {
-                      try {
-                        vitalsData =
-                          typeof log.vitals === "string"
-                            ? JSON.parse(log.vitals)
-                            : log.vitals;
-                      } catch {
-                        vitalsData = null;
-                      }
+                {logsPageItems.map((log, idx) => {
+                  let vitalsData = null;
+                  if (log.vitals) {
+                    try {
+                      vitalsData =
+                        typeof log.vitals === "string"
+                          ? JSON.parse(log.vitals)
+                          : log.vitals;
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    } catch (error) {
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      vitalsData = null;
                     }
-                    return (
-                      <div
-                        key={log.id}
-                        className="p-6 rounded-xl border border-gray-200 bg-background shadow hover:shadow-xl transition-transform duration-300 cursor-pointer mb-6"
-                        style={getStaggerStyle(idx)}
-                      >
-                        <div className="mb-2">
-                          <h3 className="text-lg font-semibold text-foreground">
-                            Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
-                          </h3>
+                  }
+                  return (
+                    <div
+                      key={log.id}
+                      className="p-6 rounded-xl border border-gray-200 bg-background shadow hover:shadow-xl transition-transform duration-300 cursor-pointer mb-6"
+                      style={getStaggerStyle(idx)}
+                    >
+                      <div className="mb-2">
+                        <h3 className="text-lg font-semibold text-foreground">
+                          Symptoms: {safeDisplay(log.symptom_type) || "N/A"}
+                        </h3>
+                      </div>
+
+                      <div className="space-y-2 text-sm text-foreground">
+                        <div>
+                          <p className="mb-2">
+                            <span className="font-bold">Severity:</span>{" "}
+                            {log.severity !== undefined &&
+                            log.severity !== null &&
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            log.severity !== ""
+                              ? log.severity
+                              : "N/A"}
+                          </p>
+                          <p className="mb-2">
+                            <span className="font-bold">Mood:</span>{" "}
+                            {safeDisplay(log.mood) || "N/A"}
+                          </p>
                         </div>
-
-                        <div className="space-y-2 text-sm text-foreground">
-                          <div>
-                            <p className="mb-2">
-                              <span className="font-bold">Severity:</span>{" "}
-                              {log.severity ?? "N/A"}
-                            </p>
-                            <p className="mb-2">
-                              <span className="font-bold">Mood:</span>{" "}
-                              {safeDisplay(log.mood) || "N/A"}
-                            </p>
-                          </div>
-
-                          <div>
-                            <p className="font-bold">Vitals:</p>
-                            <div className="ml-4">
-                              {vitalsData ? (
+                        <div>
+                          <p className="font-bold">Vitals:</p>
+                          <div className="ml-4">
+                            {(() => {
+                              let vitalsObj = null;
+                              if (log.vitals) {
+                                try {
+                                  vitalsObj =
+                                    typeof log.vitals === "string"
+                                      ? JSON.parse(log.vitals)
+                                      : log.vitals;
+                                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                } catch (error) {
+                                  vitalsObj = null;
+                                }
+                              }
+                              return vitalsObj ? (
                                 <>
                                   <p className="mb-2">
                                     <span className="font-bold">
                                       - Heart Rate:
                                     </span>{" "}
-                                    {vitalsData.heartRate || "N/A"}
+                                    {vitalsObj.heartRate || "N/A"}
                                   </p>
                                   <p className="mb-2">
                                     <span className="font-bold">
                                       - Blood Pressure:
                                     </span>{" "}
-                                    {vitalsData.bloodPressure || "N/A"}
+                                    {vitalsObj.bloodPressure || "N/A"}
                                   </p>
                                 </>
                               ) : (
                                 <p>N/A</p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div>
-                            <p>
-                              <span className="font-bold">
-                                Medication Intake:
-                              </span>{" "}
-                              {safeDisplay(log.medication_intake) || "N/A"}
-                            </p>
-                          </div>
-
-                          <div>
-                            <p>
-                              <span className="font-bold">Notes:</span>{" "}
-                              {safeDisplay(log.notes) || "N/A"}
-                            </p>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2 mt-0">
-                            <p className="text-sm">
-                              <span className="font-bold">Start:</span>{" "}
-                              {new Date(log.start_date).toLocaleDateString()}{" "}
-                              {new Date(log.start_date).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </p>
-                            <p className="text-sm">
-                              <span className="font-bold">End:</span>{" "}
-                              {log.end_date
-                                ? `${new Date(log.end_date).toLocaleDateString()} ${new Date(
-                                    log.end_date,
-                                  ).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}`
-                                : "N/A"}
-                            </p>
+                              );
+                            })()}
                           </div>
                         </div>
-
-                        <div className="flex flex-wrap gap-3 mt-4">
-                          <Button
-                            size="sm"
-                            onClick={() => openEditLogDialog(log)}
-                            className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                          >
-                            <Edit3 className="w-4 h-4 mr-1" /> View / Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              setDeleteLogId(log.id);
-                              setShowDeleteLogDialog(true);
-                            }}
-                            className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" /> Delete
-                          </Button>
+                        <div>
+                          <p>
+                            <span className="font-bold">
+                              Medication Intake:
+                            </span>{" "}
+                            {safeDisplay(log.medication_intake) || "N/A"}
+                          </p>
+                        </div>
+                        <div>
+                          <p>
+                            <span className="font-bold">Notes:</span>{" "}
+                            {safeDisplay(log.notes) || "N/A"}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap mt-0 gap-2">
+                          <p className="text-sm">
+                            <span className="font-bold">Start:</span>{" "}
+                            {new Date(log.start_date).toLocaleDateString()}{" "}
+                            {new Date(log.start_date).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-bold">End:</span>{" "}
+                            {log.end_date
+                              ? new Date(log.end_date).toLocaleDateString() +
+                                " " +
+                                new Date(log.end_date).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "N/A"}
+                          </p>
                         </div>
                       </div>
-                    );
-                  })}
+
+                      <div className="flex flex-wrap gap-3 mt-4">
+                        <Button
+                          size="sm"
+                          onClick={() => openEditLogDialog(log)}
+                          className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                        >
+                          <Edit3 className="w-4 h-4 mr-1" /> View / Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            setDeleteLogId(log.id);
+                            setShowDeleteLogDialog(true);
+                          }}
+                          className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" /> Delete
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
 
                 <div className="flex items-center justify-between py-2">
                   <Button
@@ -2026,11 +2115,14 @@ export default function HomePage() {
                     disabled={logPage <= 1}
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
-                    <ChevronLeft /> Previous
+                    <ChevronLeft />
+                    Previous
                   </Button>
+
                   <span>
-                    Page {logPage} of {Math.ceil(totalLogs / 20)}
+                    Page {logPage} of {logsTotalPages}
                   </span>
+
                   <Button
                     size="sm"
                     onClick={() =>
@@ -2041,7 +2133,8 @@ export default function HomePage() {
                     disabled={logPage >= Math.ceil(totalLogs / 20)}
                     className="hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                   >
-                    Next <ChevronRight />
+                    Next
+                    <ChevronRight />
                   </Button>
                 </div>
               </CardContent>
