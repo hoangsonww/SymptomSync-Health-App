@@ -2982,7 +2982,7 @@ export default function HomePage() {
                   <Pill className="w-5 h-5 text-indigo-600" />
                   Medication Details
                 </DialogTitle>
-                <DialogDescription className="text-foreground">
+                <DialogDescription className="text-foreground text-left">
                   A summary of this reminder.
                 </DialogDescription>
               </DialogHeader>
@@ -3047,7 +3047,7 @@ export default function HomePage() {
                   <CalendarIcon className="w-5 h-5 text-blue-600" />
                   Appointment Details
                 </DialogTitle>
-                <DialogDescription className="text-foreground">
+                <DialogDescription className="text-foreground text-left">
                   A summary of this appointment.
                 </DialogDescription>
               </DialogHeader>
@@ -3105,7 +3105,7 @@ export default function HomePage() {
                   <HeartPulse className="w-5 h-5 text-red-500" />
                   Health Log Details
                 </DialogTitle>
-                <DialogDescription className="text-foreground">
+                <DialogDescription className="text-foreground text-left">
                   A summary of your selected entry.
                 </DialogDescription>
               </DialogHeader>

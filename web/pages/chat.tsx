@@ -218,10 +218,8 @@ const ClientOnly: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 export default function AIChatPage() {
-  // --- store messages per-user instead of globally ---
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  // -----------------------------------------------------
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const hasSentMessageRef = useRef(false);
@@ -238,14 +236,12 @@ export default function AIChatPage() {
       if (!user) {
         router.push("/auth/login");
       } else {
-        // remember the signed-in user
         setUserId(user.id);
       }
     }
     checkUserAuth();
   }, [router]);
 
-  // load this user's conversation when they sign in
   useEffect(() => {
     if (!userId) return;
     const stored = localStorage.getItem(`symptomSyncChat-${userId}`);
@@ -260,7 +256,6 @@ export default function AIChatPage() {
     }
   }, [userId]);
 
-  // persist this user's messages whenever they change
   useEffect(() => {
     if (!userId) return;
     localStorage.setItem(`symptomSyncChat-${userId}`, JSON.stringify(messages));

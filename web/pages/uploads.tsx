@@ -370,12 +370,6 @@ export default function DocumentsPage() {
     }
   }
 
-  useEffect(() => {
-    if (healthDialogOpen) {
-      fetchFiles();
-    }
-  }, [healthDialogOpen]);
-
   const filteredFiles = files.filter((file) =>
     file.filename.toLowerCase().includes(search.toLowerCase()),
   );
@@ -485,8 +479,10 @@ export default function DocumentsPage() {
                         </DialogHeader>
                         <div className="mt-4 max-h-64 overflow-y-auto">
                           {filteredFiles
-                            .filter((file) =>
-                              /\.(pdf|png|jpe?g)$/i.test(file.filename),
+                            .filter(
+                              (file) =>
+                                file.file_type === "application/pdf" ||
+                                file.file_type.startsWith("image/"),
                             )
                             .map((file) => (
                               <label
@@ -508,8 +504,10 @@ export default function DocumentsPage() {
                                 <span>{file.filename}</span>
                               </label>
                             ))}
-                          {filteredFiles.filter((file) =>
-                            /\.(pdf|png|jpe?g)$/i.test(file.filename),
+                          {filteredFiles.filter(
+                            (file) =>
+                              file.file_type === "application/pdf" ||
+                              file.file_type.startsWith("image/"),
                           ).length === 0 && (
                             <p className="text-gray-500">
                               No PDF or image documents available.
