@@ -399,6 +399,7 @@ export default function MedicationReminders() {
                       size="icon"
                       title="Remind"
                       onClick={() => handleBellClick(reminder)}
+                      className="cursor-pointer hover:scale-110 transition-transform duration-300"
                     >
                       <Bell size={16} />
                     </Button>
@@ -407,6 +408,7 @@ export default function MedicationReminders() {
                       size="icon"
                       title="Edit"
                       onClick={() => openEditMedDialog(reminder)}
+                      className="cursor-pointer hover:scale-110 transition-transform duration-300"
                     >
                       <Pencil size={16} />
                     </Button>

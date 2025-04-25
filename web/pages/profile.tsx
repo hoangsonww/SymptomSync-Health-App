@@ -225,6 +225,8 @@ export default function ProfilePage() {
       });
       setProfile(updatedProfile);
       toast.success("Avatar removed successfully!");
+
+      window.location.reload();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error("Error removing avatar: " + error.message);

@@ -239,6 +239,18 @@ A big thank you to our team members for their hard work and dedication:
 
 ---
 
+## Video Demo
+
+Check out our demo video showcasing the app's features and functionality: [Link to Demo Video](https://drive.google.com/file/d/1DKOIBnTep6rMrOBSRWPVhk2s8g8uIYef/view?usp=sharing)
+
+<p align="center">
+  <a href="https://drive.google.com/file/d/1DKOIBnTep6rMrOBSRWPVhk2s8g8uIYef/view?usp=sharing" target="_blank">
+    <img src="docs/img/demo_thumbnail.png" alt="Demo Video Thumbnail" width="100%"/>
+  </a>
+</p>
+
+---
+
 ## License
 
 [MIT License](LICENSE) - Feel free to use, modify, and distribute this code as you wish. Contributions are welcome!
