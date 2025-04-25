@@ -11,6 +11,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  HeartPulse,
+  Clock,
+  Thermometer,
 } from "lucide-react";
 import {
   MedicationReminder,
@@ -361,6 +364,11 @@ export default function HomePage() {
     [],
   );
   const [allLogs, setAllLogs] = useState<HealthLog[]>([]);
+  const [viewingMed, setViewingMed] = useState<MedicationReminder | null>(null);
+  const [viewingAppt, setViewingAppt] = useState<AppointmentReminder | null>(
+    null,
+  );
+  const [viewingLog, setViewingLog] = useState<HealthLog | null>(null);
 
   const [medSearch, setMedSearch] = useState("");
   const [debouncedMedSearch, setDebouncedMedSearch] = useState("");
@@ -1762,6 +1770,7 @@ export default function HomePage() {
                     key={med.id}
                     className="p-4 rounded-lg border border-gray-200 bg-background text-foreground shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
                     style={getStaggerStyle(idx)}
+                    onClick={() => setViewingMed(med)}
                   >
                     <div className="mb-3">
                       <h3 className="text-lg font-semibold text-foreground0">
@@ -1876,6 +1885,7 @@ export default function HomePage() {
                     key={appt.id}
                     className="p-4 rounded-lg border border-gray-200 bg-background shadow-sm hover:shadow-lg transition-transform duration-300 cursor-pointer mb-4"
                     style={getStaggerStyle(idx)}
+                    onClick={() => setViewingAppt(appt)}
                   >
                     <div className="mb-3">
                       <h3 className="text-lg font-semibold text-foreground">
@@ -1986,6 +1996,7 @@ export default function HomePage() {
                       key={log.id}
                       className="p-6 rounded-xl border border-gray-200 bg-background shadow hover:shadow-xl transition-transform duration-300 cursor-pointer mb-6"
                       style={getStaggerStyle(idx)}
+                      onClick={() => setViewingLog(log)}
                     >
                       <div className="mb-2">
                         <h3 className="text-lg font-semibold text-foreground">
@@ -2962,6 +2973,226 @@ export default function HomePage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {viewingMed && (
+          <Dialog open onOpenChange={() => setViewingMed(null)}>
+            <DialogContent className="max-w-sm mx-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Pill className="w-5 h-5 text-indigo-600" />
+                  Medication Details
+                </DialogTitle>
+                <DialogDescription className="text-foreground">
+                  A summary of this reminder.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-3 py-4">
+                <div className="flex items-center gap-2">
+                  <Pill className="w-5 h-5 text-indigo-500" />
+                  <span>
+                    <strong>Name:</strong>{" "}
+                    {safeDisplay(viewingMed.medication_name)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-gray-600" />
+                  <span>
+                    <strong>Dosage:</strong> {safeDisplay(viewingMed.dosage)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-green-600" />
+                  <span>
+                    <strong>When:</strong>{" "}
+                    {new Date(viewingMed.reminder_time).toLocaleDateString()} at{" "}
+                    {new Date(viewingMed.reminder_time).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Edit3 className="w-5 h-5 text-purple-600" />
+                  <span>
+                    <strong>Recurrence:</strong>{" "}
+                    {safeDisplay(viewingMed.recurrence)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-gray-400" />
+                  <span>
+                    <strong>Created:</strong>{" "}
+                    {new Date(viewingMed.created_at).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="secondary"
+                  className="cursor-pointer"
+                  onClick={() => setViewingMed(null)}
+                >
+                  Close
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {viewingAppt && (
+          <Dialog open onOpenChange={() => setViewingAppt(null)}>
+            <DialogContent className="max-w-sm mx-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-blue-600" />
+                  Appointment Details
+                </DialogTitle>
+                <DialogDescription className="text-foreground">
+                  A summary of this appointment.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-3 py-4">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-blue-500" />
+                  <span>
+                    <strong>Title:</strong>{" "}
+                    {safeDisplay(viewingAppt.appointment_name)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-green-600" />
+                  <span>
+                    <strong>Date:</strong>{" "}
+                    {new Date(viewingAppt.date).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-gray-600" />
+                  <span>
+                    <strong>Time:</strong>{" "}
+                    {new Date(viewingAppt.date).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-gray-400" />
+                  <span>
+                    <strong>Created:</strong>{" "}
+                    {new Date(viewingAppt.date).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="secondary"
+                  className="cursor-pointer"
+                  onClick={() => setViewingAppt(null)}
+                >
+                  Close
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {viewingLog && (
+          <Dialog open onOpenChange={() => setViewingLog(null)}>
+            <DialogContent className="max-w-md mx-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <HeartPulse className="w-5 h-5 text-red-500" />
+                  Health Log Details
+                </DialogTitle>
+                <DialogDescription className="text-foreground">
+                  A summary of your selected entry.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-3 py-4">
+                <div className="flex items-center gap-2">
+                  <HeartPulse className="w-5 h-5 text-pink-500" />
+                  <span>
+                    <strong>Symptoms:</strong>{" "}
+                    {safeDisplay(viewingLog.symptom_type)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Thermometer className="w-5 h-5 text-red-500" />
+                  <span>
+                    <strong>Severity:</strong> {viewingLog.severity ?? "N/A"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-yellow-500" />
+                  <span>
+                    <strong>Mood:</strong> {safeDisplay(viewingLog.mood)}
+                  </span>
+                </div>
+                {viewingLog.vitals && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-5 h-5 text-red-600" />
+                      <span>
+                        <strong>Heart Rate:</strong>{" "}
+                        {typeof viewingLog.vitals === "string"
+                          ? JSON.parse(viewingLog.vitals).heartRate
+                          : viewingLog.vitals.heartRate || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Pill className="w-5 h-5 text-green-600" />
+                      <span>
+                        <strong>Blood Pressure:</strong>{" "}
+                        {typeof viewingLog.vitals === "string"
+                          ? JSON.parse(viewingLog.vitals).bloodPressure
+                          : viewingLog.vitals.bloodPressure || "N/A"}
+                      </span>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center gap-2">
+                  <Pill className="w-5 h-5 text-indigo-600" />
+                  <span>
+                    <strong>Intake:</strong>{" "}
+                    {safeDisplay(viewingLog.medication_intake)}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Edit3 className="w-5 h-5 text-gray-500" />
+                  <span>
+                    <strong>Notes:</strong> {safeDisplay(viewingLog.notes)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-gray-700" />
+                  <span>
+                    <strong>Start:</strong>{" "}
+                    {new Date(viewingLog.start_date).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-gray-700" />
+                  <span>
+                    <strong>End:</strong>{" "}
+                    {viewingLog.end_date
+                      ? new Date(viewingLog.end_date).toLocaleString()
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="secondary"
+                  className="cursor-pointer"
+                  onClick={() => setViewingLog(null)}
+                >
+                  Close
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </motion.div>
     </>
   );

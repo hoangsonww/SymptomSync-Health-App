@@ -182,10 +182,12 @@ const markdownComponents = {
 };
 
 /**
+ * (Unused helper retained for backward compatibility)
  * Function to get initial messages from local storage
  *
  * @returns Initial messages from local storage or an empty array
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getInitialMessages = (): ChatMessage[] => {
   if (typeof window !== "undefined") {
     const stored = localStorage.getItem("symptomSyncChat");
@@ -216,7 +218,10 @@ const ClientOnly: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 export default function AIChatPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>(getInitialMessages);
+  // --- store messages per-user instead of globally ---
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  // -----------------------------------------------------
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const hasSentMessageRef = useRef(false);
@@ -232,17 +237,37 @@ export default function AIChatPage() {
       } = await supabase.auth.getUser();
       if (!user) {
         router.push("/auth/login");
+      } else {
+        // remember the signed-in user
+        setUserId(user.id);
       }
     }
     checkUserAuth();
   }, [router]);
 
+  // load this user's conversation when they sign in
   useEffect(() => {
-    localStorage.setItem("symptomSyncChat", JSON.stringify(messages));
+    if (!userId) return;
+    const stored = localStorage.getItem(`symptomSyncChat-${userId}`);
+    if (stored) {
+      try {
+        setMessages(JSON.parse(stored));
+      } catch {
+        setMessages([]);
+      }
+    } else {
+      setMessages([]);
+    }
+  }, [userId]);
+
+  // persist this user's messages whenever they change
+  useEffect(() => {
+    if (!userId) return;
+    localStorage.setItem(`symptomSyncChat-${userId}`, JSON.stringify(messages));
     if (hasSentMessageRef.current) {
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, userId]);
 
   useEffect(() => {
     async function subscribeToUserChannel() {
@@ -316,7 +341,11 @@ export default function AIChatPage() {
         userDataSummary += `- None\n`;
       } else {
         meds.forEach((m) => {
-          userDataSummary += `- ${m.medication_name}, dosage: ${m.dosage ?? "N/A"}, next time: ${new Date(m.reminder_time).toLocaleString()}, recurrence: ${m.recurrence ?? "N/A"}\n`;
+          userDataSummary += `- ${m.medication_name}, dosage: ${
+            m.dosage ?? "N/A"
+          }, next time: ${new Date(
+            m.reminder_time,
+          ).toLocaleString()}, recurrence: ${m.recurrence ?? "N/A"}\n`;
         });
       }
       userDataSummary += `\nRecent Health Logs:\n`;
@@ -325,7 +354,9 @@ export default function AIChatPage() {
       } else {
         const recent = logs.slice(-3);
         recent.forEach((l) => {
-          userDataSummary += `- Symptom: ${l.symptom_type ?? "N/A"}, severity: ${l.severity ?? 0}, start: ${new Date(l.start_date).toLocaleString()}\n`;
+          userDataSummary += `- Symptom: ${l.symptom_type ?? "N/A"}, severity: ${
+            l.severity ?? 0
+          }, start: ${new Date(l.start_date).toLocaleString()}\n`;
         });
       }
 
@@ -367,7 +398,9 @@ export default function AIChatPage() {
    */
   const handleClear = () => {
     setMessages([]);
-    localStorage.removeItem("symptomSyncChat");
+    if (userId) {
+      localStorage.removeItem(`symptomSyncChat-${userId}`);
+    }
     hasSentMessageRef.current = false;
   };
 
@@ -400,7 +433,7 @@ export default function AIChatPage() {
       }, 50);
       return () => clearTimeout(timeout);
     }
-  }, []);
+  }, [messages]);
 
   return (
     <>
@@ -483,12 +516,18 @@ export default function AIChatPage() {
                         initial="hidden"
                         animate="visible"
                         exit={{ opacity: 0, y: -10 }}
-                        className={`mb-2 flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                        className={`mb-2 flex ${
+                          msg.role === "user" ? "justify-end" : "justify-start"
+                        }`}
                       >
                         <div
                           className={`
                             rounded-lg p-2 pb-0 shadow 
-                            ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}
+                            ${
+                              msg.role === "user"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-foreground"
+                            }
                             max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg
                             overflow-x-auto hover:shadow-lg transition-shadow duration-300
                           `}

@@ -370,6 +370,12 @@ export default function DocumentsPage() {
     }
   }
 
+  useEffect(() => {
+    if (healthDialogOpen) {
+      fetchFiles();
+    }
+  }, [healthDialogOpen]);
+
   const filteredFiles = files.filter((file) =>
     file.filename.toLowerCase().includes(search.toLowerCase()),
   );
