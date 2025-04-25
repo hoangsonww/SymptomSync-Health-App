@@ -133,7 +133,7 @@ SymptomSync offers a range of features to help users manage their health effecti
   - Each table is protected by **Row Level Security (RLS)** policies to ensure user data isolation, so that users can only access/update/delete their own data.
 - **Realtime Broadcast**: Any create/update/delete triggers both a `postgres_changes` subscription and a broadcast message so all open clients show a toast notification.
 - **Cron Jobs**: Scheduled jobs (via Supabase Cron) that scan upcoming reminders and dispatch notifications every second.
-  > Note: If the window loses focus, or when you have a slow connection, the reminder notifications may not show up.
+  > Note: If the window loses focus, or when you have a slow connection, the reminder notifications may not show up. Also, the cron jobs are not guaranteed to run at the exact time specified, but they will run within a few seconds of the scheduled time.
 - **Postgres Triggers**: Database triggers that listen for changes in the `medication_reminders`, `appointment_reminders`, and `health_logs` tables, and send messages to the broadcast channel.
   - There is also a trigger on the `auth.users` table to create a corresponding `user_profiles` entry when a new user signs up.
 - **AI Chatbot**: The chatbot uses the Google AI API to analyze user symptoms and provide health insights.
