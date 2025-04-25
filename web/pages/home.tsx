@@ -1811,7 +1811,10 @@ export default function HomePage() {
                     <div className="flex flex-wrap gap-2 mt-4">
                       <Button
                         size="sm"
-                        onClick={() => openEditMedDialog(med)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditMedDialog(med);
+                        }}
                         className="flex items-center hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                       >
                         <Edit3 className="w-4 h-4 mr-1" /> View / Edit
@@ -1819,7 +1822,8 @@ export default function HomePage() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setDeleteMedId(med.id);
                           setShowDeleteMedDialog(true);
                         }}
@@ -1908,7 +1912,10 @@ export default function HomePage() {
                     <div className="flex flex-wrap gap-3">
                       <Button
                         size="sm"
-                        onClick={() => openEditApptDialog(appt)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditApptDialog(appt);
+                        }}
                         className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                       >
                         <Edit3 className="w-4 h-4 mr-1" /> View / Edit
@@ -1916,7 +1923,8 @@ export default function HomePage() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setDeleteApptId(appt.id);
                           setShowDeleteApptDialog(true);
                         }}
@@ -2098,7 +2106,10 @@ export default function HomePage() {
                       <div className="flex flex-wrap gap-3 mt-4">
                         <Button
                           size="sm"
-                          onClick={() => openEditLogDialog(log)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditLogDialog(log);
+                          }}
                           className="flex items-center px-3 py-1 hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
                         >
                           <Edit3 className="w-4 h-4 mr-1" /> View / Edit
@@ -2106,7 +2117,8 @@ export default function HomePage() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setDeleteLogId(log.id);
                             setShowDeleteLogDialog(true);
                           }}
