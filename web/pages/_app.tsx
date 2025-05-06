@@ -11,14 +11,19 @@ import { ThemeProvider } from "@/components/theme-provider";
 
 const queryClient = new QueryClient();
 
+const shownNotifications = new Set<string>();
+const handleToast = (r: { title: string; body: string }) => {
+  const key = `${r.title}:${r.body}`;
+  if (shownNotifications.has(key)) return;
+  shownNotifications.add(key);
+  toast.info(r.title, { description: r.body });
+};
+
 supabase.auth.onAuthStateChange((_, session) => {
   const userId = session?.user?.id;
   if (!userId) return;
 
   supabase.removeAllChannels();
-
-  const handleToast = (r: { title: string; body: string }) =>
-    toast.info(r.title, { description: r.body });
 
   const fetchMissed = async () => {
     const since = new Date(Date.now() - 60_000).toISOString();
@@ -117,11 +122,8 @@ export default function App({ Component, pageProps }: AppProps) {
   useLayoutEffect(() => {
     if (!userId) return;
 
-    const handleToast = (r: { title: string; body: string }) =>
-      toast.info(r.title, { description: r.body });
-
     const fetchMissed = async () => {
-      const since = new Date(Date.now() - 60_000).toISOString(); // last 60s
+      const since = new Date(Date.now() - 60_000).toISOString();
       const { data, error } = await supabase
         .from("user_notifications")
         .select("title, body")
@@ -133,7 +135,6 @@ export default function App({ Component, pageProps }: AppProps) {
         return;
       }
 
-      // null-guard here
       (data ?? []).forEach(handleToast);
     };
 
@@ -148,10 +149,8 @@ export default function App({ Component, pageProps }: AppProps) {
       ({ new: row }) => handleToast(row as { title: string; body: string }),
     );
 
-    // subscription with status callback
     channel.subscribe((status) => {
       if (status === "SUBSCRIBED") {
-        console.log("✅ reminders channel LIVE");
         fetchMissed();
       }
     });
@@ -192,7 +191,7 @@ export default function App({ Component, pageProps }: AppProps) {
             title: string;
             body: string;
           };
-          toast.info(title, { description: body });
+          handleToast({ title, body });
         },
       )
       .subscribe();
@@ -244,19 +243,17 @@ export default function App({ Component, pageProps }: AppProps) {
       const windowEnd = new Date(windowStart.getTime() + 60_000);
 
       const { data: dueReminders, error } = await supabase
-        .from("reminders")
+        .from("user_notifications")
         .select("title, body")
         .eq("user_profile_id", userId)
-        .gte("due_at", windowStart.toISOString())
-        .lt("due_at", windowEnd.toISOString());
+        .gte("created_at", windowStart.toISOString())
+        .lt("created_at", windowEnd.toISOString());
 
       if (error) {
         console.error("Error fetching due reminders:", error);
         return;
       }
-      dueReminders?.forEach(({ title, body }) =>
-        toast.info(title, { description: body }),
-      );
+      dueReminders?.forEach(({ title, body }) => handleToast({ title, body }));
     };
 
     const now = new Date();
