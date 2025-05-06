@@ -454,11 +454,16 @@ export default function MedicationReminders() {
           <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Medication</DialogTitle>
-              <DialogDescription>Update all relevant fields.</DialogDescription>
+              <DialogDescription>
+                Update your medication details.
+              </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>Medication Name</Label>
+                <Label>
+                  Medication Name
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <Input
                   value={editMedName}
                   onChange={(e) => setEditMedName(e.target.value)}
@@ -495,7 +500,10 @@ export default function MedicationReminders() {
               </div>
 
               <div className="space-y-2">
-                <Label>Schedule (Date & Time)</Label>
+                <Label>
+                  Schedule (Date & Time)
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <div className="mb-2">
                   <Label className="text-xs">Date</Label>
                   <DatePicker
@@ -514,7 +522,9 @@ export default function MedicationReminders() {
               </div>
 
               <div className="space-y-2">
-                <Label>Recurrence</Label>
+                <Label>
+                  Recurrence<span className="ml-0 text-red-500">*</span>
+                </Label>
                 <Select
                   value={editMedRecurrence}
                   onValueChange={setEditMedRecurrence}

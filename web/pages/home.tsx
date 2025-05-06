@@ -1216,7 +1216,7 @@ export default function HomePage() {
     labels: dayLabels,
     datasets: [
       {
-        label: "Avg. Symptom Severity (lower = better)",
+        label: "Avg. Symptom Severity (lower is better)",
         data: dayValues,
         borderColor: colorSet[0],
         backgroundColor: colorSet[0],
@@ -2175,7 +2175,10 @@ export default function HomePage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>Medication Name</Label>
+                <Label>
+                  Medication Name
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <Input
                   value={newMedName}
                   onChange={(e) => setNewMedName(e.target.value)}
@@ -2212,7 +2215,10 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Schedule (Date & Time)</Label>
+                <Label>
+                  Schedule (Date & Time)
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <div className="mb-2">
                   <Label className="text-xs">Date</Label>
                   <DatePicker
@@ -2231,7 +2237,10 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Recurrence</Label>
+                <Label>
+                  Recurrence
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <Select
                   value={newMedRecurrence}
                   onValueChange={setNewMedRecurrence}
@@ -2279,7 +2288,10 @@ export default function HomePage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>Appointment Info</Label>
+                <Label>
+                  Appointment Info
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <Input
                   value={newApptName}
                   onChange={(e) => setNewApptName(e.target.value)}
@@ -2288,12 +2300,18 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Date</Label>
+                <Label>
+                  Date
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <DatePicker value={newApptDate} onChange={setNewApptDate} />
               </div>
 
               <div className="space-y-2">
-                <Label>Time (24h)</Label>
+                <Label>
+                  Time (24h)
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <CustomTimePicker
                   value={newApptTime}
                   onChange={setNewApptTime}
@@ -2330,7 +2348,10 @@ export default function HomePage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>Symptom(s)</Label>
+                <Label>
+                  Symptom(s)
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <Input
                   value={hlSymptomType}
                   onChange={(e) => setHlSymptomType(e.target.value)}
@@ -2339,7 +2360,10 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Severity (0-10)</Label>
+                <Label>
+                  Severity (0-10)
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
                 <Slider
                   value={[hlSeverity]}
                   onValueChange={(value) => setHlSeverity(value[0])}
@@ -2444,15 +2468,18 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Start Date</Label>
-                <div className="mb-2">
+                <Label>
+                  Start Date
+                  <span className="ml-0 text-red-500">*</span>
+                </Label>
+                <div className="mb-4">
                   <DatePicker
                     value={hlStartDatePicker}
                     onChange={setHlStartDatePicker}
                     className="w-full"
                   />
                 </div>
-                <Label className="text-xs">Start Time (24h)</Label>
+                <Label>Start Time (24h)</Label>
                 <CustomTimePicker
                   value={hlStartTimePicker}
                   onChange={setHlStartTimePicker}
@@ -2461,14 +2488,14 @@ export default function HomePage() {
 
               <div className="space-y-2">
                 <Label>End Date</Label>
-                <div className="mb-2">
+                <div className="mb-4">
                   <DatePicker
                     value={hlEndDatePicker}
                     onChange={setHlEndDatePicker}
                     className="w-full"
                   />
                 </div>
-                <Label className="text-xs">End Time (24h)</Label>
+                <Label>End Time (24h)</Label>
                 <CustomTimePicker
                   value={hlEndTimePicker}
                   onChange={setHlEndTimePicker}
@@ -2526,12 +2553,15 @@ export default function HomePage() {
               <DialogHeader>
                 <DialogTitle>Edit Medication</DialogTitle>
                 <DialogDescription>
-                  Update all relevant fields.
+                  Update your medication details.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>Medication Name</Label>
+                  <Label>
+                    Medication Name
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <Input
                     value={editMedName}
                     onChange={(e) => setEditMedName(e.target.value)}
@@ -2566,7 +2596,10 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Schedule (Date & Time)</Label>
+                  <Label>
+                    Schedule (Date & Time)
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <div className="mb-2">
                     <Label className="text-xs">Date</Label>
                     <DatePicker
@@ -2585,7 +2618,10 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Recurrence</Label>
+                  <Label>
+                    Recurrence
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <Select
                     value={editMedRecurrence}
                     onValueChange={setEditMedRecurrence}
@@ -2633,12 +2669,15 @@ export default function HomePage() {
               <DialogHeader>
                 <DialogTitle>Edit Appointment</DialogTitle>
                 <DialogDescription>
-                  Update appointment details.
+                  Update your appointment details.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>Appointment Info</Label>
+                  <Label>
+                    Appointment Info
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <Input
                     value={editApptName}
                     onChange={(e) => setEditApptName(e.target.value)}
@@ -2646,12 +2685,18 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Date</Label>
+                  <Label>
+                    Date
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <DatePicker value={editApptDate} onChange={setEditApptDate} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Time (24h)</Label>
+                  <Label>
+                    Time (24h)
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <CustomTimePicker
                     value={editApptTime}
                     onChange={setEditApptTime}
@@ -2688,12 +2733,15 @@ export default function HomePage() {
               <DialogHeader>
                 <DialogTitle>Edit Health Log</DialogTitle>
                 <DialogDescription>
-                  Update all relevant fields.
+                  Update your health log details.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>Symptom(s)</Label>
+                  <Label>
+                    Symptom(s)
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <Input
                     value={editSymptomType}
                     onChange={(e) => setEditSymptomType(e.target.value)}
@@ -2701,7 +2749,10 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Severity (0-10)</Label>
+                  <Label>
+                    Severity (0-10)
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <Slider
                     value={[editSeverity]}
                     onValueChange={(value) => setEditSeverity(value[0])}
@@ -2806,7 +2857,10 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Start Date</Label>
+                  <Label>
+                    Start Date
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <div className="mb-2">
                     <DatePicker
                       value={editStartDatePicker}

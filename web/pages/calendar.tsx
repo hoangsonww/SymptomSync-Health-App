@@ -1233,7 +1233,10 @@ export default function CalendarPage() {
             {addType === "appointment" ? (
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>Appointment Info</Label>
+                  <Label>
+                    Appointment Info
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <Input
                     value={newApptName}
                     onChange={(e) => setNewApptName(e.target.value)}
@@ -1241,11 +1244,17 @@ export default function CalendarPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Date</Label>
+                  <Label>
+                    Date
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <DatePicker value={newApptDate} onChange={setNewApptDate} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Time (24h)</Label>
+                  <Label>
+                    Time (24h)
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <CustomTimePicker
                     value={newApptTime}
                     onChange={setNewApptTime}
@@ -1255,7 +1264,10 @@ export default function CalendarPage() {
             ) : (
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>Medication Name</Label>
+                  <Label>
+                    Medication Name
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <Input
                     value={newMedName}
                     onChange={(e) => setNewMedName(e.target.value)}
@@ -1263,7 +1275,10 @@ export default function CalendarPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Schedule (Date & Time)</Label>
+                  <Label>
+                    Schedule (Date & Time)
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <div className="mb-2">
                     <Label className="text-xs">Date</Label>
                     <DatePicker value={newMedDate} onChange={setNewMedDate} />
@@ -1304,7 +1319,10 @@ export default function CalendarPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Recurrence</Label>
+                  <Label>
+                    Recurrence
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <Select
                     value={newMedRecurrence ?? undefined}
                     onValueChange={setNewMedRecurrence}
@@ -1357,9 +1375,15 @@ export default function CalendarPage() {
         <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
           <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Event Details</DialogTitle>
+              <DialogTitle>
+                {dialogEvent && dialogEvent.type === "appointment"
+                  ? "Edit Appointment"
+                  : "Edit Medication"}
+              </DialogTitle>
               <DialogDescription>
-                Edit or delete the event below.
+                {dialogEvent && dialogEvent.type === "appointment"
+                  ? "Edit appointment info and its date/time."
+                  : "Edit medication info, date/time, and recurrence."}
               </DialogDescription>
             </DialogHeader>
             {dialogEvent && (
@@ -1370,6 +1394,7 @@ export default function CalendarPage() {
                       ? "Appointment"
                       : "Medication"}{" "}
                     Title
+                    <span className="ml-0 text-red-500">*</span>
                   </Label>
                   <Input
                     value={editTitle}
@@ -1379,12 +1404,18 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Date</Label>
+                  <Label>
+                    Date
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <DatePicker value={editDate} onChange={setEditDate} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Time (24h)</Label>
+                  <Label>
+                    Time (24h)
+                    <span className="ml-0 text-red-500">*</span>
+                  </Label>
                   <CustomTimePicker value={editTime} onChange={setEditTime} />
                 </div>
 

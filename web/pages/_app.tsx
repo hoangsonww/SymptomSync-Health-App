@@ -1,7 +1,7 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import NavBar from "@/components/NavBar";
 import { Toaster, toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
@@ -10,6 +10,50 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const queryClient = new QueryClient();
+
+supabase.auth.onAuthStateChange((_, session) => {
+  const userId = session?.user?.id;
+  if (!userId) return;
+
+  supabase.removeAllChannels();
+
+  const handleToast = (r: { title: string; body: string }) =>
+    toast.info(r.title, { description: r.body });
+
+  const fetchMissed = async () => {
+    const since = new Date(Date.now() - 60_000).toISOString();
+    const { data, error } = await supabase
+      .from("user_notifications")
+      .select("title, body")
+      .eq("user_profile_id", userId)
+      .gte("created_at", since);
+
+    if (error) {
+      console.error("Missed fetch error:", error);
+      return;
+    }
+    (data ?? []).forEach(handleToast);
+  };
+
+  const channel = supabase.channel(`reminders-${userId}`).on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "user_notifications",
+      filter: `user_profile_id=eq.${userId}`,
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ new: row }) => handleToast(row as any),
+  );
+
+  channel.subscribe((status) => {
+    if (status === "SUBSCRIBED") {
+      console.log("✅ reminders channel LIVE");
+      fetchMissed();
+    }
+  });
+});
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -69,6 +113,53 @@ export default function App({ Component, pageProps }: AppProps) {
       isMounted = false;
     };
   }, []);
+
+  useLayoutEffect(() => {
+    if (!userId) return;
+
+    const handleToast = (r: { title: string; body: string }) =>
+      toast.info(r.title, { description: r.body });
+
+    const fetchMissed = async () => {
+      const since = new Date(Date.now() - 60_000).toISOString(); // last 60s
+      const { data, error } = await supabase
+        .from("user_notifications")
+        .select("title, body")
+        .eq("user_profile_id", userId)
+        .gte("created_at", since);
+
+      if (error) {
+        console.error("Missed fetch error:", error);
+        return;
+      }
+
+      // null-guard here
+      (data ?? []).forEach(handleToast);
+    };
+
+    const channel = supabase.channel(`reminders-${userId}`).on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "user_notifications",
+        filter: `user_profile_id=eq.${userId}`,
+      },
+      ({ new: row }) => handleToast(row as { title: string; body: string }),
+    );
+
+    // subscription with status callback
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        console.log("✅ reminders channel LIVE");
+        fetchMissed();
+      }
+    });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   /**
    * Supabase Realtime #3: Reminder notifications.
@@ -142,6 +233,48 @@ export default function App({ Component, pageProps }: AppProps) {
       broadcastChannelRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    // Helper to fetch reminders due in the current minute window
+    const fetchDueReminders = async () => {
+      const now = new Date();
+      const windowStart = new Date(now.setSeconds(0, 0));
+      const windowEnd = new Date(windowStart.getTime() + 60_000);
+
+      const { data: dueReminders, error } = await supabase
+        .from("reminders")
+        .select("title, body")
+        .eq("user_profile_id", userId)
+        .gte("due_at", windowStart.toISOString())
+        .lt("due_at", windowEnd.toISOString());
+
+      if (error) {
+        console.error("Error fetching due reminders:", error);
+        return;
+      }
+      dueReminders?.forEach(({ title, body }) =>
+        toast.info(title, { description: body }),
+      );
+    };
+
+    const now = new Date();
+    const msToNextMinute =
+      60_000 - (now.getSeconds() * 1_000 + now.getMilliseconds());
+
+    const timeoutId = setTimeout(() => {
+      fetchDueReminders();
+
+      const intervalId = setInterval(fetchDueReminders, 60_000);
+
+      return () => clearInterval(intervalId);
+    }, msToNextMinute);
+
+    fetchDueReminders();
+
+    return () => clearTimeout(timeoutId);
+  }, [userId]);
 
   if (hideNav) {
     return (
