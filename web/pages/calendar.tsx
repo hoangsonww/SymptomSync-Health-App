@@ -1233,7 +1233,7 @@ export default function CalendarPage() {
             {addType === "appointment" ? (
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Appointment Info
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -1244,14 +1244,14 @@ export default function CalendarPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Date
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
                   <DatePicker value={newApptDate} onChange={setNewApptDate} />
                 </div>
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Time (24h)
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -1264,7 +1264,7 @@ export default function CalendarPage() {
             ) : (
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Medication Name
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -1275,7 +1275,7 @@ export default function CalendarPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Schedule (Date & Time)
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -1319,7 +1319,7 @@ export default function CalendarPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Recurrence
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -1389,7 +1389,7 @@ export default function CalendarPage() {
             {dialogEvent && (
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     {dialogEvent.type === "appointment"
                       ? "Appointment"
                       : "Medication"}{" "}
@@ -1404,7 +1404,7 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Date
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -1412,7 +1412,7 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Time (24h)
                     <span className="ml-0 text-red-500">*</span>
                   </Label>

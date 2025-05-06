@@ -1,6 +1,6 @@
 # Design Document
 
-> Written by: Caroline Bryan, Kathryn Brown, David Nguyen, and Erica Ocbu for COMP 426: Modern Web Programming at UNC-Chapel Hill.
+> Written by: David Nguyen and Erica Ocbu for COMP 426: Modern Web Programming at UNC-Chapel Hill.
 
 ## Feature Plan
 
@@ -63,7 +63,6 @@
 **Technical Notes:** Uploaded documents are stored in Supabase Storage buckets, with corresponding metadata (filename, URL, timestamp) saved in a dedicated "files" table linked to user accounts. The export functionality generates PDF reports on demand using server-side rendering libraries in Next.js, which pull and format data from the database. Secure access policies and role-based access control are also enforced.
 
 ---
-
 
 ## Backend Database Schema
 

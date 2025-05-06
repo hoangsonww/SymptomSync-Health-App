@@ -149,17 +149,19 @@ SymptomSync offers a range of features to help users manage their health effecti
    cd final-project-team-16
    ```
 
-2. Install dependencies (Remember to use `--legacy-peer-deps` if you encounter issues with React versions being incompatible with Shadcn/ui)
+2. Open the project in your favorite code editor (e.g., VSCode). When prompted by your IDE, select "Open in Container" to open the project in a Docker container. Alternatively, if using VSCode, you can use the Remote - Containers extension to open the project in a container.
+   - This is very important as the project uses Docker to run the database and other services. If you don't have Docker installed, please install it first.
+3. Install dependencies (Remember to use `--legacy-peer-deps` if you encounter issues with React versions being incompatible with Shadcn/ui)
    ```bash
    npm install --legacy-peer-deps
    ```
-3. Copy `.env.example` → `.env.local` and fill in your Supabase credentials
+4. Copy `.env.example` → `.env.local` and fill in your Supabase credentials
    ```bash
    NEXT_PUBLIC_SUPABASE_URL=…
    NEXT_PUBLIC_SUPABASE_ANON_KEY=…
    NEXT_PUBLIC_GOOGLE_AI_API_KEY=…
    ```
-4. Run the dev server
+5. Run the dev server
    ```bash
    npm run dev
    ```
@@ -237,8 +239,8 @@ If we had more time, we would have added:
 
 A big thank you to our team members for their hard work and dedication:
 
-- David Nguyen
-- Erica Ocbu
+- [David Nguyen](https://github.com/hoangsonww)
+- [Erica Ocbu](https://github.com/ericaocbu)
 
 ---
 
@@ -254,15 +256,15 @@ Check out our demo video showcasing the app's features and functionality: [Link 
 
 ---
 
-## License
+## High-Fidelity Prototype
 
-[MIT License](LICENSE) - Feel free to use, modify, and distribute this code as you wish. Contributions are welcome!
+Link to Figma prototype: [SymptomSync Figma Prototype](https://www.figma.com/design/YwoQ1OgAPYOfFOwlbf3aP0/COMP-426-Final-Project-Prototype?node-id=2-287&t=yC99fAWyYGJEOY3N-1)
 
 ---
 
-## Acknowledgements
+## License
 
-Huge thanks to the 426 team for their support and guidance throughout the project!
+[MIT License](LICENSE) - Feel free to use, modify, and distribute this code as you wish. Contributions are welcome!
 
 ---
 

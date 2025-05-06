@@ -2175,7 +2175,7 @@ export default function HomePage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>
+                <Label className="inline-flex items-center gap-0.5">
                   Medication Name
                   <span className="ml-0 text-red-500">*</span>
                 </Label>
@@ -2215,7 +2215,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>
+                <Label className="inline-flex items-center gap-0.5">
                   Schedule (Date & Time)
                   <span className="ml-0 text-red-500">*</span>
                 </Label>
@@ -2237,7 +2237,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>
+                <Label className="inline-flex items-center gap-0.5">
                   Recurrence
                   <span className="ml-0 text-red-500">*</span>
                 </Label>
@@ -2288,7 +2288,7 @@ export default function HomePage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>
+                <Label className="inline-flex items-center gap-0.5">
                   Appointment Info
                   <span className="ml-0 text-red-500">*</span>
                 </Label>
@@ -2300,7 +2300,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>
+                <Label className="inline-flex items-center gap-0.5">
                   Date
                   <span className="ml-0 text-red-500">*</span>
                 </Label>
@@ -2308,7 +2308,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>
+                <Label className="inline-flex items-center gap-0.5">
                   Time (24h)
                   <span className="ml-0 text-red-500">*</span>
                 </Label>
@@ -2348,7 +2348,7 @@ export default function HomePage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>
+                <Label className="inline-flex items-center gap-0.5">
                   Symptom(s)
                   <span className="ml-0 text-red-500">*</span>
                 </Label>
@@ -2360,7 +2360,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>
+                <Label className="inline-flex items-center gap-0.5">
                   Severity (0-10)
                   <span className="ml-0 text-red-500">*</span>
                 </Label>
@@ -2468,7 +2468,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-2">
-                <Label>
+                <Label className="inline-flex items-center gap-0.5">
                   Start Date
                   <span className="ml-0 text-red-500">*</span>
                 </Label>
@@ -2558,7 +2558,7 @@ export default function HomePage() {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Medication Name
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -2596,7 +2596,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Schedule (Date & Time)
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -2618,7 +2618,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Recurrence
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -2674,7 +2674,7 @@ export default function HomePage() {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Appointment Info
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -2685,7 +2685,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Date
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -2693,7 +2693,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Time (24h)
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -2738,7 +2738,7 @@ export default function HomePage() {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Symptom(s)
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -2749,7 +2749,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Severity (0-10)
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
@@ -2857,7 +2857,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>
+                  <Label className="inline-flex items-center gap-0.5">
                     Start Date
                     <span className="ml-0 text-red-500">*</span>
                   </Label>
