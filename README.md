@@ -6,7 +6,7 @@ Build with patient care in mind, SymptomSync is a web application designed to he
 
 ![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google)
 
-Currently live on Vercel at [https://symptomsync.vercel.app](https://symptomsync.vercel.app)! 🚀
+**Currently live on Vercel at [https://symptomsync.vercel.app](https://symptomsync.vercel.app)! 🚀**
 
 ---
 
@@ -57,6 +57,8 @@ The UI of the app was designed with Figma and Tailwind CSS. The design is respon
 </p>
 
 ... and many more!
+
+> Link to Figma prototype: [SymptomSync Figma Prototype](https://www.figma.com/design/YwoQ1OgAPYOfFOwlbf3aP0/COMP-426-Final-Project-Prototype?node-id=2-287&t=yC99fAWyYGJEOY3N-1)
 
 ---
 
@@ -259,6 +261,14 @@ Check out our demo video showcasing the app's features and functionality: [Link 
 ## High-Fidelity Prototype
 
 Link to Figma prototype: [SymptomSync Figma Prototype](https://www.figma.com/design/YwoQ1OgAPYOfFOwlbf3aP0/COMP-426-Final-Project-Prototype?node-id=2-287&t=yC99fAWyYGJEOY3N-1)
+
+Our high-fidelity prototype showcases the app's design and user experience. You can interact with the prototype to get a feel for how the app works.
+
+<p align="center">
+  <a href="https://www.figma.com/design/YwoQ1OgAPYOfFOwlbf3aP0/COMP-426-Final-Project-Prototype?node-id=2-287&t=yC99fAWyYGJEOY3N-1" target="_blank">
+    <img src="docs/img/figma.png" alt="Figma Prototype Thumbnail" width="100%"/>
+  </a>
+</p>
 
 ---
 
