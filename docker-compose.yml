@@ -1,0 +1,34 @@
+version: "3.9"
+services:
+  # SymptomSync Frontend
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    image: ghcr.io/hoangsonww/symptomsync-frontend:0.1.0
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_GOOGLE_AI_API_KEY=${NEXT_PUBLIC_GOOGLE_AI_API_KEY}
+    depends_on:
+      - backend
+
+  # Article Curator Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: ghcr.io/hoangsonww/government-article-curator-backend:1.0.0
+    ports:
+      - "4000:3000"
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+
+networks:
+  default:
+    name: estatewise_net
+    driver: bridge
