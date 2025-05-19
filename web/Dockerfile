@@ -2,17 +2,16 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Allow passing BUILD_DATE at build time
+# Build-time argument for timestamp
 ARG BUILD_DATE
-ENV BUILD_DATE=${BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}
+# Expose it as an environment variable
+ENV BUILD_DATE=${BUILD_DATE}
 
-# Copy package files
+# Copy package files and install with legacy-peer-deps to avoid conflicts
 COPY package*.json ./
-
-# Install dependencies (including dev) with legacy-peer-deps to resolve conflicts
 RUN npm install --legacy-peer-deps
 
-# Copy the rest of the code and build
+# Copy source & build
 COPY . .
 RUN npm run build
 
@@ -20,10 +19,8 @@ RUN npm run build
 FROM node:18-alpine
 WORKDIR /app
 
-# Copy only the package definitions
+# Copy only production deps
 COPY package*.json ./
-
-# Install only production deps with legacy-peer-deps
 RUN npm install --production --legacy-peer-deps
 
 # Copy built output
@@ -31,7 +28,7 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 
-# OCI labels for GHCR metadata
+# OCI labels
 LABEL org.opencontainers.image.title="SymptomSync Frontend" \
       org.opencontainers.image.description="Production build of SymptomSync, a health management web app built with Next.js" \
       org.opencontainers.image.version="0.1.0" \
@@ -40,8 +37,6 @@ LABEL org.opencontainers.image.title="SymptomSync Frontend" \
       org.opencontainers.image.authors="David Nguyen, Erica Ocbu" \
       org.opencontainers.image.created="${BUILD_DATE}"
 
-# Expose default Next.js port
 EXPOSE 3000
 
-# Start in production mode
 CMD ["npm", "start"]
