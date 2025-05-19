@@ -2,35 +2,43 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Copy package files and install deps
+# Allow passing BUILD_DATE at build time
+ARG BUILD_DATE
+ENV BUILD_DATE=${BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}
+
+# Copy package files
 COPY package*.json ./
-RUN npm install
+
+# Install dependencies (including dev) with legacy-peer-deps to resolve conflicts
+RUN npm install --legacy-peer-deps
 
 # Copy the rest of the code and build
 COPY . .
 RUN npm run build
 
-# ─── Stage 2: Production image ──────────────────────────────────────────────
+# ─── Stage 2: Production image ─────────────────────────────────────────────
 FROM node:18-alpine
 WORKDIR /app
 
-# Copy only production deps
+# Copy only the package definitions
 COPY package*.json ./
-RUN npm install --production
+
+# Install only production deps with legacy-peer-deps
+RUN npm install --production --legacy-peer-deps
 
 # Copy built output
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 
-# Metadata labels
+# OCI labels for GHCR metadata
 LABEL org.opencontainers.image.title="SymptomSync Frontend" \
       org.opencontainers.image.description="Production build of SymptomSync, a health management web app built with Next.js" \
       org.opencontainers.image.version="0.1.0" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.url="https://github.com/comp426-25s/final-project-team-16" \
       org.opencontainers.image.authors="David Nguyen, Erica Ocbu" \
-      org.opencontainers.image.created="${BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}"
+      org.opencontainers.image.created="${BUILD_DATE}"
 
 # Expose default Next.js port
 EXPOSE 3000

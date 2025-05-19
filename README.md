@@ -88,7 +88,7 @@ SymptomSync offers a range of features to help users manage their health effecti
 
 ## Tech Stack
 
-- **Front End**
+- **Front-End**
   - Next.js & React (TypeScript)
   - Tailwind CSS & Shadcn/ui components
   - Framer Motion for animations
@@ -96,7 +96,7 @@ SymptomSync offers a range of features to help users manage their health effecti
   - react-query for data fetching & caching
   - react-calendar for calendar view
   - lucide-icons for icons
-- **Back End / Data**
+- **Back-End / Data**
   - Supabase (Auth, Postgres, Realtime, Storage, Cron)
 - **Notifications & Sync**
   - Supabase Postgres Triggers for real-time updates
