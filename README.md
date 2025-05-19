@@ -2,7 +2,7 @@
 
 Build with patient care in mind, SymptomSync is a web application designed to help users manage their health and wellness. It provides a comprehensive dashboard for tracking medications, appointments, and health logs, all while ensuring real-time synchronization across devices. With features like medication reminders, appointment tracking, and an AI-powered chatbot, SymptomSync empowers users to take control of their health journey.
 
-> Developed by David Nguyen and Erica Ocbu for COMP 426: Modern Web Programming at UNC–Chapel Hill.
+> Developed by David Nguyen and Erica Ocbu for COMP-426: Modern Web Programming at UNC–Chapel Hill.
 
 ![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google)
 
