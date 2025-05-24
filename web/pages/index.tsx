@@ -29,6 +29,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowDown,
+  Github,
 } from "lucide-react";
 import Head from "next/head";
 
@@ -674,25 +675,34 @@ export default function Home() {
 
         <footer className="bg-background text-foreground py-8 px-4 text-center shadow-lg">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between">
-            <p className="text-sm">
+            <p className="text-sm whitespace-nowrap">
               © {new Date().getFullYear()}{" "}
               <strong className="font-bold">SymptomSync</strong>. All rights
               reserved.
             </p>
-            <div className="mt-4 md:mt-0 flex items-center space-x-4">
+            <div className="mt-4 md:mt-0 flex flex-wrap items-center justify-center md:justify-end gap-4">
               <Link
                 href="/privacy"
-                className="flex items-center hover:text-primary transition-colors"
+                className="flex items-center hover:text-primary transition-colors whitespace-nowrap"
               >
                 <Shield className="w-4 h-4 mr-1" />
                 <span className="text-sm">Privacy Policy</span>
               </Link>
               <Link
                 href="/terms"
-                className="flex items-center hover:text-primary transition-colors"
+                className="flex items-center hover:text-primary transition-colors whitespace-nowrap"
               >
                 <FileText className="w-4 h-4 mr-1" />
                 <span className="text-sm">Terms of Service</span>
+              </Link>
+              <Link
+                href="https://github.com/hoangsonww/SymptomSync-Health-App"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center hover:text-primary transition-colors whitespace-nowrap"
+              >
+                <Github className="w-4 h-4 mr-1" />
+                <span className="text-sm">GitHub Repository</span>
               </Link>
             </div>
           </div>
