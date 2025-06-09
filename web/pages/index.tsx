@@ -605,8 +605,10 @@ export default function Home() {
                   How secure is my data?
                 </h3>
                 <p className="text-muted-foreground">
-                  Your data is encrypted and stored securely. We prioritize your
-                  privacy.
+                  Your data is always encrypted and stored securely. We use the
+                  latest security protocols to ensure your information is safe.
+                  We never share your data with third parties without your
+                  consent.
                 </p>
               </Card>
             </AnimatedInView>
@@ -616,8 +618,10 @@ export default function Home() {
                   Can I access detailed reports?
                 </h3>
                 <p className="text-muted-foreground">
-                  Yes. Our dashboard offers in-depth, downloadable health
-                  reports.
+                  Yes. Our dashboard offers in-depth health reports with
+                  interactive charts and insights. You can also export your
+                  health reports as PDFs from the Documents page for easy
+                  sharing with healthcare providers.
                 </p>
               </Card>
             </AnimatedInView>
@@ -627,8 +631,9 @@ export default function Home() {
                   How do I set reminders?
                 </h3>
                 <p className="text-muted-foreground">
-                  Configure custom reminders easily within your account
-                  settings.
+                  Simply navigate to the Home page, then add your
+                  medications/appointments with a due date/time to receive
+                  timely reminders!
                 </p>
               </Card>
             </AnimatedInView>
@@ -638,7 +643,70 @@ export default function Home() {
                   Is customer support available 24/7?
                 </h3>
                 <p className="text-muted-foreground">
-                  Absolutely. Our support team is here around the clock.
+                  Absolutely! Our support team is here around the clock. Send an
+                  email to{" "}
+                  <a
+                    href="mailto:hoangson091104@gmail.com"
+                    className="text-primary underline"
+                  >
+                    our support email
+                  </a>{" "}
+                  for assistance.
+                </p>
+              </Card>
+            </AnimatedInView>
+            <AnimatedInView delay={0.1}>
+              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
+                <h3 className="text-2xl font-bold mb-2">
+                  Is there a chatbot for quick questions?
+                </h3>
+                <p className="text-muted-foreground">
+                  Yes, our AI-powered chatbot is available 24/7 to answer your
+                  questions and give you health advice. Just navigate to the
+                  Chatbot page to start a conversation!
+                </p>
+              </Card>
+            </AnimatedInView>
+            <AnimatedInView delay={0.1}>
+              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
+                <h3 className="text-2xl font-bold mb-2">
+                  How do I log my health information?
+                </h3>
+                <p className="text-muted-foreground">
+                  You can log your health information directly from the Home
+                  page. Just click on the &quot;Log Health&quot; button and fill
+                  in your daily metrics. It&apos;s quick and easy! Your
+                  dashboard will automatically update with your latest entries,
+                  allowing you to track your health trends over time.
+                </p>
+              </Card>
+            </AnimatedInView>
+            <AnimatedInView delay={0.1}>
+              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
+                <h3 className="text-2xl font-bold mb-2">
+                  How do I view my upcoming appointments/medications in a
+                  calendar?
+                </h3>
+                <p className="text-muted-foreground">
+                  You can view your upcoming appointments and medications in the
+                  Calendar page. It provides a clear overview of your schedule,
+                  allowing you to stay organized and never miss an important
+                  date. You can also add medications and appointments directly
+                  from the Calendar page, making it easy to keep track of your
+                  health commitments!
+                </p>
+              </Card>
+            </AnimatedInView>
+            <AnimatedInView delay={0.1}>
+              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
+                <h3 className="text-2xl font-bold mb-2">
+                  Is there a mobile app available?
+                </h3>
+                <p className="text-muted-foreground">
+                  Unfortunately, our platform is only available as a web
+                  application at the moment. However, it is fully responsive and
+                  works seamlessly on mobile devices. We are actively working on
+                  a mobile app version, so stay tuned for updates!
                 </p>
               </Card>
             </AnimatedInView>
