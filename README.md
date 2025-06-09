@@ -4,7 +4,7 @@ Build with patient care in mind, SymptomSync is a web application designed to he
 
 > Developed by David Nguyen and Erica Ocbu at UNC–Chapel Hill.
 
-![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google)
+![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![JavaScript](https://img.shields.io/badge/-JavaScript-05122A?style=flat&logo=javascript) ![Node.js](https://img.shields.io/badge/-Node.js-05122A?style=flat&logo=nodedotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![CSS](https://img.shields.io/badge/-CSS-05122A?style=flat&logo=css) ![HTML5](https://img.shields.io/badge/-HTML5-05122A?style=flat&logo=html5) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-05122A?style=flat&logo=postgresql) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Docker](https://img.shields.io/badge/-Docker-05122A?style=flat&logo=docker) ![Git](https://img.shields.io/badge/-Git-05122A?style=flat&logo=git) ![GitHub](https://img.shields.io/badge/-GitHub-05122A?style=flat&logo=github) ![npm](https://img.shields.io/badge/-npm-05122A?style=flat&logo=npm) ![Webpack](https://img.shields.io/badge/-Webpack-05122A?style=flat&logo=webpack) ![Babel](https://img.shields.io/badge/-Babel-05122A?style=flat&logo=babel) ![ESLint](https://img.shields.io/badge/-ESLint-05122A?style=flat&logo=eslint) ![Prettier](https://img.shields.io/badge/-Prettier-05122A?style=flat&logo=prettier) ![Postman](https://img.shields.io/badge/-Postman-05122A?style=flat&logo=postman)
 
 **Currently live on Vercel at [https://symptomsync.vercel.app](https://symptomsync.vercel.app)! 🚀**
 
@@ -147,8 +147,8 @@ SymptomSync offers a range of features to help users manage their health effecti
 1. Clone the repo
 
    ```bash
-   git clone https://github.com/comp426-25s/final-project-team-16.git
-   cd final-project-team-16
+   git clone https://github.com/hoangsonww/SymptomSync-Health-App.git
+   cd SymptomSync-Health-App
    ```
 
 2. Open the project in your favorite code editor (e.g., VSCode). When prompted by your IDE, select "Open in Container" to open the project in a Docker container. Alternatively, if using VSCode, you can use the Remote - Containers extension to open the project in a container.

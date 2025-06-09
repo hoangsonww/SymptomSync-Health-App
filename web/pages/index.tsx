@@ -270,13 +270,28 @@ export default function Home() {
                 <AnimatedInView>
                   <Card className="h-64 shadow-lg">
                     <CardHeader className="flex flex-col items-center">
-                      <Activity className="w-16 h-16 text-primary" />
+                      <HeartPulse className="w-16 h-16 text-primary" />
                       <CardTitle className="text-2xl font-bold">
-                        Activity Log
+                        AI Health Assistant
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 text-center text-muted-foreground">
-                      Record workouts and sleep patterns.
+                      Get personalized health advice anytime.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Activity className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Health Log
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 text-center text-muted-foreground">
+                      Record your daily health activities and symptoms.
                     </CardContent>
                   </Card>
                 </AnimatedInView>
@@ -307,6 +322,21 @@ export default function Home() {
                     </CardHeader>
                     <CardContent className="flex-1 text-center text-muted-foreground">
                       Set alerts for your health milestones.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <ThumbsUp className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Dark/Light Modes
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Choose your preferred theme for a personalized experience.
                     </CardContent>
                   </Card>
                 </AnimatedInView>
@@ -394,6 +424,22 @@ export default function Home() {
                   </Card>
                 </AnimatedInView>
               </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-38 shadow-lg">
+                    <CardContent className="flex flex-col justify-evenly text-center">
+                      <p className="italic">
+                        &quot;I love the AI health assistant – it feels like
+                        having a personal coach!&quot;
+                      </p>
+                      <div className="flex items-center justify-center space-x-2 mt-2">
+                        <Zap className="w-6 h-6 text-primary" />
+                        <span className="font-bold">— Taylor</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
             </Slider>
           </AnimatedInView>
         </section>
@@ -473,6 +519,67 @@ export default function Home() {
                   </Card>
                 </AnimatedInView>
               </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Activity className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Chat with AI
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Engage with our AI health assistant for personalized
+                      advice.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <HeartPulse className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Stay Healthy
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Monitor your health and stay on track.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Zap className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Boost Wellness
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Experience a healthier, happier you.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Clock className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Save Time
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Spend less time worrying, more time living.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
             </Slider>
           </AnimatedInView>
         </section>
@@ -541,21 +648,6 @@ export default function Home() {
                 <AnimatedInView>
                   <Card className="h-64 shadow-lg">
                     <CardHeader className="flex flex-col items-center">
-                      <Clock className="w-16 h-16 text-primary" />
-                      <CardTitle className="text-2xl font-bold">
-                        24/7 Support
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center text-muted-foreground">
-                      We&apos;re here for you around the clock.
-                    </CardContent>
-                  </Card>
-                </AnimatedInView>
-              </div>
-              <div className="px-4">
-                <AnimatedInView>
-                  <Card className="h-64 shadow-lg">
-                    <CardHeader className="flex flex-col items-center">
                       <Shield className="w-16 h-16 text-primary" />
                       <CardTitle className="text-2xl font-bold">
                         Secure Tracking
@@ -582,6 +674,51 @@ export default function Home() {
                   </Card>
                 </AnimatedInView>
               </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <HeartPulse className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        AI Health Assistant
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      Get personalized health advice anytime.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <Clock className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        24/7 Support
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      We&apos;re here for you around the clock.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
+              <div className="px-4">
+                <AnimatedInView>
+                  <Card className="h-64 shadow-lg">
+                    <CardHeader className="flex flex-col items-center">
+                      <CheckSquare className="w-16 h-16 text-primary" />
+                      <CardTitle className="text-2xl font-bold">
+                        Comprehensive Features
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center text-muted-foreground">
+                      All-in-one platform for your health needs.
+                    </CardContent>
+                  </Card>
+                </AnimatedInView>
+              </div>
             </Slider>
           </AnimatedInView>
         </section>
@@ -598,118 +735,77 @@ export default function Home() {
               Find answers to our most common queries.
             </p>
           </AnimatedInView>
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-            <AnimatedInView delay={0.1}>
-              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-                <h3 className="text-2xl font-bold mb-2">
-                  How secure is my data?
-                </h3>
-                <p className="text-muted-foreground">
-                  Your data is always encrypted and stored securely. We use the
-                  latest security protocols to ensure your information is safe.
-                  We never share your data with third parties without your
-                  consent.
-                </p>
-              </Card>
-            </AnimatedInView>
-            <AnimatedInView delay={0.1}>
-              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-                <h3 className="text-2xl font-bold mb-2">
-                  Can I access detailed reports?
-                </h3>
-                <p className="text-muted-foreground">
-                  Yes. Our dashboard offers in-depth health reports with
-                  interactive charts and insights. You can also export your
-                  health reports as PDFs from the Documents page for easy
-                  sharing with healthcare providers.
-                </p>
-              </Card>
-            </AnimatedInView>
-            <AnimatedInView delay={0.1}>
-              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-                <h3 className="text-2xl font-bold mb-2">
-                  How do I set reminders?
-                </h3>
-                <p className="text-muted-foreground">
-                  Simply navigate to the Home page, then add your
-                  medications/appointments with a due date/time to receive
-                  timely reminders!
-                </p>
-              </Card>
-            </AnimatedInView>
-            <AnimatedInView delay={0.1}>
-              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-                <h3 className="text-2xl font-bold mb-2">
-                  Is customer support available 24/7?
-                </h3>
-                <p className="text-muted-foreground">
-                  Absolutely! Our support team is here around the clock. Send an
-                  email to{" "}
-                  <a
-                    href="mailto:hoangson091104@gmail.com"
-                    className="text-primary underline"
-                  >
-                    our support email
-                  </a>{" "}
-                  for assistance.
-                </p>
-              </Card>
-            </AnimatedInView>
-            <AnimatedInView delay={0.1}>
-              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-                <h3 className="text-2xl font-bold mb-2">
-                  Is there a chatbot for quick questions?
-                </h3>
-                <p className="text-muted-foreground">
-                  Yes, our AI-powered chatbot is available 24/7 to answer your
-                  questions and give you health advice. Just navigate to the
-                  Chatbot page to start a conversation!
-                </p>
-              </Card>
-            </AnimatedInView>
-            <AnimatedInView delay={0.1}>
-              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-                <h3 className="text-2xl font-bold mb-2">
-                  How do I log my health information?
-                </h3>
-                <p className="text-muted-foreground">
-                  You can log your health information directly from the Home
-                  page. Just click on the &quot;Log Health&quot; button and fill
-                  in your daily metrics. It&apos;s quick and easy! Your
-                  dashboard will automatically update with your latest entries,
-                  allowing you to track your health trends over time.
-                </p>
-              </Card>
-            </AnimatedInView>
-            <AnimatedInView delay={0.1}>
-              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-                <h3 className="text-2xl font-bold mb-2">
-                  How do I view my upcoming appointments/medications in a
-                  calendar?
-                </h3>
-                <p className="text-muted-foreground">
-                  You can view your upcoming appointments and medications in the
-                  Calendar page. It provides a clear overview of your schedule,
-                  allowing you to stay organized and never miss an important
-                  date. You can also add medications and appointments directly
-                  from the Calendar page, making it easy to keep track of your
-                  health commitments!
-                </p>
-              </Card>
-            </AnimatedInView>
-            <AnimatedInView delay={0.1}>
-              <Card className="shadow-lg rounded-lg p-6 hover:shadow-xl duration-300 hover:scale-102 transition-transform">
-                <h3 className="text-2xl font-bold mb-2">
-                  Is there a mobile app available?
-                </h3>
-                <p className="text-muted-foreground">
-                  Unfortunately, our platform is only available as a web
-                  application at the moment. However, it is fully responsive and
-                  works seamlessly on mobile devices. We are actively working on
-                  a mobile app version, so stay tuned for updates!
-                </p>
-              </Card>
-            </AnimatedInView>
+
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+            {[
+              {
+                q: "How secure is my data?",
+                a: `Your data is always encrypted and stored securely. We use the
+            latest security protocols to ensure your information is safe.
+            We never share your data with third parties without your
+            consent.`,
+              },
+              {
+                q: "Can I access detailed reports?",
+                a: `Yes. Our dashboard offers in-depth health reports with
+            interactive charts and insights. You can also export your
+            health reports as PDFs from the Documents page for easy
+            sharing with healthcare providers.`,
+              },
+              {
+                q: "How do I set reminders?",
+                a: `Simply navigate to the Home page, then add your
+            medications/appointments with a due date/time to receive
+            timely reminders!`,
+              },
+              {
+                q: "Is customer support available 24/7?",
+                a: `Absolutely! Our support team is here around the clock. Send an
+            email to <a href="mailto:hoangson091104@gmail.com" className="text-primary underline">our support email</a> for assistance.`,
+              },
+              {
+                q: "Is there a chatbot for quick questions?",
+                a: `Yes, our AI-powered chatbot is available 24/7 to answer your
+            questions and give you health advice. Just navigate to the
+            Chatbot page to start a conversation!`,
+              },
+              {
+                q: "How do I log my health information?",
+                a: `You can log your health information directly from the Home
+            page. Just click on the "Log Health" button and fill
+            in your daily metrics. It's quick and easy! Your
+            dashboard will automatically update with your latest entries,
+            allowing you to track your health trends over time.`,
+              },
+              {
+                q: "How do I view my upcoming appointments/medications in a calendar?",
+                a: `You can view your upcoming appointments and medications in the
+            Calendar page. It provides a clear overview of your schedule,
+            allowing you to stay organized and never miss an important
+            date. You can also add medications and appointments directly
+            from the Calendar page, making it easy to keep track of your
+            health commitments!`,
+              },
+              {
+                q: "Is there a mobile app available?",
+                a: `Unfortunately, our platform is only available as a web
+            application at the moment. However, it is fully responsive and
+            works seamlessly on mobile devices. We are actively working on
+            a mobile app version, so stay tuned for updates!`,
+              },
+            ].map(({ q, a }, idx) => (
+              <AnimatedInView key={idx} delay={0.1 * (idx + 1)}>
+                <Card className="h-full flex flex-col shadow-lg rounded-lg p-6 hover:shadow-xl hover:scale-102 duration-300 transition-transform">
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold mb-2">{q}</h3>
+                    <p
+                      className="text-muted-foreground"
+                      dangerouslySetInnerHTML={{ __html: a }}
+                    />
+                  </div>
+                </Card>
+              </AnimatedInView>
+            ))}
           </div>
         </section>
 
