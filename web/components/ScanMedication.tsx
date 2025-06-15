@@ -137,8 +137,7 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
         setFallback(true);
         toast.error("No record found – enter manually");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       setFallback(true);
       toast.error("Lookup failed – enter manually");
     } finally {
@@ -169,13 +168,13 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-lg">
         <DialogHeader>
-          <DialogTitle>📷 Scan Medication Barcode</DialogTitle>
+          <DialogTitle>📷 Scan Medication Barcode/QR Code</DialogTitle>
           <DialogDescription>
-            Align the barcode in the frame below.
+            Align the barcode/QR code in the frame below.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4 max-h-[70vh] overflow-y-auto pr-1 space-y-4">
+        <div className="mt-4 max-h-[70vh] overflow-y-auto pr-1 space-y-4 pl-1">
           {!results && !loading && !fallback && (
             <div className="relative w-full h-64 bg-black rounded-lg overflow-hidden ring-2 ring-primary/50">
               <video
@@ -205,8 +204,8 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
 
           {results && (
             <p className="text-sm font-medium">
-              Pick the correct product from the list below and we&apos;ll fill
-              in the details for you:
+              Now pick the correct product from the list below and we&apos;ll
+              fill in the details for you:
             </p>
           )}
 
@@ -215,12 +214,15 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
               Array.isArray(entry.images) && entry.images.length
                 ? entry.images[0]
                 : null;
+            const isSelected = selected === idx;
             return (
               <div
                 key={idx}
                 className={cn(
                   "border rounded-lg p-4 flex gap-4 cursor-pointer transition",
-                  selected === idx ? "bg-primary/10" : "hover:bg-muted/20",
+                  isSelected
+                    ? "bg-primary/60 dark:bg-primary/50 ring-2 ring-primary/80"
+                    : "hover:bg-muted/40",
                 )}
                 onClick={() => setSelected(idx)}
               >
@@ -232,9 +234,23 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
                   />
                 )}
                 <div className="flex-1">
-                  <h3 className="font-medium">{entry.title}</h3>
+                  <h3
+                    className={cn(
+                      "font-medium",
+                      isSelected && "text-foreground",
+                    )}
+                  >
+                    {entry.title}
+                  </h3>
                   {entry.published_date && (
-                    <p className="text-sm text-muted-foreground">
+                    <p
+                      className={cn(
+                        "text-sm",
+                        isSelected
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
                       {entry.published_date}
                     </p>
                   )}

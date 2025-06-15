@@ -2183,7 +2183,7 @@ export default function HomePage() {
                   onClick={() => setScanOpen(true)}
                   className="cursor-pointer"
                 >
-                  Scan Barcode
+                  Scan Barcode/QR Code
                 </Button>
               </div>
 
