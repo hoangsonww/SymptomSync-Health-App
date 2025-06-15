@@ -44,6 +44,12 @@ The UI of the app was designed with Figma and Tailwind CSS. The design is respon
   <img src="docs/img/chat.png" alt="Chatbot Screenshot" width="100%"/>
 </p>
 
+### Profile Page
+
+<p align="center">
+  <img src="docs/img/profile.png" alt="Profile Screenshot" width="100%"/>
+</p>
+
 ### Auth
 
 <p align="center">
@@ -56,7 +62,13 @@ The UI of the app was designed with Figma and Tailwind CSS. The design is respon
   <img src="docs/img/darkmode.png" alt="Dark Mode Screenshot" width="100%"/>
 </p>
 
-... and many more!
+### Barcode/QR Code Scanning
+
+<p align="center">
+  <img src="docs/img/barcode.gif" alt="Barcode Scanning Screenshot" width="100%"/>
+</p>
+
+... and so many more! Explore [our app](https://symptomsync.vercel.app) to see the full range of features and functionality.
 
 > Link to Figma prototype: [SymptomSync Figma Prototype](https://www.figma.com/design/YwoQ1OgAPYOfFOwlbf3aP0/COMP-426-Final-Project-Prototype?node-id=2-287&t=yC99fAWyYGJEOY3N-1)
 
@@ -67,6 +79,7 @@ The UI of the app was designed with Figma and Tailwind CSS. The design is respon
 SymptomSync offers a range of features to help users manage their health effectively:
 
 - **Medication Reminders**: Schedule, edit, and delete recurring or one‑off med alerts.
+  - **QR/Barcode Scanning**: Scan medication QR codes to auto-fill details. This can save time and reduce errors when entering medication information!
 - **Appointment Tracking**: Log upcoming appointments with date/time and manage them.
 - **Health Logs**: Record symptoms, mood, vitals, and notes; visualize trends over time.
 - **Dashboard Visualizations**: Interactive charts for severity trends, symptom & mood distribution, and more.
