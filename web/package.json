@@ -39,6 +39,8 @@
     "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-query": "^5.72.2",
     "@vercel/analytics": "^1.5.0",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "chart.js": "^4.4.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

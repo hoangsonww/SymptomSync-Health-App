@@ -81,6 +81,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { CustomTimePicker } from "@/components/ui/time-picker";
+import { BarcodeScanModal, MedInfo } from "@/components/ScanMedication";
 import { useTheme } from "next-themes";
 
 ChartJS.register(
@@ -318,6 +319,7 @@ export default function HomePage() {
   const [editMedTimePicker, setEditMedTimePicker] = useState("00:00");
   const [editMedRecurrence, setEditMedRecurrence] = useState("Daily");
   const [editMedCalendarSync, setEditMedCalendarSync] = useState("");
+  const [scanOpen, setScanOpen] = useState(false);
   const [editingAppt, setEditingAppt] = useState<AppointmentReminder | null>(
     null,
   );
@@ -2174,6 +2176,12 @@ export default function HomePage() {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              <div className="flex justify-center mt-0">
+                <Button variant="outline" size="sm" onClick={() => setScanOpen(true)} className="cursor-pointer">
+                  Scan Barcode
+                </Button>
+              </div>
+
               <div className="space-y-2">
                 <Label className="inline-flex items-center gap-0.5">
                   Medication Name
@@ -3259,6 +3267,18 @@ export default function HomePage() {
             </DialogContent>
           </Dialog>
         )}
+
+        <BarcodeScanModal
+          open={scanOpen}
+          onClose={() => setScanOpen(false)}
+          onConfirm={(info: MedInfo) => {
+            // fill in the form
+            setNewMedName(info.name);
+            setNewMedDosage(info.dosage);
+            setNewMedDosageUnit(info.unit || "mg");
+            setScanOpen(false);
+          }}
+        />
       </motion.div>
     </>
   );
