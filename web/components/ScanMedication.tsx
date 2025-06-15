@@ -95,7 +95,7 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
               toast.error("Camera error");
               reader.reset();
             }
-          }
+          },
         );
       })
       .catch((err) => {
@@ -130,7 +130,9 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
       if (Array.isArray(data) && data.length) {
         setResults(data);
         setSelected(data.length === 1 ? 0 : null);
-        toast.success(`Found ${data.length} result${data.length > 1 ? "s" : ""}`);
+        toast.success(
+          `Found ${data.length} result${data.length > 1 ? "s" : ""}`,
+        );
       } else {
         setFallback(true);
         toast.error("No record found – enter manually");
@@ -218,9 +220,7 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
                 key={idx}
                 className={cn(
                   "border rounded-lg p-4 flex gap-4 cursor-pointer transition",
-                  selected === idx
-                    ? "bg-primary/10"
-                    : "hover:bg-muted/20"
+                  selected === idx ? "bg-primary/10" : "hover:bg-muted/20",
                 )}
                 onClick={() => setSelected(idx)}
               >
@@ -284,7 +284,11 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
 
         <DialogFooter className="flex justify-end space-x-2 mt-4">
           {!results && !fallback && (
-            <Button variant="outline" onClick={onClose} className="cursor-pointer">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="cursor-pointer"
+            >
               Cancel
             </Button>
           )}
@@ -303,7 +307,11 @@ export const BarcodeScanModal: React.FC<BarcodeScanModalProps> = ({
               >
                 Rescan
               </Button>
-              <Button disabled={selected == null} onClick={confirmSelected} className="cursor-pointer">
+              <Button
+                disabled={selected == null}
+                onClick={confirmSelected}
+                className="cursor-pointer"
+              >
                 Confirm
               </Button>
             </>

@@ -2177,7 +2177,12 @@ export default function HomePage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="flex justify-center mt-0">
-                <Button variant="outline" size="sm" onClick={() => setScanOpen(true)} className="cursor-pointer">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setScanOpen(true)}
+                  className="cursor-pointer"
+                >
                   Scan Barcode
                 </Button>
               </div>

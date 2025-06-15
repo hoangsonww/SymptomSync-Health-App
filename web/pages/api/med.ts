@@ -6,7 +6,7 @@ type ErrorResponse = { error: string };
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<MedResponse | ErrorResponse>
+  res: NextApiResponse<MedResponse | ErrorResponse>,
 ) {
   const { ndc } = req.query;
   if (!ndc || typeof ndc !== "string") {
@@ -15,7 +15,7 @@ export default async function handler(
 
   try {
     const upcRes = await fetch(
-      `https://api.upcitemdb.com/prod/trial/lookup?upc=${encodeURIComponent(ndc)}`
+      `https://api.upcitemdb.com/prod/trial/lookup?upc=${encodeURIComponent(ndc)}`,
     );
     if (upcRes.ok) {
       const upcJson = await upcRes.json();
@@ -42,7 +42,7 @@ export default async function handler(
 
   try {
     const v1Url = `https://dailymed.nlm.nih.gov/dailymed/services/v1/ndc/${encodeURIComponent(
-      ndc
+      ndc,
     )}/spls.json`;
     const dm1Res = await fetch(v1Url);
     if (dm1Res.ok) {
