@@ -258,6 +258,9 @@ Check out our demo video showcasing the app's features and functionality: [Link 
   </a>
 </p>
 
+> [!TIP]
+> This video might not be comprehensive and cover all features of our app - so please feel free to give our live app at [symptomsync.vercel.app](https://symptomsync.vercel.app) a try to test out all the features!
+
 ---
 
 ## High-Fidelity Prototype
