@@ -5,7 +5,7 @@ Build with patient care in mind, SymptomSync is a web application designed to he
 > [!NOTE]
 > Developed by [David Nguyen](https://sonnguyenhoang.com) and Erica Ocbu at UNC–Chapel Hill.
 
-![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![JavaScript](https://img.shields.io/badge/-JavaScript-05122A?style=flat&logo=javascript) ![Node.js](https://img.shields.io/badge/-Node.js-05122A?style=flat&logo=nodedotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![CSS](https://img.shields.io/badge/-CSS-05122A?style=flat&logo=css) ![HTML5](https://img.shields.io/badge/-HTML5-05122A?style=flat&logo=html5) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-05122A?style=flat&logo=postgresql) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Docker](https://img.shields.io/badge/-Docker-05122A?style=flat&logo=docker) ![Git](https://img.shields.io/badge/-Git-05122A?style=flat&logo=git) ![GitHub](https://img.shields.io/badge/-GitHub-05122A?style=flat&logo=github) ![npm](https://img.shields.io/badge/-npm-05122A?style=flat&logo=npm) ![Webpack](https://img.shields.io/badge/-Webpack-05122A?style=flat&logo=webpack) ![Babel](https://img.shields.io/badge/-Babel-05122A?style=flat&logo=babel) ![ESLint](https://img.shields.io/badge/-ESLint-05122A?style=flat&logo=eslint) ![Prettier](https://img.shields.io/badge/-Prettier-05122A?style=flat&logo=prettier) ![Postman](https://img.shields.io/badge/-Postman-05122A?style=flat&logo=postman) ![Jest](https://img.shields.io/badge/-Jest-05122A?style=flat&logo=jest) ![Shell](https://img.shields.io/badge/-Shell-05122A?style=flat&logo=gnu-bash) ![Makefile](https://img.shields.io/badge/-Makefile-05122A?style=flat&logo=gnu)
+![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![JavaScript](https://img.shields.io/badge/-JavaScript-05122A?style=flat&logo=javascript) ![Node.js](https://img.shields.io/badge/-Node.js-05122A?style=flat&logo=nodedotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![CSS](https://img.shields.io/badge/-CSS-05122A?style=flat&logo=css) ![HTML5](https://img.shields.io/badge/-HTML5-05122A?style=flat&logo=html5) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-05122A?style=flat&logo=postgresql) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Docker](https://img.shields.io/badge/-Docker-05122A?style=flat&logo=docker) ![Git](https://img.shields.io/badge/-Git-05122A?style=flat&logo=git) ![GitHub](https://img.shields.io/badge/-GitHub-05122A?style=flat&logo=github) ![npm](https://img.shields.io/badge/-npm-05122A?style=flat&logo=npm) ![Webpack](https://img.shields.io/badge/-Webpack-05122A?style=flat&logo=webpack) ![Babel](https://img.shields.io/badge/-Babel-05122A?style=flat&logo=babel) ![ESLint](https://img.shields.io/badge/-ESLint-05122A?style=flat&logo=eslint) ![Prettier](https://img.shields.io/badge/-Prettier-05122A?style=flat&logo=prettier) ![Postman](https://img.shields.io/badge/-Postman-05122A?style=flat&logo=postman) ![Jest](https://img.shields.io/badge/-Jest-05122A?style=flat&logo=jest) ![Shell](https://img.shields.io/badge/-Shell-05122A?style=flat&logo=gnu-bash) ![Makefile](https://img.shields.io/badge/-Makefile-05122A?style=flat&logo=gnu) ![AWS](https://img.shields.io/badge/-Amazon%20Web%20Services-05122A?style=flat&logo=awesomewm) ![Ansible](https://img.shields.io/badge/-Ansible-05122A?style=flat&logo=ansible)
 
 > [!IMPORTANT]
 > **Live Web App: [https://symptomsync.vercel.app](https://symptomsync.vercel.app) 🚀**
@@ -219,7 +219,7 @@ SymptomSync offers a range of features to help users manage their health effecti
 
 1. Sign up / log in via Supabase Auth.
 2. On the **Home** dashboard, add new medications, appointments, or health logs.
-3. View interactive charts—severity trends, symptom distribution, appointment patterns.
+3. View interactive charts - severity trends, symptom distribution, appointment patterns.
 4. Navigate to **Calendar** to see a month/week/day/agenda view of all events, add events, or even import/export ICS.
 5. All changes sync in real‑time across open tabs/devices; cron‑driven reminders notify you via in-app notifications.
 6. Use the **Documents** page to upload/export health records, prescriptions, etc.
@@ -275,6 +275,66 @@ Our high-fidelity prototype showcases the app's design and user experience. You 
     <img src="docs/img/figma.png" alt="Figma Prototype Thumbnail" width="100%"/>
   </a>
 </p>
+
+---
+
+## AWS & Ansible Deployment
+
+SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Vercel if you choose to host your own instance on AWS! Its deployment infra is defined in the `aws/` folder (AWS CDK in JavaScript) and can be deployed via the Ansible playbook in `ansible/`. This setup will provision Cognito, DynamoDB, S3, Lambdas, API Gateway and a scheduled EventBridge rule - and automate it all via Ansible.
+
+### Directory Layout
+
+```
+.
+├── aws/           # CDK v2 stack (JavaScript)
+│   ├── bin/
+│   ├── lib/
+│   ├── lambda/
+│   ├── package.json
+│   ├── cdk.json
+│   └── .gitignore
+└── ansible/       # Ansible deployment playbook
+├── ansible.cfg
+├── inventory.ini
+└── deploy-infrastructure.yml
+
+```
+
+### AWS CDK
+
+1. **Bootstrap & Deploy**  
+  ```bash
+   cd aws
+   npm install
+   cdk bootstrap
+   cdk deploy --require-approval never
+  ```
+
+2. **What’s created**
+
+   * **Cognito** User Pool & App Client
+   * **DynamoDB** tables for profiles, meds, appts, logs, notifications
+   * **S3** buckets (`avatars`, `documents`)
+   * **Lambda** functions: REST API, reminder processor, chatbot, presigned-URL
+   * **API Gateway** (REST) + Cognito authorizer
+   * **EventBridge** rule to run reminders every minute
+
+### Ansible Playbook
+
+1. **Run the playbook**
+
+   ```bash
+   cd ansible
+   ansible-playbook deploy-infrastructure.yml
+   ```
+2. **What it does**
+
+   * Installs Node.js, AWS CLI, AWS CDK on the host
+   * Verifies your `GOOGLE_AI_API_KEY` env var
+   * Bootstraps CDK in your AWS account
+   * Deploys the entire SymptomSync stack non-interactively
+
+Ensure your AWS credentials (via `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) and `GOOGLE_AI_API_KEY` are set in your environment before running.
 
 ---
 

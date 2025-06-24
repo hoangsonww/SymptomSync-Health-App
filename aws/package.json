@@ -1,0 +1,15 @@
+{
+  "name": "symptomsync-aws",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "cdk": "cdk"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.83.0",
+    "constructs": "^10.1.88"
+  },
+  "devDependencies": {
+    "esbuild": "^0.18.16"
+  }
+}

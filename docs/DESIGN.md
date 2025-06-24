@@ -1,6 +1,10 @@
-# Design Document
+# SymptomSync - Application Design Document
 
+> [!NOTE]
 > Written by: David Nguyen and Erica Ocbu for COMP 426: Modern Web Programming at UNC-Chapel Hill.
+
+> [!IMPORTANT]
+> Note: This design document served as our starting point when we initially started the project. Features may be changed without prior notice, and this design document may be outdated. For example, the peer-support chat feature has been replaced with an AI-powered chatbot feature which allows users to get help directly from the AI/LLM. Please refer to the latest web app at [https://symptomsync.vercel.app](https://symptomsync.vercel.app) and the project's [README file](../README.md) for the latest updates and features!
 
 ## Feature Plan
 
@@ -89,7 +93,8 @@
 
 ## High-Fidelity Prototype
 
-Link to Figma prototype: [SymptomSync Figma Prototype](https://www.figma.com/design/YwoQ1OgAPYOfFOwlbf3aP0/COMP-426-Final-Project-Prototype?node-id=2-287&t=yC99fAWyYGJEOY3N-1)
+> [!IMPORTANT]
+> Link to Figma prototype: [SymptomSync Figma Prototype](https://www.figma.com/design/YwoQ1OgAPYOfFOwlbf3aP0/COMP-426-Final-Project-Prototype?node-id=2-287&t=yC99fAWyYGJEOY3N-1)
 
 ---
 
