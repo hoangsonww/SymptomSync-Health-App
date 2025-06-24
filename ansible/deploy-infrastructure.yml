@@ -1,0 +1,84 @@
+---
+- name: Deploy SymptomSync AWS Infrastructure
+  hosts: local
+  connection: local
+  gather_facts: yes
+
+  vars:
+    aws_region: "{{ lookup('env','AWS_REGION') | default('us-east-1', true) }}"
+    aws_profile: "{{ lookup('env','AWS_PROFILE') | default('', true) }}"
+    google_ai_api_key: "{{ lookup('env','GOOGLE_AI_API_KEY') }}"
+    cdk_dir: "{{ playbook_dir }}/../aws"
+    nodejs_setup_version: "16.x"
+
+  pre_tasks:
+    - name: Fail if Google AI API key is not set
+      ansible.builtin.fail:
+        msg: "Please set the GOOGLE_AI_API_KEY environment variable."
+      when: google_ai_api_key == ""
+
+  tasks:
+    - name: Ensure apt cache is up to date (Debian/Ubuntu)
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == 'Debian'
+
+    - name: Install system packages
+      ansible.builtin.package:
+        name:
+          - curl
+          - python3-pip
+          - git
+        state: present
+
+    - name: Add NodeSource APT repo for Node.js {{ nodejs_setup_version }}
+      ansible.builtin.shell: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_setup_version }} | bash -
+      args:
+        executable: /bin/bash
+      when: ansible_os_family == 'Debian'
+
+    - name: Install Node.js & npm
+      ansible.builtin.package:
+        name: nodejs
+        state: present
+
+    - name: Install AWS CLI (via pip)
+      ansible.builtin.pip:
+        name: awscli
+        executable: pip3
+
+    - name: Install AWS CDK CLI (via npm)
+      ansible.builtin.npm:
+        name: aws-cdk
+        global: yes
+      environment:
+        NPM_CONFIG_LOGLEVEL: error
+
+    - name: Verify CDK version
+      ansible.builtin.command: cdk --version
+
+    - name: Install AWS infra dependencies
+      ansible.builtin.command: npm install
+      args:
+        chdir: "{{ cdk_dir }}"
+
+    - name: Bootstrap CDK environment
+      ansible.builtin.command: >
+        cdk bootstrap
+      args:
+        chdir: "{{ cdk_dir }}"
+      environment:
+        AWS_PROFILE: "{{ aws_profile }}"
+        AWS_REGION: "{{ aws_region }}"
+
+    - name: Deploy SymptomSync Stack
+      ansible.builtin.command: >
+        cdk deploy --require-approval never
+      args:
+        chdir: "{{ cdk_dir }}"
+      environment:
+        AWS_PROFILE: "{{ aws_profile }}"
+        AWS_REGION: "{{ aws_region }}"
+        GOOGLE_AI_API_KEY: "{{ google_ai_api_key }}"
