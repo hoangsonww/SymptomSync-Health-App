@@ -1,6 +1,10 @@
 # SymptomSync - A Health Management Web App 💊
 
-Build with patient care in mind, SymptomSync is a web application designed to help users manage their health and wellness. It provides a comprehensive dashboard for tracking medications, appointments, and health logs, all while ensuring real-time synchronization across devices. With features like medication reminders, appointment tracking, and an AI-powered chatbot, SymptomSync empowers users to take control of their health journey.
+Build with patient care in mind, **SymptomSync** is a web application designed to help users manage their health and wellness. It provides a comprehensive dashboard for tracking medications, appointments, and health logs, all while ensuring real-time synchronization across devices. With features like medication reminders, appointment tracking, and an AI-powered chatbot, **SymptomSync** empowers users to take smarter control of their health journey and live healthier lives 💪.
+
+<p align="center">
+  <img src="docs/img/logo.jpeg" alt="SymptomSync Logo" width="40%"/>
+</p>
 
 > [!NOTE]
 > Developed by [David Nguyen](https://sonnguyenhoang.com) and Erica Ocbu at UNC–Chapel Hill.
