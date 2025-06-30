@@ -4,12 +4,12 @@ Build with patient care in mind, **SymptomSync** is a web application designed t
 
 <p align="center">
   <a href="https://symptomsync.vercel.app" target="_blank">
-    <img src="docs/img/logo.jpeg" alt="SymptomSync Logo" width="40%"/>
+    <img src="docs/img/logo.jpeg" alt="SymptomSync Logo" width="45%"/>
   </a>
 </p>
 
 > [!NOTE]
-> Developed by [David Nguyen](https://sonnguyenhoang.com) and Erica Ocbu at UNC–Chapel Hill.
+> Developed by [David Nguyen](https://sonnguyenhoang.com) and Erica Ocbu at UNC–Chapel Hill. **© SymptomSync Team, 2025**. 
 
 ![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![JavaScript](https://img.shields.io/badge/-JavaScript-05122A?style=flat&logo=javascript) ![Node.js](https://img.shields.io/badge/-Node.js-05122A?style=flat&logo=nodedotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![CSS](https://img.shields.io/badge/-CSS-05122A?style=flat&logo=css) ![HTML5](https://img.shields.io/badge/-HTML5-05122A?style=flat&logo=html5) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-05122A?style=flat&logo=postgresql) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Docker](https://img.shields.io/badge/-Docker-05122A?style=flat&logo=docker) ![Git](https://img.shields.io/badge/-Git-05122A?style=flat&logo=git) ![GitHub](https://img.shields.io/badge/-GitHub-05122A?style=flat&logo=github) ![npm](https://img.shields.io/badge/-npm-05122A?style=flat&logo=npm) ![Webpack](https://img.shields.io/badge/-Webpack-05122A?style=flat&logo=webpack) ![Babel](https://img.shields.io/badge/-Babel-05122A?style=flat&logo=babel) ![ESLint](https://img.shields.io/badge/-ESLint-05122A?style=flat&logo=eslint) ![Prettier](https://img.shields.io/badge/-Prettier-05122A?style=flat&logo=prettier) ![Postman](https://img.shields.io/badge/-Postman-05122A?style=flat&logo=postman) ![Jest](https://img.shields.io/badge/-Jest-05122A?style=flat&logo=jest) ![Shell](https://img.shields.io/badge/-Shell-05122A?style=flat&logo=gnu-bash) ![Makefile](https://img.shields.io/badge/-Makefile-05122A?style=flat&logo=gnu) ![AWS](https://img.shields.io/badge/-Amazon%20Web%20Services-05122A?style=flat&logo=awesomewm) ![Ansible](https://img.shields.io/badge/-Ansible-05122A?style=flat&logo=ansible)
 
@@ -129,6 +129,8 @@ SymptomSync offers a range of features to help users manage their health effecti
 
 ## Architecture Overview
 
+Below is a high-level architectural overview of **SymptomSync**: 
+
 ```
 ┌──────────────────┐                   ┌───────────────────────┐
 │  Next.js Client  │ <––– WebSocket –> │   Supabase Realtime   │
@@ -175,7 +177,8 @@ SymptomSync offers a range of features to help users manage their health effecti
    ```
 
 2. Open the project in your favorite code editor (e.g., VSCode). When prompted by your IDE, select "Open in Container" to open the project in a Docker container. Alternatively, if using VSCode, you can use the Remote - Containers extension to open the project in a container.
-   - This is very important as the project uses Docker to run the database and other services. If you don't have Docker installed, please install it first.
+> [!CAUTION]
+> This is very important as the project uses Docker to run the database and other services. If you don't have Docker installed, please install it first.
 3. Install dependencies (Remember to use `--legacy-peer-deps` if you encounter issues with React versions being incompatible with Shadcn/ui)
    ```bash
    npm install --legacy-peer-deps
