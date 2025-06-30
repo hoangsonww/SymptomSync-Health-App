@@ -129,6 +129,8 @@ SymptomSync offers a range of features to help users manage their health effecti
 
 ## Architecture Overview
 
+Below is a high-level architectural overview of **SymptomSync**: 
+
 ```
 ┌──────────────────┐                   ┌───────────────────────┐
 │  Next.js Client  │ <––– WebSocket –> │   Supabase Realtime   │
