@@ -4,7 +4,7 @@ Build with patient care in mind, **SymptomSync** is a web application designed t
 
 <p align="center">
   <a href="https://symptomsync.vercel.app" target="_blank">
-    <img src="docs/img/logo.jpeg" alt="SymptomSync Logo" width="40%"/>
+    <img src="docs/img/logo.jpeg" alt="SymptomSync Logo" width="45%"/>
   </a>
 </p>
 
