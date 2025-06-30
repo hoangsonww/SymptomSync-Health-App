@@ -177,7 +177,8 @@ Below is a high-level architectural overview of **SymptomSync**:
    ```
 
 2. Open the project in your favorite code editor (e.g., VSCode). When prompted by your IDE, select "Open in Container" to open the project in a Docker container. Alternatively, if using VSCode, you can use the Remote - Containers extension to open the project in a container.
-   - This is very important as the project uses Docker to run the database and other services. If you don't have Docker installed, please install it first.
+> [!CAUTION]
+> This is very important as the project uses Docker to run the database and other services. If you don't have Docker installed, please install it first.
 3. Install dependencies (Remember to use `--legacy-peer-deps` if you encounter issues with React versions being incompatible with Shadcn/ui)
    ```bash
    npm install --legacy-peer-deps
