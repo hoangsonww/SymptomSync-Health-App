@@ -109,6 +109,8 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/symptomsync:latest
           build-args: |
             NODE_ENV=production
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
 
   deploy:
     name: "🚀 Deploy (AWS CDK + Ansible)"
