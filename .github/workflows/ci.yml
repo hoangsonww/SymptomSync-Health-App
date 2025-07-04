@@ -1,115 +1,147 @@
-name: CI/CD Pipeline
+name: CI / CD – SymptomSync
 
 on:
   push:
-    branches: [master]
+    branches: [main, master]
   pull_request:
-    branches: [master]
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 18
 
 jobs:
   formatting:
-    name: "🔧 Formatting & Lint"
+    name: "🔧 Format & Lint"
     runs-on: ubuntu-latest
+    env:
+      FMT_LINT_B64: ${{ secrets.SCRIPT_FORMAT_LINT }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        continue-on-error: true
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Use Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-        continue-on-error: true
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Decode & run formatter / linter
+        run: |
+          echo "$FMT_LINT_B64" | base64 --decode > fmt-lint.sh
+          chmod +x fmt-lint.sh
+          ./fmt-lint.sh
+
+  testing:
+    name: "🧪 Unit & E2E Tests"
+    runs-on: ubuntu-latest
+    needs: formatting
+    env:
+      TEST_B64: ${{ secrets.SCRIPT_TEST }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Decode & run tests
+        run: |
+          echo "$TEST_B64" | base64 --decode > test.sh
+          chmod +x test.sh
+          ./test.sh
+
+  build:
+    name: "🏗 Build Next.js (web/)"
+    runs-on: ubuntu-latest
+    needs: testing
+
+    env:
+      NODE_VERSION: 18
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: npm ci
-        continue-on-error: true
+        run: |
+          cd web
+          npm ci --legacy-peer-deps
 
-      - name: Prettier format
-        run: npm run format
-        continue-on-error: true
+      - name: Build Next.js app
+        run: |
+          cd web
+          npm run build
 
-      - name: ESLint lint
-        run: npm run lint
-        continue-on-error: true
-
-  backend:
-    name: "✅ Backend Build & Test"
-    runs-on: ubuntu-latest
-    needs: [formatting]
-    if: ${{ always() }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        continue-on-error: true
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
-          node-version: 18
-        continue-on-error: true
+          name: next-build
+          path: web/.next
 
-      - name: Install backend deps
-        run: npm --workspace backend ci
-        continue-on-error: true
-
-      - name: Backend format
-        run: npm --workspace backend run format
-        continue-on-error: true
-
-      - name: Backend lint
-        run: npm --workspace backend run lint
-        continue-on-error: true
-
-      - name: Build backend
-        run: npm --workspace backend run build
-        continue-on-error: true
-
-      - name: Backend tests
-        run: npm --workspace backend run test
-        continue-on-error: true
-
-  frontend:
-    name: "🌐 Frontend Build & Test"
+  docker:
+    name: "🐳 Build & Push Docker Image"
     runs-on: ubuntu-latest
-    needs: [backend]
-    if: ${{ always() }}
+    needs: build
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        continue-on-error: true
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
-          node-version: 18
-        continue-on-error: true
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install frontend deps
-        run: npm --workspace frontend ci
-        continue-on-error: true
+      - name: Build & push SymptomSync image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/symptomsync:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/symptomsync:latest
+          build-args: |
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+            NODE_ENV=production
 
-      - name: Frontend format
-        run: npm --workspace frontend run format
-        continue-on-error: true
+  deploy:
+    name: "🚀 Deploy (AWS CDK + Ansible)"
+    runs-on: ubuntu-latest
+    needs: docker
+    env:
+      DEPLOY_B64: ${{ secrets.SCRIPT_DEPLOY }}
+      GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+      AWS_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Frontend lint
-        run: npm --workspace frontend run lint
-        continue-on-error: true
-
-      - name: Build frontend
-        run: npm --workspace frontend run build
-        continue-on-error: true
-
-      - name: Frontend tests
-        run: npm --workspace frontend run test:unit
-        continue-on-error: true
+      - name: Decode & run deploy script
+        run: |
+          echo "$DEPLOY_B64" | base64 --decode > deploy.sh
+          chmod +x deploy.sh
+          ./deploy.sh
 
   complete:
     name: "🎉 Pipeline Complete"
     runs-on: ubuntu-latest
-    needs: [formatting, backend, frontend]
-    if: ${{ always() }}
+    needs: deploy
+    env:
+      DONE_B64: ${{ secrets.SCRIPT_COMPLETE }}
     steps:
-      - name: Final status
-        run: echo "✅ CI/CD pipeline finished successfully."
+      - uses: actions/checkout@v4
+      - name: Decode & announce
+        run: |
+          echo "$DONE_B64" | base64 --decode > done.sh
+          chmod +x done.sh
+          ./done.sh
