@@ -52,7 +52,7 @@ jobs:
           key: ${{ runner.os }}-web-npm-${{ hashFiles('web/package-lock.json') }}
 
   # ────────────────────────────────────────────────────────────────
-  #  🔒 1. Security & License Scan                                 #
+  #  🔒 2. Security & License Scan                                 #
   # ────────────────────────────────────────────────────────────────
   security-scan:
     name: "🔒 Security & License Scan"
@@ -61,17 +61,27 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - run: npm ci --legacy-peer-deps
-      - name: npm audit
-        run: npm audit --audit-level=high || true
-      - name: license-checker
-        run: npx license-checker --production || true
-      - name: Static analysis
+
+      - name: Install root deps (if any)
+        run: npm install --legacy-peer-deps || true
+
+      - name: Install web deps
+        run: npm ci --legacy-peer-deps --prefix web
+
+      - name: Audit web dependencies
+        run: npm audit --audit-level=high --prefix web || true
+
+      - name: Check web licenses
+        run: npx license-checker --production --start web || true
+
+      - name: Static analysis (ESLint & Semgrep)
         run: |
-          npx eslint "web/**/*.{js,ts}" --max-warnings=0 || true
+          npx eslint "backend/**/*.{js,ts}" "web/**/*.{js,ts}" --max-warnings=0 || true
           npx semgrep --config=auto --timeout 60 || true
 
   # ────────────────────────────────────────────────────────────────
