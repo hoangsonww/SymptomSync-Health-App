@@ -20,7 +20,20 @@ Build with patient care in mind, **SymptomSync** is a web application designed t
 
 ## Table of Contents
 
-
+1. [SymptomSync UI](#symptomsync-ui)
+2. [Features](#features)
+3. [Tech Stack](#tech-stack)
+4. [Architecture Overview](#architecture-overview)
+5. [Installation](#installation)
+6. [Configuration](#configuration)
+7. [Usage](#usage)
+8. [Contributing](#contributing)
+9. [Authors](#authors)
+10. [Video Demo](#video-demo)
+11. [High-Fidelity Prototype](#high-fidelity-prototype)
+12. [AWS & Ansible Deployment](#aws--ansible-deployment)
+13. [License](#license) 
+14. [Acknowledgements](#acknowledgements)
 
 ---
 
@@ -356,6 +369,26 @@ Ensure your AWS credentials (via `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRE
 ## License
 
 [MIT License](LICENSE) - Feel free to use, modify, and distribute this code as you wish. Contributions are welcome!
+
+---
+
+## Acknowledgements
+
+We would like to acknowledge the following resources and libraries that made this project possible:
+
+- [Next.js](https://nextjs.org) for the React framework
+- [Supabase](https://supabase.io) for the backend services
+- [Tailwind CSS](https://tailwindcss.com) for the styling framework
+- [Shadcn/ui](https://ui.shadcn.com) for the UI components
+- [Framer Motion](https://www.framer.com/motion/) for the animations
+- [Chart.js](https://www.chartjs.org) for the data visualizations
+- [Google AI](https://ai.google) for the AI-powered chatbot
+- [Docker](https://www.docker.com) for containerization
+- [Ansible](https://www.ansible.com) for deployment automation 
+- [AWS CDK](https://aws.amazon.com/cdk/) for infrastructure as code
+- [Figma](https://www.figma.com) for the design and prototyping
+- [Postman](https://www.postman.com) for API testing
+- [Jest](https://jestjs.io) for testing
 
 ---
 
