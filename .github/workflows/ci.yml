@@ -123,22 +123,29 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+
       - name: Install dependencies
         run: |
           cd web
           npm ci --legacy-peer-deps
+
       - name: Build Next.js app
         run: |
           cd web
           npm run build
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: next-build
-          path: web/.next
+          path: |
+            web/.next/**
+            web/public/**
+            web/next.config.js
 
   # ────────────────────────────────────────────────────────────────
   #  🐳 4. Build & Push Docker Image                              #

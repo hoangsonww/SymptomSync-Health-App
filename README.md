@@ -353,6 +353,10 @@ We have set up GitHub Actions for continuous integration and deployment. The wor
 
 For more details, check out the `.github/workflows/ci.yml` file in the repository.
 
+<p align="center">
+  <img src="docs/img/gh.png" alt="GitHub Actions CI/CD Workflow" width="100%"/>
+</p>
+
 ## Testing
 
 We have implemented unit tests using Jest to ensure the reliability of our application. The tests cover various components and functionalities, including:
