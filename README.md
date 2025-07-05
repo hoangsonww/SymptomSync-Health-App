@@ -16,8 +16,6 @@ Build with patient care in mind, **SymptomSync** is a web application designed t
 > [!IMPORTANT]
 > **Live Web App: [https://symptomsync.vercel.app](https://symptomsync.vercel.app) 🚀**
 
----
-
 ## Table of Contents
 
 1. [SymptomSync UI](#symptomsync-ui)
@@ -32,10 +30,10 @@ Build with patient care in mind, **SymptomSync** is a web application designed t
 10. [Video Demo](#video-demo)
 11. [High-Fidelity Prototype](#high-fidelity-prototype)
 12. [AWS & Ansible Deployment](#aws--ansible-deployment)
-13. [License](#license) 
-14. [Acknowledgements](#acknowledgements)
-
----
+13. [GitHub Actions CI/CD](#github-actions-cicd)
+14. [Testing](#testing)
+15. [License](#license)
+16. [Acknowledgements](#acknowledgements)
 
 ## SymptomSync UI
 
@@ -100,8 +98,6 @@ The UI of the app was designed with Figma and Tailwind CSS. The design is respon
 > [!IMPORTANT]
 > Link to Figma prototype: [SymptomSync Figma Prototype](https://www.figma.com/design/YwoQ1OgAPYOfFOwlbf3aP0/COMP-426-Final-Project-Prototype?node-id=2-287&t=yC99fAWyYGJEOY3N-1)
 
----
-
 ## Features
 
 SymptomSync offers a range of features to help users manage their health effectively:
@@ -125,8 +121,6 @@ SymptomSync offers a range of features to help users manage their health effecti
 - **Dark Mode**: Toggle between light and dark themes for better accessibility.
 - **Responsive Design**: Mobile-first design with a focus on usability across devices.
 
----
-
 ## Tech Stack
 
 - **Front-End**
@@ -143,8 +137,6 @@ SymptomSync offers a range of features to help users manage their health effecti
   - Supabase Postgres Triggers for real-time updates
   - Supabase Cron Jobs for scheduled reminders
   - Supabase Broadcast Channels & `postgres_changes` for live updates & notifications
-
----
 
 ## Architecture Overview
 
@@ -184,8 +176,6 @@ Below is a high-level architectural overview of **SymptomSync**:
   - There is also a trigger on the `auth.users` table to create a corresponding `user_profiles` entry when a new user signs up.
 - **AI Chatbot**: The chatbot uses the Google AI API to analyze user symptoms and provide health insights.
 
----
-
 ## Installation
 
 1. Clone the repo
@@ -213,8 +203,6 @@ Below is a high-level architectural overview of **SymptomSync**:
    npm run dev
    ```
 
----
-
 ## Configuration
 
 - **Supabase**
@@ -241,8 +229,6 @@ Below is a high-level architectural overview of **SymptomSync**:
   - `.env.local` holds all keys (refer to `.env.example`)
   - Default port: `3000`
 
----
-
 ## Usage
 
 1. Sign up / log in via Supabase Auth.
@@ -256,8 +242,6 @@ Below is a high-level architectural overview of **SymptomSync**:
 9. View and manage your **profile**. You can also vies other users' profiles.
 10. Visit the **Medication Schedules** page to view/edit a complete list of your medications and their schedules.
 
----
-
 ## Contributing
 
 1. Fork & branch: `git checkout -b feature/awesome`
@@ -266,16 +250,12 @@ Below is a high-level architectural overview of **SymptomSync**:
 4. Commit & PR with description
 5. Wait for review and merge
 
----
-
 ## Authors
 
 A big thank you to our team members for their hard work and dedication:
 
 - [David Nguyen](https://github.com/hoangsonww)
 - [Erica Ocbu](https://github.com/ericaocbu)
-
----
 
 ## Video Demo
 
@@ -290,8 +270,6 @@ Check out our demo video showcasing the app's features and functionality: [Link 
 > [!TIP]
 > This video might not be comprehensive and cover all features of our app - so please feel free to give our live app at [symptomsync.vercel.app](https://symptomsync.vercel.app) a try to test out all the features!
 
----
-
 ## High-Fidelity Prototype
 
 Link to Figma prototype: [SymptomSync Figma Prototype](https://www.figma.com/design/YwoQ1OgAPYOfFOwlbf3aP0/COMP-426-Final-Project-Prototype?node-id=2-287&t=yC99fAWyYGJEOY3N-1)
@@ -303,8 +281,6 @@ Our high-fidelity prototype showcases the app's design and user experience. You 
     <img src="docs/img/figma.png" alt="Figma Prototype Thumbnail" width="100%"/>
   </a>
 </p>
-
----
 
 ## AWS & Ansible Deployment
 
@@ -364,13 +340,39 @@ SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Ve
 
 Ensure your AWS credentials (via `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) and `GOOGLE_AI_API_KEY` are set in your environment before running.
 
----
+## GitHub Actions CI/CD
+
+We have set up GitHub Actions for continuous integration and deployment. The workflow runs on every push to the `main` branch and performs the following steps:
+
+- Installs dependencies
+- Runs tests
+- Builds the application
+- Deploys to Vercel 
+- Deploys the AWS stack using the Ansible playbook
+- Notifies the team on success/failure
+
+For more details, check out the `.github/workflows/ci.yml` file in the repository.
+
+## Testing
+
+We have implemented unit tests using Jest to ensure the reliability of our application. The tests cover various components and functionalities, including:
+
+- User authentication
+- Data fetching and state management
+- API integration
+- UI components
+
+To run the tests, use the following command in the `web` directory:
+
+```bash
+npm run test
+```
 
 ## License
 
 [MIT License](LICENSE) - Feel free to use, modify, and distribute this code as you wish. Contributions are welcome!
 
----
+Please ensure to follow the [Contributing Guidelines](#contributing) if you wish to contribute to this project.
 
 ## Acknowledgements
 
