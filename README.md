@@ -24,16 +24,17 @@ Build with patient care in mind, **SymptomSync** is a web application designed t
 4. [Architecture Overview](#architecture-overview)
 5. [Installation](#installation)
 6. [Configuration](#configuration)
-7. [Usage](#usage)
-8. [Contributing](#contributing)
-9. [Authors](#authors)
-10. [Video Demo](#video-demo)
-11. [High-Fidelity Prototype](#high-fidelity-prototype)
-12. [AWS & Ansible Deployment](#aws--ansible-deployment)
-13. [GitHub Actions CI/CD](#github-actions-cicd)
-14. [Testing](#testing)
-15. [License](#license)
-16. [Acknowledgements](#acknowledgements)
+7. [Supabase Schema](#supabase-schema)
+8. [Usage](#usage)
+9. [Video Demo](#video-demo)
+10. [High-Fidelity Prototype](#high-fidelity-prototype)
+11. [AWS & Ansible Deployment](#aws--ansible-deployment)
+12. [GitHub Actions CI/CD](#github-actions-cicd)
+13. [Testing](#testing)
+14. [Contributing](#contributing)
+15. [Authors](#authors)
+16. [License](#license)
+17. [Acknowledgements](#acknowledgements)
 
 ## SymptomSync UI
 
@@ -229,6 +230,30 @@ Below is a high-level architectural overview of **SymptomSync**:
   - `.env.local` holds all keys (refer to `.env.example`)
   - Default port: `3000`
 
+## Supabase Schema
+
+SymptomSync uses the following tables in Supabase:
+
+- `user_profiles`
+- `medication_reminders`
+- `appointment_reminders`
+- `health_logs`
+- `files`
+- `user_notifications`
+- `auth.users` (Supabase Auth table)
+- `auth.refresh_tokens` (Supabase Auth table)
+- `auth.user_attributes` (Supabase Auth table)
+- `auth.user_mfa` (Supabase Auth table)
+- and more...
+
+These tables are used to store user profiles, medication reminders, appointment reminders, health logs, uploaded files, and user notifications. The schema is designed to ensure data integrity and security through Row Level Security (RLS) policies.
+
+Below is a diagram of the Supabase schema used in SymptomSync:
+
+<p align="center">
+  <img src="docs/img/schema.jpeg" alt="Supabase Schema Diagram" width="100%"/>
+</p>
+
 ## Usage
 
 1. Sign up / log in via Supabase Auth.
@@ -395,7 +420,16 @@ We would like to acknowledge the following resources and libraries that made thi
 - [Figma](https://www.figma.com) for the design and prototyping
 - [Postman](https://www.postman.com) for API testing
 - [Jest](https://jestjs.io) for testing
+- [ESLint](https://eslint.org) for code linting
+- [Prettier](https://prettier.io) for code formatting
+- and many more!
+
+## Contact
+
+For any questions, feedback, or contributions, feel free to open an issue [here](https://github.com/hoangsonww/SymptomSync-Health-App/issues) or reach out to us via [GitHub Discussions](https://github.com/hoangsonww/SymptomSync-Health-App/discussions). We appreciate your interest in **SymptomSync** and look forward to hearing from you!
 
 ---
 
-Thank you for checking out SymptomSync! We hope it helps you manage your health and wellness effectively. If you have any questions or feedback, feel free to reach out! 💊
+Thank you for checking out **SymptomSync**! We hope it helps you manage your health and wellness effectively. If you have any questions or feedback, feel free to reach out! 💊
+
+[🔝 Back to Top](#symptomsync---a-health-management-web-app-)
