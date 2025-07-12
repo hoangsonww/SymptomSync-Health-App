@@ -234,18 +234,34 @@ jobs:
           ./deploy.sh
 
   # ────────────────────────────────────────────────────────────────
-  #  🎉 8. Pipeline Complete                                       #
+  #  🎉 Pipeline Complete                                         #
   # ────────────────────────────────────────────────────────────────
   complete:
     name: "🎉 Pipeline Complete"
     runs-on: ubuntu-latest
     needs: [deploy]
-    env:
-      DONE_B64: ${{ secrets.SCRIPT_COMPLETE }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Decode & announce
+      - name: Deployment Summary (log)
         run: |
-          echo "$DONE_B64" | base64 --decode > done.sh
-          chmod +x done.sh
-          ./done.sh
+          echo "::group::🎉 SymptomSync Deployment Summary"
+          echo ""
+          echo "- 🌐 **Web App:** https://symptomsync.vercel.app"
+          echo "- 🐳 **Container Image:** ghcr.io/${{ github.repository_owner }}/symptomsync:${{ github.sha }}"
+          echo "- 🚀 **AWS/CDK + Ansible Deployed:** ✅"
+          echo ""
+          echo "✅ All stages completed successfully!"
+          echo "::endgroup::"
+
+      - name: Write Summary to GitHub Step Summary
+        run: |
+          {
+            echo "## 🚀 SymptomSync CI/CD Pipeline Complete"
+            echo ""
+            echo "| Item                  | Details                                                |"
+            echo "| --------------------- | ------------------------------------------------------ |"
+            echo "| **Live Web App**      | [https://symptomsync.vercel.app](https://symptomsync.vercel.app) |"
+            echo "| **Container Image**   | `ghcr.io/${{ github.repository_owner }}/symptomsync:${{ github.sha }}` |"
+            echo "| **AWS Deployment**    | Completed via AWS CDK & Ansible                        |"
+            echo ""
+            echo "**Completed at** $(date -u +"%Y-%m-%dT%H:%M:%SZ") UTC"
+          } >> $GITHUB_STEP_SUMMARY
