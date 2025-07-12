@@ -1,4 +1,4 @@
-name: CI / CD – SymptomSync
+name: CI / CD – SymptomSync App
 
 on:
   push:
