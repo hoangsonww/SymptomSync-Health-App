@@ -1,4 +1,4 @@
-name: CI / CD – SymptomSync App
+name: CI / CD Pipeline – SymptomSync App
 
 on:
   push:
