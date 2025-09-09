@@ -26,7 +26,7 @@ export interface NotificationAction {
 export interface OfflineDataPayload {
   method: 'POST' | 'PUT' | 'DELETE';
   url: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: number;
 }
 
@@ -228,7 +228,8 @@ export async function queueNotificationAction(action: NotificationAction): Promi
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       const registration = await navigator.serviceWorker.ready;
       if ('sync' in registration) {
-        await registration.sync.register('notification-actions');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (registration as any).sync.register('notification-actions');
       }
     }
   } catch (error) {
@@ -241,7 +242,7 @@ export async function queueOfflineData(
   type: 'medication' | 'appointment' | 'log',
   method: 'POST' | 'PUT' | 'DELETE',
   url: string,
-  data: any
+  data: Record<string, unknown>
 ): Promise<void> {
   try {
     const db = await openOfflineDB();
@@ -261,7 +262,8 @@ export async function queueOfflineData(
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       const registration = await navigator.serviceWorker.ready;
       if ('sync' in registration) {
-        await registration.sync.register('offline-data');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (registration as any).sync.register('offline-data');
       }
     }
   } catch (error) {
@@ -299,8 +301,10 @@ export async function flushOfflineQueues(): Promise<void> {
       const registration = await navigator.serviceWorker.ready;
       if ('sync' in registration) {
         await Promise.all([
-          registration.sync.register('notification-actions'),
-          registration.sync.register('offline-data')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (registration as any).sync.register('notification-actions'),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (registration as any).sync.register('offline-data')
         ]);
       }
     }
