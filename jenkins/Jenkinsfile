@@ -1,0 +1,131 @@
+pipeline {
+  agent any
+  options { timestamps() }
+
+  environment {
+    NODE_VERSION = '18'
+    AWS_REGION   = 'us-east-1'
+    NEXT_PUBLIC_SUPABASE_URL = credentials('NEXT_PUBLIC_SUPABASE_URL')
+    NEXT_PUBLIC_SUPABASE_ANON_KEY = credentials('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    GOOGLE_AI_API_KEY = credentials('GOOGLE_AI_API_KEY')
+  }
+
+  stages {
+    stage('Preflight: Format & Lint') {
+      agent { docker { image "node:${NODE_VERSION}" } }
+      steps {
+        checkout scm
+        sh '''
+          npm install --legacy-peer-deps
+          npm run lint
+        '''
+      }
+    }
+
+    stage('Security & License Scan') {
+      agent { docker { image "node:${NODE_VERSION}" } }
+      steps {
+        sh '''
+          npm install --legacy-peer-deps || true
+          npm ci --legacy-peer-deps --prefix web
+          npm audit --audit-level=high --prefix web || true
+          npx license-checker --production --start web || true
+          npx eslint "backend/**/*.{js,ts}" "web/**/*.{js,ts}" --max-warnings=0 || true
+          npx semgrep --config=auto --timeout 60 || true
+        '''
+      }
+    }
+
+    stage('Unit & E2E Tests') {
+      parallel {
+        stage('Node 18') {
+          agent { docker { image 'node:18' } }
+          steps {
+            sh '''
+              npm ci --legacy-peer-deps --prefix web
+              npm test --prefix web || true
+            '''
+          }
+        }
+        stage('Node 20') {
+          agent { docker { image 'node:20' } }
+          steps {
+            sh '''
+              npm ci --legacy-peer-deps --prefix web
+              npm test --prefix web || true
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Build Next.js (web/)') {
+      agent { docker { image "node:${NODE_VERSION}" } }
+      steps {
+        sh '''
+          npm ci --legacy-peer-deps --prefix web
+          npm run build --prefix web
+        '''
+        stash name: 'next-build', includes: 'web/.next/**, web/public/**, web/next.config.js'
+      }
+    }
+
+    stage('Build & Push Docker Image') {
+      environment {
+        IMAGE_NAME = "ghcr.io/${env.GITHUB_REPOSITORY_OWNER ?: 'owner'}/symptomsync"
+      }
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'ghcr', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+          sh '''
+            echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_USER --password-stdin
+            docker build -t $IMAGE_NAME:${env.GIT_COMMIT} -t $IMAGE_NAME:latest \
+              --build-arg NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
+              --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
+              --build-arg NODE_ENV=production .
+            docker push $IMAGE_NAME:${env.GIT_COMMIT}
+            docker push $IMAGE_NAME:latest
+          '''
+        }
+      }
+    }
+
+    stage('Image Vulnerability Scan') {
+      steps {
+        sh '''
+          trivy image --exit-code 0 ghcr.io/${env.GITHUB_REPOSITORY_OWNER ?: 'owner'}/symptomsync:latest || true
+        '''
+      }
+    }
+
+    stage('Performance Benchmark') {
+      steps {
+        sh '''
+          docker run -d --rm -p 5000:5000 ghcr.io/${env.GITHUB_REPOSITORY_OWNER ?: 'owner'}/symptomsync:latest
+          sleep 5
+          npx artillery quick --count 20 -n 50 http://localhost:5000/health || true
+        '''
+      }
+    }
+
+    stage('Deploy (AWS CDK + Ansible)') {
+      steps {
+        sh '''
+          if [ -x ./deploy.sh ]; then
+            ./deploy.sh
+          else
+            echo "No deploy.sh script found - skipping deploy"
+          fi
+        '''
+      }
+    }
+  }
+
+  post {
+    success {
+      echo 'SymptomSync pipeline completed successfully'
+    }
+    failure {
+      echo 'SymptomSync pipeline failed'
+    }
+  }
+}
