@@ -6,39 +6,39 @@ SymptomSync pairs a feature-rich Next.js client with Supabase's managed backend 
 
 ```mermaid
 flowchart TD
-  subgraph Client[Next.js Client]
-    Pages[Pages & Layouts]
-    Components[UI Components<br/>(shadcn/ui + Tailwind)]
-    Hooks[Hooks & Utilities]
-    DataLayer[React Query + Supabase SDK]
+  subgraph Client["Next.js Client"]
+    Pages["Pages & Layouts"]
+    Components["UI Components\n(shadcn/ui + Tailwind)"]
+    Hooks["Hooks & Utilities"]
+    DataLayer["React Query + Supabase SDK"]
   end
 
-  subgraph Supabase[Supabase Cloud]
-    Auth[Auth]
-    Postgres[(Postgres + RLS)]
-    Storage[File Storage]
-    Realtime[Realtime Channels]
-    Cron[pg_cron Scheduler]
-    Functions[Stored Procedures]
+  subgraph Supabase["Supabase Cloud"]
+    Auth["Auth"]
+    Postgres["Postgres + RLS"]
+    Storage["File Storage"]
+    Realtime["Realtime Channels"]
+    Cron["pg_cron Scheduler"]
+    Functions["Stored Procedures"]
   end
 
-  subgraph Integrations[External Integrations]
-    GoogleAI[Google AI<br/>(Generative API)]
+  subgraph Integrations["External Integrations"]
+    GoogleAI["Google AI\n(Generative API)"]
   end
 
   Pages --> Components
   Components --> Hooks
   Hooks --> DataLayer
-  DataLayer -->|RPC / REST| Postgres
-  DataLayer -->|Auth| Auth
-  DataLayer -->|Uploads| Storage
-  Postgres -->|postgres_changes| Realtime
+  DataLayer -->|"RPC / REST"| Postgres
+  DataLayer -->|"Auth"| Auth
+  DataLayer -->|"Uploads"| Storage
+  Postgres -->|"postgres_changes"| Realtime
   Realtime --> DataLayer
-  Cron -->|invoke functions| Functions
-  Functions -->|stored procedures| Postgres
-  Postgres -->|materialized data| Functions
-  Cron -->|notify_due_reminders()| Postgres
-  DataLayer -->|Symptom prompts| GoogleAI
+  Cron -->|"invoke functions"| Functions
+  Functions -->|"stored procedures"| Postgres
+  Postgres -->|"materialized data"| Functions
+  Cron -->|"notify_due_reminders()"| Postgres
+  DataLayer -->|"Symptom prompts"| GoogleAI
 
   style Client fill:#E3F2FD,stroke:#0D47A1
   style Supabase fill:#E8F5E9,stroke:#1B5E20
@@ -53,16 +53,16 @@ Reusable presentation and interaction building blocks reside in [`web/components
 
 ```mermaid
 graph LR
-  A[index.tsx]
-  B[home.tsx]
-  C[calendar.tsx]
-  D[chat.tsx]
-  E[uploads.tsx]
-  F[profile.tsx]
-  G[reminder.tsx]
-  Shared[_app.tsx / _document.tsx]
-  Store[lib/ (Supabase clients, queries, mutations)]
-  UI[components/ (UI primitives, charts, forms)]
+  A["index.tsx"]
+  B["home.tsx"]
+  C["calendar.tsx"]
+  D["chat.tsx"]
+  E["uploads.tsx"]
+  F["profile.tsx"]
+  G["reminder.tsx"]
+  Shared["_app.tsx / _document.tsx"]
+  Store["lib/\nSupabase clients, queries, mutations"]
+  UI["components/\nUI primitives, charts, forms"]
 
   Shared --> A
   Shared --> B
