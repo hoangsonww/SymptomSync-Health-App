@@ -145,32 +145,32 @@ The diagrams below summarize how SymptomSync is assembled across the client, dat
 
 ```mermaid
 flowchart TD
-  subgraph Client[Next.js Frontend]
-    UI[UI Layer<br/>React + Tailwind + shadcn/ui]
-    Data[State & Data Layer<br/>React Query + Supabase SDK]
+  subgraph Client["Next.js Frontend"]
+    UI["UI Layer\nReact + Tailwind + shadcn/ui"]
+    Data["State & Data Layer\nReact Query + Supabase SDK"]
   end
 
-  subgraph Supabase[Supabase Platform]
-    Auth[Auth]
-    DB[(Postgres + RLS)]
-    Storage[Storage Buckets]
-    Realtime[Realtime Channels]
-    Cron[pg_cron Jobs]
-    Functions[Stored Procedures]
+  subgraph Supabase["Supabase Platform"]
+    Auth["Auth"]
+    DB["Postgres + RLS"]
+    Storage["Storage Buckets"]
+    Realtime["Realtime Channels"]
+    Cron["pg_cron Jobs"]
+    Functions["Stored Procedures"]
   end
 
-  subgraph Integrations[External Services]
-    GoogleAI[Google AI<br/>(Generative API)]
+  subgraph Integrations["External Services"]
+    GoogleAI["Google AI\n(Generative API)"]
   end
 
-  UI -->|Forms, Charts, Calendar| Data
-  Data -->|Auth, REST & RPC| Auth
-  Data -->|CRUD & analytics| DB
-  Data -->|File uploads| Storage
-  DB -->|Broadcast changes| Realtime
-  Cron -->|invoke notify_due_reminders()| DB
-  Data -->|Live subscription| Realtime
-  Data -->|Symptom prompts| GoogleAI
+  UI -->|"Forms, Charts, Calendar"| Data
+  Data -->|"Auth, REST & RPC"| Auth
+  Data -->|"CRUD & analytics"| DB
+  Data -->|"File uploads"| Storage
+  DB -->|"Broadcast changes"| Realtime
+  Cron -->|"invoke notify_due_reminders()"| DB
+  Data -->|"Live subscription"| Realtime
+  Data -->|"Symptom prompts"| GoogleAI
 
   style Client fill:#E6F4FF,stroke:#0B5394,stroke-width:1.2px
   style Supabase fill:#E9F7EF,stroke:#1B5E20,stroke-width:1.2px
@@ -179,23 +179,16 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-  Dev[Developer] -->|push / PR| GitHub[GitHub Repository]
-  GitHub -->|CI trigger| Actions[GitHub Actions Pipeline]
-  Actions -->|lint & test| Quality[Quality Gates]
-  Actions -->|next build| Artifact[Next.js Build Artifacts]
-  Actions -->|docker build| GHCR[GitHub Container Registry]
-  Actions -->|Ansible + CDK| AWS[AWS Deployment (optional)]
-  Actions -->|Deploy| Vercel[Vercel Hosting]
-  AWS -->|REST + Cron| ClientStack[Serverless API & Reminders]
-  SupabaseSvc[Supabase Cloud] -->|Auth, DB, Realtime| ClientStack
-  Vercel -->|serve UI| Users[End Users]
-
-  style Actions fill:#F3E5F5,stroke:#6A1B9A
-  style AWS fill:#FFF8E1,stroke:#FF6F00
-  style Vercel fill:#ECEFF1,stroke:#263238
-  style SupabaseSvc fill:#E9F7EF,stroke:#1B5E20
-  style ClientStack fill:#E0F7FA,stroke:#006064
-  style Users fill:#FFF
+  Dev["Developer"] -->|"push / PR"| GitHub["GitHub Repository"]
+  GitHub -->|"CI trigger"| Actions["GitHub Actions Pipeline"]
+  Actions -->|"lint & test"| Quality["Quality Gates"]
+  Actions -->|"next build"| Artifact["Next.js Build Artifacts"]
+  Actions -->|"docker build"| GHCR["GitHub Container Registry"]
+  Actions -->|"Ansible + CDK"| AWS["AWS Deployment (optional)"]
+  Actions -->|"Deploy"| Vercel["Vercel Hosting"]
+  AWS -->|"REST + Cron"| ClientStack["Serverless API & Reminders"]
+  SupabaseSvc["Supabase Cloud"] -->|"Auth, DB, Realtime"| ClientStack
+  Vercel -->|"serve UI"| Users["End Users"]
 ```
 
 - **Supabase**: The backend is powered by Supabase, which provides a Postgres database, authentication, and real-time capabilities.
