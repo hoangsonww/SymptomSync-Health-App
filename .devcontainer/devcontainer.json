@@ -1,5 +1,5 @@
 {
-    "name": "COMP 426 Final Project Container",
+    "name": "SymptomSync Project Container",
     "dockerFile": "Dockerfile",
     
     // Forward ports
