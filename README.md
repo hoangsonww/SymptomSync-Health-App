@@ -285,7 +285,7 @@ Below is a diagram of the Supabase schema used in SymptomSync:
 6. Use the **Documents** page to upload/export health records, prescriptions, etc.
 7. Chat with the **AI Chatbot** for symptom analysis and health insights.
 8. Toggle between light and dark mode for better accessibility.
-9. View and manage your **profile**. You can also vies other users' profiles.
+9. View and manage your **profile**. You can also view other users' profiles.
 10. Visit the **Medication Schedules** page to view/edit a complete list of your medications and their schedules.
 
 ## Agentic AI
