@@ -66,14 +66,6 @@ graph TB
 
     API -.->|Deploy| AWS
     API -.->|Deploy| Azure
-
-    style API fill:#4a90e2
-    style SE fill:#50c878
-    style KR fill:#50c878
-    style DA fill:#50c878
-    style RA fill:#50c878
-    style RG fill:#50c878
-    style ORC fill:#ffa500
 ```
 
 ### Assembly Line Flow
@@ -186,13 +178,6 @@ graph LR
     State <-->|Read/Write| A3
     State <-->|Read/Write| A4
     State <-->|Read/Write| A5
-
-    style State fill:#ffd700
-    style A1 fill:#87ceeb
-    style A2 fill:#87ceeb
-    style A3 fill:#87ceeb
-    style A4 fill:#87ceeb
-    style A5 fill:#87ceeb
 ```
 
 ### Cloud Deployment Architecture
@@ -230,11 +215,6 @@ graph TB
     ACI --> AzureRedis
     ACI --> AzureStorage
     ACI --> AppInsights
-
-    style ALB fill:#ff9900
-    style ECS fill:#ff9900
-    style ACI fill:#0078d4
-    style AzureDB fill:#0078d4
 ```
 
 ## 🚀 Quick Start
