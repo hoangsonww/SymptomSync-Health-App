@@ -1,0 +1,119 @@
+version: '3.9'
+
+services:
+  # Agentic AI MCP Server
+  agentic-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: symptomsync-agentic-ai:latest
+    container_name: symptomsync-agentic-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - SYMPTOMSYNC_ENVIRONMENT=production
+      - SYMPTOMSYNC_DATABASE_URL=postgresql://symptomsync:password@postgres:5432/symptomsync
+      - SYMPTOMSYNC_REDIS_HOST=redis
+      - SYMPTOMSYNC_REDIS_PORT=6379
+      - SYMPTOMSYNC_OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SYMPTOMSYNC_CHROMA_PERSIST_DIRECTORY=/app/data/chroma
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - symptomsync-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: symptomsync-postgres
+    environment:
+      - POSTGRES_USER=symptomsync
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=symptomsync
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - symptomsync-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U symptomsync"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: symptomsync-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - symptomsync-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: symptomsync-prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - symptomsync-network
+    restart: unless-stopped
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: symptomsync-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    networks:
+      - symptomsync-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+networks:
+  symptomsync-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
