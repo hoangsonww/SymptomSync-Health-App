@@ -2,6 +2,13 @@
 
 A sophisticated multi-agent AI system for health symptom analysis built with LangGraph, LangChain, and Model Context Protocol (MCP) server architecture.
 
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/release/python-3110/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.95.2-green.svg)](https://fastapi.tiangolo.com/)
+[![LangChain](https://img.shields.io/badge/LangChain-0.1.0-yellow.svg)](https://www.langchain.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-0.1.0-orange.svg)](https://www.langgraph.com/)
+[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-red.svg)](https://www.modelcontextprotocol.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 ## 🎯 Overview
 
 This production-ready agentic AI pipeline implements an **assembly line architecture** where specialized AI agents work in sequence to analyze health symptoms, retrieve medical knowledge, assess risks, and generate personalized recommendations.
