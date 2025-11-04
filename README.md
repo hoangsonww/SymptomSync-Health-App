@@ -26,15 +26,16 @@ Build with patient care in mind, **SymptomSync** is a web application designed t
 6. [Configuration](#configuration)
 7. [Supabase Schema](#supabase-schema)
 8. [Usage](#usage)
-9. [Video Demo](#video-demo)
-10. [High-Fidelity Prototype](#high-fidelity-prototype)
-11. [AWS & Ansible Deployment](#aws--ansible-deployment)
-12. [GitHub Actions CI/CD](#github-actions-cicd)
-13. [Testing](#testing)
-14. [Contributing](#contributing)
-15. [Authors](#authors)
-16. [License](#license)
-17. [Acknowledgements](#acknowledgements)
+9. [Agentic AI](#agentic-ai)
+10. [Video Demo](#video-demo)
+11. [High-Fidelity Prototype](#high-fidelity-prototype)
+12. [AWS & Ansible Deployment](#aws--ansible-deployment)
+13. [GitHub Actions CI/CD](#github-actions-cicd)
+14. [Testing](#testing)
+15. [Contributing](#contributing)
+16. [Authors](#authors)
+17. [License](#license)
+18. [Acknowledgements](#acknowledgements)
 
 ## SymptomSync UI
 
@@ -171,10 +172,6 @@ flowchart TD
   Cron -->|"invoke notify_due_reminders()"| DB
   Data -->|"Live subscription"| Realtime
   Data -->|"Symptom prompts"| GoogleAI
-
-  style Client fill:#E6F4FF,stroke:#0B5394,stroke-width:1.2px
-  style Supabase fill:#E9F7EF,stroke:#1B5E20,stroke-width:1.2px
-  style Integrations fill:#FFF3E0,stroke:#FF8F00,stroke-width:1.2px
 ```
 
 ```mermaid
@@ -288,23 +285,18 @@ Below is a diagram of the Supabase schema used in SymptomSync:
 6. Use the **Documents** page to upload/export health records, prescriptions, etc.
 7. Chat with the **AI Chatbot** for symptom analysis and health insights.
 8. Toggle between light and dark mode for better accessibility.
-9. View and manage your **profile**. You can also vies other users' profiles.
+9. View and manage your **profile**. You can also view other users' profiles.
 10. Visit the **Medication Schedules** page to view/edit a complete list of your medications and their schedules.
 
-## Contributing
+## Agentic AI
 
-1. Fork & branch: `git checkout -b feature/awesome`
-2. Develop something awesome
-3. Install & format: `npm install && npm run format`
-4. Commit & PR with description
-5. Wait for review and merge
+SymptomSync incorporates Agentic AI to enhance user experience and provide personalized health insights. The AI analyzes user data, identifies patterns, and offers tailored recommendations for medication management, appointment scheduling, and health tracking.
+- **Symptom Analysis**: The AI chatbot can analyze user-reported symptoms and provide insights based on medical knowledge.
+- **Personalized Reminders**: The AI can suggest optimal times for medication reminders based on user routines and habits.
+- **Health Trend Predictions**: By analyzing health logs, the AI can predict potential health trends and alert users to take preventive actions.
+- **Natural Language Processing**: The AI chatbot uses NLP to understand user queries and provide relevant responses in a conversational manner.
 
-## Authors
-
-A big thank you to our team members for their hard work and dedication:
-
-- [David Nguyen](https://github.com/hoangsonww)
-- [Erica Ocbu](https://github.com/ericaocbu)
+For more details on how Agentic AI is integrated into SymptomSync, refer to the [AI Integration Documentation](agentic_ai/README.md).
 
 ## Video Demo
 
@@ -420,6 +412,21 @@ To run the tests, use the following command in the `web` directory:
 ```bash
 npm run test
 ```
+
+## Contributing
+
+1. Fork & branch: `git checkout -b feature/awesome`
+2. Develop something awesome
+3. Install & format: `npm install && npm run format`
+4. Commit & PR with description
+5. Wait for review and merge
+
+## Authors
+
+A big thank you to our team members for their hard work and dedication:
+
+- [David Nguyen](https://github.com/hoangsonww)
+- [Erica Ocbu](https://github.com/ericaocbu)
 
 ## License
 
