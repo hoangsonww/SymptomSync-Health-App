@@ -14,10 +14,17 @@ import {
   File,
   List,
   X,
+  Settings,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { signOut } from "@/lib/auth";
 import { ModeToggle } from "@/components/ModeToggle";
+import { NotificationBell } from "@/components/NotificationStatus";
+
+type User = {
+  id: string;
+  [key: string]: unknown;
+};
 
 type NavItemProps = {
   href: string;
@@ -64,6 +71,8 @@ export default function NavBar({
 }: NavBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [authToken, setAuthToken] = useState<string>('');
   const router = useRouter();
   const navRef = useRef<HTMLDivElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
@@ -71,10 +80,14 @@ export default function NavBar({
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session?.user);
+      setUser((session?.user as unknown as User) || null);
+      setAuthToken(session?.access_token || '');
     });
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setIsLoggedIn(!!session?.user);
+        setUser((session?.user as unknown as User) || null);
+        setAuthToken(session?.access_token || '');
       },
     );
     return () => {
@@ -195,6 +208,21 @@ export default function NavBar({
               label="Profile"
               isExpanded={isExpanded}
             />
+            <NavItem
+              href="/settings"
+              icon={<Settings className="w-5 h-5" />}
+              label="Settings"
+              isExpanded={isExpanded}
+            />
+            {isLoggedIn && user && authToken && (
+              <div className={isExpanded ? "px-4 py-2" : "px-2 py-2 flex justify-center"}>
+                <NotificationBell
+                  userId={user.id}
+                  authToken={authToken}
+                  onClick={() => router.push('/settings')}
+                />
+              </div>
+            )}
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
