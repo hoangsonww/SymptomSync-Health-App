@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Inter } from "next/font/google";
 import dynamic from "next/dynamic";
 import { motion, useInView } from "framer-motion";
 import "slick-carousel/slick/slick.css";
@@ -37,11 +36,6 @@ import Head from "next/head";
 // This is intentional - we want to load this only on the client side since
 // it is for client side interactions only
 const Slider = dynamic(() => import("react-slick"), { ssr: false });
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function PrevArrow(props: any) {
@@ -150,7 +144,7 @@ export default function Home() {
           content="Your health companion to track, understand, and manage your daily health seamlessly."
         />
       </Head>
-      <div className={`${inter.className} font-sans overflow-x-hidden`}>
+      <div className="font-sans overflow-x-hidden">
         {/* Gotta override the default scroll behavior */}
         {/* This is a workaround for smooth scrolling */}
         <style jsx global>{`
