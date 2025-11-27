@@ -8,7 +8,7 @@ SymptomSync pairs a feature-rich Next.js client with Supabase's managed backend 
 flowchart TD
   subgraph Client["Next.js Client"]
     Pages["Pages & Layouts"]
-    Components["UI Components\n(shadcn/ui + Tailwind)"]
+    Components["UI Components\nshadcn/ui + Tailwind"]
     Hooks["Hooks & Utilities"]
     DataLayer["React Query + Supabase SDK"]
   end
@@ -23,7 +23,7 @@ flowchart TD
   end
 
   subgraph Integrations["External Integrations"]
-    GoogleAI["Google AI\n(Generative API)"]
+    GoogleAI["Google AI\nGenerative AI APIs"]
   end
 
   Pages --> Components
@@ -37,7 +37,7 @@ flowchart TD
   Cron -->|"invoke functions"| Functions
   Functions -->|"stored procedures"| Postgres
   Postgres -->|"materialized data"| Functions
-  Cron -->|"notify_due_reminders()"| Postgres
+  Cron -->|"notify_due_reminders"| Postgres
   DataLayer -->|"Symptom prompts"| GoogleAI
 
   style Client fill:#E3F2FD,stroke:#0D47A1
@@ -187,7 +187,7 @@ flowchart LR
   Image[Docker Build & Push]
   Scan[Trivy Image Scan]
   Perf[Performance Benchmark]
-  Deploy[AWS CDK Deploy (canary ready)]
+  Deploy[AWS CDK Deploy - canary ready]
   Promote[Blue/Green Promote]
   Summary[Pipeline Summary]
 

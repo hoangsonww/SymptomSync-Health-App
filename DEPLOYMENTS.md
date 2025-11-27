@@ -17,7 +17,7 @@ flowchart LR
   Jenkins --> BuildImg[Build & push image]
   BuildImg --> Scan[Trivy scan]
   Scan --> Sign[Cosign sign?]
-  Sign --> CDK[CDK deploy (canary Lambdas + blue/green API)]
+  Sign --> CDK[CDK deploy - canary Lambdas + blue/green API]
   CDK --> Promote[Ansible blue/green promotion]
   Promote --> Live[Active stage updated]
 ```
