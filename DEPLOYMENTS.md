@@ -70,8 +70,8 @@ sequenceDiagram
   ```
 
 ## Observability & guardrails
-- Monitor Lambda `Errors`/`Throttles` on the `live` aliases and API Gateway 4XX/5XX per stage.
-- Keep WAF enabled on API Gateway; CloudWatch alarms should page on 5XX > 2% and P95 latency > 2s.
+- Monitor Lambda `Errors`/`Throttles` on the `live` aliases and API Gateway 4XX/5XX per stage (CloudWatch alarms are provisioned for 5XX and p95 latency per stage).
+- Keep WAF enabled on API Gateway; managed rule set + rate limit (2k rpm) are applied by CDK.
 - Buckets are encrypted and retained; no public access by default.
 - Sign images when possible: `cosign sign ghcr.io/<org>/symptomsync:<tag>`.
 

@@ -12,6 +12,7 @@ const targets = require('aws-cdk-lib/aws-events-targets');
 const codedeploy = require('aws-cdk-lib/aws-codedeploy');
 const cloudwatch = require('aws-cdk-lib/aws-cloudwatch');
 const ssm = require('aws-cdk-lib/aws-ssm');
+const wafv2 = require('aws-cdk-lib/aws-wafv2');
 
 class SymptomSyncStack extends Stack {
   constructor(scope, id, props) {
@@ -208,6 +209,17 @@ class SymptomSyncStack extends Stack {
     const chat = api.root.addResource('chatbot');
     chat.addMethod('POST', new apigw.LambdaIntegration(chatbotAlias), { authorizer });
 
+    // /health (no auth) for smoke tests
+    api.root.addResource('health').addMethod(
+      'GET',
+      new apigw.MockIntegration({
+        integrationResponses: [{ statusCode: '200', responseTemplates: { 'application/json': '{"status":"ok"}' } }],
+        passthroughBehavior: apigw.PassthroughBehavior.WHEN_NO_TEMPLATES,
+        requestTemplates: { 'application/json': '{"statusCode": 200}' },
+      }),
+      { methodResponses: [{ statusCode: '200' }], authorizationType: apigw.AuthorizationType.NONE },
+    );
+
     // Blue/green stages
     const deployment = new apigw.Deployment(this, 'SymptomSyncDeployment', { api });
     const blueStage = new apigw.Stage(this, 'BlueStage', {
@@ -232,6 +244,79 @@ class SymptomSyncStack extends Stack {
       stringValue: 'blue',
       description: 'Active API stage for production traffic (blue/green switch).',
     });
+
+    // API Gateway WAF with managed protections
+    const webAcl = new wafv2.CfnWebACL(this, 'ApiWafAcl', {
+      scope: 'REGIONAL',
+      defaultAction: { allow: {} },
+      visibilityConfig: {
+        cloudWatchMetricsEnabled: true,
+        metricName: 'symptomsync-waf',
+        sampledRequestsEnabled: true,
+      },
+      rules: [
+        {
+          name: 'AWS-AWSManagedRulesCommonRuleSet',
+          priority: 1,
+          overrideAction: { none: {} },
+          statement: { managedRuleGroupStatement: { vendorName: 'AWS', name: 'AWSManagedRulesCommonRuleSet' } },
+          visibilityConfig: {
+            cloudWatchMetricsEnabled: true,
+            metricName: 'common-rule-set',
+            sampledRequestsEnabled: true,
+          },
+        },
+        {
+          name: 'RateLimit',
+          priority: 2,
+          action: { block: {} },
+          statement: { rateBasedStatement: { aggregateKeyType: 'IP', limit: 2000 } },
+          visibilityConfig: {
+            cloudWatchMetricsEnabled: true,
+            metricName: 'rate-limit',
+            sampledRequestsEnabled: true,
+          },
+        },
+      ],
+    });
+
+    // Associate WAF to both stages
+    new wafv2.CfnWebACLAssociation(this, 'BlueWafAssociation', {
+      resourceArn: `arn:aws:apigateway:${Stack.of(this).region}::/restapis/${api.restApiId}/stages/${blueStage.stageName}`,
+      webAclArn: webAcl.attrArn,
+    });
+    new wafv2.CfnWebACLAssociation(this, 'GreenWafAssociation', {
+      resourceArn: `arn:aws:apigateway:${Stack.of(this).region}::/restapis/${api.restApiId}/stages/${greenStage.stageName}`,
+      webAclArn: webAcl.attrArn,
+    });
+
+    // API Gateway alarms (5XX and latency per stage)
+    const buildApiAlarms = (stageName, label) => {
+      new cloudwatch.Alarm(this, `${label}5xxAlarm`, {
+        metric: api.metricServerError({
+          statistic: 'sum',
+          period: Duration.minutes(1),
+          dimensionsMap: { ApiName: api.restApiName, Stage: stageName },
+        }),
+        threshold: 5,
+        evaluationPeriods: 1,
+        datapointsToAlarm: 1,
+        alarmDescription: `${label} API 5XX rate high`,
+      });
+      new cloudwatch.Alarm(this, `${label}LatencyAlarm`, {
+        metric: api.metricLatency({
+          statistic: 'p95',
+          period: Duration.minutes(1),
+          dimensionsMap: { ApiName: api.restApiName, Stage: stageName },
+        }),
+        threshold: 2000,
+        evaluationPeriods: 3,
+        datapointsToAlarm: 2,
+        alarmDescription: `${label} API latency high (p95)`,
+      });
+    };
+    buildApiAlarms(blueStage.stageName, 'BlueStage');
+    buildApiAlarms(greenStage.stageName, 'GreenStage');
 
     // Scheduled rule for reminders
     new events.Rule(this, 'ReminderSchedule', {

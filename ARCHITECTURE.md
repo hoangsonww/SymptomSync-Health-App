@@ -173,7 +173,7 @@ flowchart TB
 
 ## 6. DevOps & Automation
 
-Continuous integration and delivery are orchestrated through [`.github/workflows/ci.yml`](.github/workflows/ci.yml) and mirrored in `jenkins/Jenkinsfile`. The Jenkins pipeline adds image signing (Cosign), CodeDeploy-driven canary deployments for all Lambda functions, and a blue/green API Gateway cutover driven by an SSM flag. Stages cover linting/formatting, dependency caching, security scans, a Node.js version matrix test run, static Next.js builds, Docker image publication to GHCR, Trivy scans, optional performance checks, CDK deploy, and automated blue/green promotion via Ansible.
+Continuous integration and delivery are orchestrated through [`.github/workflows/ci.yml`](.github/workflows/ci.yml) and mirrored in `jenkins/Jenkinsfile`. The Jenkins pipeline adds image signing (Cosign), CodeDeploy-driven canary deployments for all Lambda functions, and a blue/green API Gateway cutover driven by an SSM flag. Stages cover linting/formatting, dependency caching, security scans, a Node.js version matrix test run, static Next.js builds, Docker image publication to GHCR, Trivy scans, optional performance checks, CDK deploy, and automated blue/green promotion via Ansible. API Gateway is fronted with WAF managed rules and per-stage CloudWatch alarms for 5XX and latency; a public `/health` endpoint is exposed for smoke tests.
 
 ```mermaid
 flowchart LR

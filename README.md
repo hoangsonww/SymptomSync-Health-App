@@ -366,7 +366,8 @@ SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Ve
    * **DynamoDB** tables for profiles, meds, appts, logs, notifications
    * **S3** buckets (`avatars`, `documents`) with encryption, no public access, retained by default
    * **Lambda** functions: REST API, reminder processor, chatbot, presigned-URL, each fronted by a `live` alias with CodeDeploy `CANARY_10PERCENT_5MINUTES` rollback
-   * **API Gateway** (REST) + Cognito authorizer + explicit `blue`/`green` stages exported as stack outputs
+   * **API Gateway** (REST) + Cognito authorizer + explicit `blue`/`green` stages exported as stack outputs, `/health` endpoint for smoke checks
+   * **WAF + Alarms** managed rules and rate limit on API Gateway; per-stage CloudWatch alarms for 5XX and p95 latency
    * **SSM Parameter** `/symptomsync/active_stage` to flip traffic between blue/green (via DNS/base-path)
    * **EventBridge** rule to run reminders every minute pinned to the `live` alias
 
