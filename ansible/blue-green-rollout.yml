@@ -1,0 +1,61 @@
+---
+- name: Progressive delivery rollout for SymptomSync (blue/green + canary)
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    aws_region: "{{ lookup('env','AWS_REGION') | default('us-east-1', true) }}"
+    stack_name: "{{ lookup('env','STACK_NAME') | default('SymptomSyncStack', true) }}"
+    active_stage_param: "{{ lookup('env','ACTIVE_STAGE_PARAM') | default('/symptomsync/active_stage', true) }}"
+    target_stage: "{{ lookup('env','TARGET_STAGE') | default('', true) }}"
+    smoke_path: "{{ lookup('env','SMOKE_PATH') | default('/health', true) }}"
+
+  tasks:
+    - name: Read current active stage from SSM
+      ansible.builtin.command: >
+        aws ssm get-parameter --name "{{ active_stage_param }}" --query "Parameter.Value" --output text --region "{{ aws_region }}"
+      register: active_stage_cmd
+      changed_when: false
+      failed_when: active_stage_cmd.rc != 0 and active_stage_cmd.rc != 254
+
+    - name: Set active stage fact (default blue when missing)
+      ansible.builtin.set_fact:
+        active_stage: "{{ active_stage_cmd.stdout if active_stage_cmd.rc == 0 else 'blue' }}"
+
+    - name: Decide rollout target stage
+      ansible.builtin.set_fact:
+        rollout_stage: >-
+          {{ target_stage if target_stage|length > 0 else ('green' if active_stage == 'blue' else 'blue') }}
+
+    - name: Lookup target stage URL from CloudFormation outputs
+      ansible.builtin.command: >
+        aws cloudformation describe-stacks --stack-name "{{ stack_name }}" --region "{{ aws_region }}" \
+        --query "Stacks[0].Outputs[?OutputKey=='{{ rollout_stage | title }}StageUrl'].OutputValue" --output text
+      register: target_url
+      changed_when: false
+
+    - name: Fail if target URL is not found
+      ansible.builtin.fail:
+        msg: "Could not find URL for stage {{ rollout_stage }} in stack {{ stack_name }}."
+      when: target_url.stdout is not defined or target_url.stdout == ''
+
+    - name: Smoke test target stage before cutover
+      ansible.builtin.command: >
+        curl -fsS "{{ target_url.stdout.rstrip('/') }}{{ smoke_path }}"
+      register: smoke_result
+      retries: 5
+      delay: 5
+      until: smoke_result.rc == 0
+      changed_when: false
+
+    - name: Promote stage by updating SSM active_stage parameter
+      ansible.builtin.command: >
+        aws ssm put-parameter --name "{{ active_stage_param }}" --type String --overwrite \
+        --value "{{ rollout_stage }}" --region "{{ aws_region }}"
+      register: promote_result
+      changed_when: promote_result.rc == 0
+
+    - name: Emit rollout summary
+      ansible.builtin.debug:
+        msg: "Active stage switched from {{ active_stage }} to {{ rollout_stage }} after smoke checks"

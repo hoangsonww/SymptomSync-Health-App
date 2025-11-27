@@ -1,0 +1,7 @@
+# Trivy ignore rules for tracked vulnerabilities.
+# Each entry must include an expiration to force periodic review.
+ignore:
+  - id: CVE-2023-12345
+    path: '**'
+    reason: "Example suppression; replace with approved exception and removal date."
+    expiration: 2024-12-31T00:00:00Z

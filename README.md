@@ -325,7 +325,12 @@ Our high-fidelity prototype showcases the app's design and user experience. You 
 
 ## AWS & Ansible Deployment
 
-SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Vercel if you choose to host your own instance on AWS! Its deployment infra is defined in the `aws/` folder (AWS CDK in JavaScript) and can be deployed via the Ansible playbook in `ansible/`. This setup will provision Cognito, DynamoDB, S3, Lambdas, API Gateway and a scheduled EventBridge rule - and automate it all via Ansible.
+SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Vercel if you choose to host your own instance on AWS! Its deployment infra is defined in the `aws/` folder (AWS CDK in JavaScript) and can be deployed via the Ansible playbooks in `ansible/`. This setup provisions Cognito, DynamoDB, S3, Lambdas, API Gateway, a scheduled EventBridge rule, and now includes CodeDeploy canaries plus blue/green stages for safe rollouts and canary deployments for dual-instance traffic shifting.
+
+> [!TIP]
+> Blue/green deployments: This strategy uses two identical environments (blue and green). One environment (e.g., blue) serves all production traffic while the other (green) is idle. When deploying a new version, it is first deployed to the idle environment (green). After testing, traffic is switched from blue to green. This allows for quick rollbacks by switching back to the previous environment if issues arise.
+> 
+> Canary deployments: This strategy gradually shifts traffic to the new version in small increments (e.g., 10% every 5 minutes) while monitoring for errors. If no issues are detected, the deployment continues until all traffic is on the new version. If problems occur, the deployment can be automatically rolled back to the previous stable version.
 
 ### Directory Layout
 
@@ -359,10 +364,12 @@ SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Ve
 
    * **Cognito** User Pool & App Client
    * **DynamoDB** tables for profiles, meds, appts, logs, notifications
-   * **S3** buckets (`avatars`, `documents`)
-   * **Lambda** functions: REST API, reminder processor, chatbot, presigned-URL
-   * **API Gateway** (REST) + Cognito authorizer
-   * **EventBridge** rule to run reminders every minute
+   * **S3** buckets (`avatars`, `documents`) with encryption, no public access, retained by default
+   * **Lambda** functions: REST API, reminder processor, chatbot, presigned-URL, each fronted by a `live` alias with CodeDeploy `CANARY_10PERCENT_5MINUTES` rollback
+   * **API Gateway** (REST) + Cognito authorizer + explicit `blue`/`green` stages exported as stack outputs, `/health` endpoint for smoke checks
+   * **WAF + Alarms** managed rules and rate limit on API Gateway; per-stage CloudWatch alarms for 5XX and p95 latency
+   * **SSM Parameter** `/symptomsync/active_stage` to flip traffic between blue/green (via DNS/base-path)
+   * **EventBridge** rule to run reminders every minute pinned to the `live` alias
 
 ### Ansible Playbook
 
@@ -378,6 +385,7 @@ SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Ve
    * Verifies your `GOOGLE_AI_API_KEY` env var
    * Bootstraps CDK in your AWS account
    * Deploys the entire SymptomSync stack non-interactively
+   * (Optional) Run `ansible/blue-green-rollout.yml` to smoke test the inactive stage and update `/symptomsync/active_stage` after a deploy
 
 Ensure your AWS credentials (via `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) and `GOOGLE_AI_API_KEY` are set in your environment before running.
 

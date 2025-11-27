@@ -8,7 +8,7 @@ SymptomSync pairs a feature-rich Next.js client with Supabase's managed backend 
 flowchart TD
   subgraph Client["Next.js Client"]
     Pages["Pages & Layouts"]
-    Components["UI Components\n(shadcn/ui + Tailwind)"]
+    Components["UI Components\nshadcn/ui + Tailwind"]
     Hooks["Hooks & Utilities"]
     DataLayer["React Query + Supabase SDK"]
   end
@@ -23,7 +23,7 @@ flowchart TD
   end
 
   subgraph Integrations["External Integrations"]
-    GoogleAI["Google AI\n(Generative API)"]
+    GoogleAI["Google AI\nGenerative AI APIs"]
   end
 
   Pages --> Components
@@ -37,7 +37,7 @@ flowchart TD
   Cron -->|"invoke functions"| Functions
   Functions -->|"stored procedures"| Postgres
   Postgres -->|"materialized data"| Functions
-  Cron -->|"notify_due_reminders()"| Postgres
+  Cron -->|"notify_due_reminders"| Postgres
   DataLayer -->|"Symptom prompts"| GoogleAI
 
   style Client fill:#E3F2FD,stroke:#0D47A1
@@ -173,7 +173,7 @@ flowchart TB
 
 ## 6. DevOps & Automation
 
-Continuous integration and delivery are orchestrated through [`.github/workflows/ci.yml`](.github/workflows/ci.yml). The workflow stages include linting/formatting, dependency caching, security scans, a Node.js version matrix test run, static Next.js builds, Docker image publication to GHCR, Trivy scans, optional performance checks, and infrastructure deployment via Ansible + AWS CDK.
+Continuous integration and delivery are orchestrated through [`.github/workflows/ci.yml`](.github/workflows/ci.yml) and mirrored in `jenkins/Jenkinsfile`. The Jenkins pipeline adds image signing (Cosign), CodeDeploy-driven canary deployments for all Lambda functions, and a blue/green API Gateway cutover driven by an SSM flag. Stages cover linting/formatting, dependency caching, security scans, a Node.js version matrix test run, static Next.js builds, Docker image publication to GHCR, Trivy scans, optional performance checks, CDK deploy, and automated blue/green promotion via Ansible. API Gateway is fronted with WAF managed rules and per-stage CloudWatch alarms for 5XX and latency; a public `/health` endpoint is exposed for smoke tests.
 
 ```mermaid
 flowchart LR
@@ -187,10 +187,11 @@ flowchart LR
   Image[Docker Build & Push]
   Scan[Trivy Image Scan]
   Perf[Performance Benchmark]
-  Deploy[AWS CDK + Ansible Deploy]
+  Deploy[AWS CDK Deploy - canary ready]
+  Promote[Blue/Green Promote]
   Summary[Pipeline Summary]
 
-  Commit --> Trigger --> Lint --> Cache --> Security --> Tests --> Build --> Image --> Scan --> Perf --> Deploy --> Summary
+  Commit --> Trigger --> Lint --> Cache --> Security --> Tests --> Build --> Image --> Scan --> Perf --> Deploy --> Promote --> Summary
 ```
 
-Together, these layers deliver a responsive patient-facing experience with secure data handling, real-time collaboration, and repeatable infrastructure automation.
+Together, these layers deliver a responsive patient-facing experience with secure data handling, real-time collaboration, and repeatable infrastructure automation, now with canary-safe Lambdas and explicit blue/green API stages that can be promoted via Ansible.

@@ -1,0 +1,14 @@
+route:
+  receiver: team-health
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 2m
+  repeat_interval: 2h
+
+receivers:
+  - name: team-health
+    slack_configs:
+      - api_url: https://hooks.slack.com/services/REDACTED
+        channel: '#prod-alerts'
+        title: '{{ .CommonLabels.alertname }} ({{ .CommonLabels.severity }})'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}'
