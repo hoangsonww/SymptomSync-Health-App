@@ -1,0 +1,38 @@
+{
+  "title": "SymptomSync API Overview",
+  "schemaVersion": 36,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "API Gateway 5XX Rate",
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(apigw_5xx_count{stage=\"$stage\"}[5m])) / sum(rate(apigw_request_count{stage=\"$stage\"}[5m]))" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Lambda Errors (live alias)",
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(lambda_errors_sum{alias=\"live\"}[5m]))" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "P95 Latency",
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum(rate(apigw_latency_bucket{stage=\"$stage\"}[5m])) by (le))" }
+      ]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "stage",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(apigw_request_count, stage)",
+        "current": { "text": "blue", "value": "blue" }
+      }
+    ]
+  }
+}

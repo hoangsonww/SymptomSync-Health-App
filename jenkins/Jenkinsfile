@@ -97,6 +97,18 @@ pipeline {
       }
     }
 
+    stage('Sign Image (Cosign)') {
+      steps {
+        sh '''
+          if command -v cosign >/dev/null 2>&1 && [ -n "$COSIGN_KEY" ]; then
+            cosign sign --key "$COSIGN_KEY" ghcr.io/${env.GITHUB_REPOSITORY_OWNER ?: 'owner'}/symptomsync:${env.GIT_COMMIT}
+          else
+            echo "Cosign key or binary missing; skipping image signing."
+          fi
+        '''
+      }
+    }
+
     stage('Performance Benchmark') {
       steps {
         sh '''
@@ -107,13 +119,31 @@ pipeline {
       }
     }
 
-    stage('Deploy (AWS CDK + Ansible)') {
+    stage('Deploy Infrastructure (AWS CDK)') {
+      environment {
+        AWS_REGION = "${env.AWS_REGION}"
+      }
       steps {
         sh '''
-          if [ -x ./deploy.sh ]; then
-            ./deploy.sh
+          if [ -d aws ]; then
+            npm ci --prefix aws
+            npx cdk deploy --require-approval never --app \"node aws/bin/symptomsync.ts\" --all
           else
-            echo "No deploy.sh script found - skipping deploy"
+            echo "aws/ directory not present; skipping CDK deploy"
+          fi
+        '''
+      }
+    }
+
+    stage('Progressive Delivery (Blue/Green + Canary)') {
+      steps {
+        sh '''
+          if command -v ansible-playbook >/dev/null 2>&1; then
+            ansible-playbook ansible/blue-green-rollout.yml || {
+              echo "Blue/green playbook failed; please inspect logs and rerun once fixed."
+            }
+          else
+            echo "Ansible not installed on this agent; skipping blue/green automation."
           fi
         '''
       }

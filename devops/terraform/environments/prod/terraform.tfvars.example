@@ -1,0 +1,3 @@
+region       = "us-east-1"
+project_name = "symptomsync"
+# Add environment-specific variables here (VPC IDs, certificates, DB endpoints, etc.)
