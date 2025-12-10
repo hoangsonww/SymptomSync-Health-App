@@ -1,5 +1,5 @@
 # ---------- build stage ----------
-  FROM node:18-alpine AS builder
+  FROM node:20-alpine AS builder
   WORKDIR /app/web
   
   # tolerate legacy peer deps & allow TypeScript errors that don't affect runtime
@@ -23,7 +23,7 @@
   RUN npm run build
   
   # ---------- runtime stage ----------
-  FROM node:18-alpine
+  FROM node:20-alpine
   WORKDIR /app/web
   ENV NODE_ENV=production
   

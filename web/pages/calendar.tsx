@@ -373,6 +373,9 @@ export default function CalendarPage() {
   const [editMedDosageUnit, setEditMedDosageUnit] = useState("mg");
   const [editMedRecurrence, setEditMedRecurrence] = useState("Daily");
   const [isLoading, setIsLoading] = useState(true);
+  const [moreEvents, setMoreEvents] = useState<CalendarEvent[]>([]);
+  const [moreDate, setMoreDate] = useState<Date | null>(null);
+  const [showMoreDialog, setShowMoreDialog] = useState(false);
 
   /**
    * Function to send a broadcast message to all connected clients
@@ -755,6 +758,12 @@ export default function CalendarPage() {
     setShowEventDialog(true);
   }
 
+  function handleShowMore(eventsForDay: CalendarEvent[], date: Date) {
+    setMoreEvents(eventsForDay);
+    setMoreDate(date);
+    setShowMoreDialog(true);
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function dayPropGetter(date: Date): React.HTMLAttributes<HTMLDivElement> {
     return {
@@ -1092,10 +1101,58 @@ export default function CalendarPage() {
             selectable
             onSelectEvent={handleSelectEvent}
             onSelectSlot={handleSelectSlot}
+            onShowMore={handleShowMore}
             eventPropGetter={eventPropGetter}
             dayPropGetter={dayPropGetter}
           />
         </motion.div>
+
+        <Dialog open={showMoreDialog} onOpenChange={setShowMoreDialog}>
+          <DialogContent className="max-w-3xl w-full">
+            <DialogHeader>
+              <DialogTitle>
+                Events on {moreDate ? format(moreDate, "PPP") : "this day"}
+              </DialogTitle>
+              <DialogDescription>Tap any item to edit it.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pt-2">
+              {moreEvents.length === 0 && (
+                <p className="text-sm text-muted-foreground">No events.</p>
+              )}
+              {moreEvents.map((ev) => (
+                <div
+                  key={ev.id}
+                  className="border rounded-lg p-3 flex justify-between items-center bg-background shadow-sm hover:shadow-md hover:-translate-y-[2px] transition-all duration-150 cursor-pointer"
+                  onClick={() => {
+                    setShowMoreDialog(false);
+                    handleSelectEvent(ev);
+                  }}
+                >
+                  <div className="space-y-1">
+                    <p className="font-semibold">
+                      {ev.title.replace(/^💊 Med: |^🗓️ Appt: /, "")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {ev.type === "medication" ? "Medication" : "Appointment"}
+                    </p>
+                  </div>
+                  <div className="text-right text-sm text-muted-foreground">
+                    <div>{format(ev.start, "p")}</div>
+                    <div>– {format(ev.end, "p")}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowMoreDialog(false)}
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={showIcsDialog} onOpenChange={setShowIcsDialog}>
           <DialogContent className="max-w-lg w-full max-h-[80vh] overflow-y-auto">

@@ -1,5 +1,8 @@
 name: CI / CD Pipeline – SymptomSync App
 
+# Copyright: Son Nguyen, 2025
+# License: MIT
+
 on:
   push:
     branches: [main, master]
@@ -8,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 18
+  NODE_VERSION: 20
 
 jobs:
   # ────────────────────────────────────────────────────────────────
@@ -17,19 +20,18 @@ jobs:
   formatting:
     name: "🔧 Format & Lint"
     runs-on: ubuntu-latest
-    env:
-      FMT_LINT_B64: ${{ secrets.SCRIPT_FORMAT_LINT }}
     steps:
       - uses: actions/checkout@v4
       - name: Use Node ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Decode & run formatter / linter
-        run: |
-          echo "$FMT_LINT_B64" | base64 --decode > fmt-lint.sh
-          chmod +x fmt-lint.sh
-          ./fmt-lint.sh
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci --legacy-peer-deps
+      - name: Lint
+        working-directory: web
+        run: npm run lint
 
   # ────────────────────────────────────────────────────────────────
   #  💾 0.1 Cache Dependencies                                     #
@@ -92,7 +94,7 @@ jobs:
     needs: [security-scan]
     strategy:
       matrix:
-        node: [18, 20]
+        node: [20]
     runs-on: ubuntu-latest
     env:
       TEST_B64: ${{ secrets.SCRIPT_TEST }}
