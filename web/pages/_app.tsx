@@ -12,11 +12,102 @@ import { ThemeProvider } from "@/components/theme-provider";
 const queryClient = new QueryClient();
 
 const shownNotifications = new Set<string>();
+let browserNotifier:
+  | ((r: { title: string; body: string; type?: string }) => void)
+  | null = null;
+let notifierInitPromise: Promise<
+  | ((r: { title: string; body: string; type?: string }) => Promise<void>)
+  | null
+> | null = null;
+let notifiedPermissionDenied = false;
+
+const initBrowserNotifier = async () => {
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return null;
+  }
+  try {
+    if ("serviceWorker" in navigator) {
+      try {
+        await navigator.serviceWorker.register("/sw.js");
+      } catch (err) {
+        console.error("Service worker registration failed:", err);
+      }
+    }
+    const registration = "serviceWorker" in navigator
+      ? await navigator.serviceWorker.ready.catch((err) => {
+          console.error("Service worker ready failed:", err);
+          return null;
+        })
+      : null;
+
+    if (Notification.permission === "default") {
+      await Notification.requestPermission();
+    }
+    const notify = async ({
+      title,
+      body,
+    }: {
+      title: string;
+      body: string;
+    }) => {
+      if (!("Notification" in window)) return;
+      if (Notification.permission === "denied") {
+        if (!notifiedPermissionDenied) {
+          toast.warning(
+            "Browser notifications are blocked. Enable them in site settings.",
+          );
+          notifiedPermissionDenied = true;
+        }
+        return;
+      }
+      if (Notification.permission === "default") {
+        const perm = await Notification.requestPermission();
+        if (perm !== "granted") return;
+      }
+      const reg =
+        registration ||
+        (await navigator.serviceWorker.getRegistration().catch((err) => {
+          console.error("getRegistration failed:", err);
+          return null;
+        }));
+      const options: NotificationOptions = {
+        body,
+        icon: "/favicon.ico",
+        tag: `${title}:${body}`,
+        data: { url: window.location.href },
+      };
+      if (reg) {
+        await reg.showNotification(title, options);
+      } else {
+        new Notification(title, options);
+      }
+    };
+    browserNotifier = notify;
+    return notify;
+  } catch (err) {
+    console.error("Notification init failed:", err);
+    return null;
+  }
+};
+
+const ensureNotifier = async () => {
+  if (browserNotifier) return browserNotifier;
+  if (!notifierInitPromise) {
+    notifierInitPromise = initBrowserNotifier();
+  }
+  return notifierInitPromise;
+};
+
 const handleToast = (r: { title: string; body: string }) => {
   const key = `${r.title}:${r.body}`;
   if (shownNotifications.has(key)) return;
   shownNotifications.add(key);
   toast.info(r.title, { description: r.body });
+  if (browserNotifier) {
+    browserNotifier(r);
+  } else {
+    ensureNotifier().then((notifier) => notifier?.(r));
+  }
 };
 
 supabase.auth.onAuthStateChange((_, session) => {
@@ -100,6 +191,83 @@ export default function App({ Component, pageProps }: AppProps) {
   const [userId, setUserId] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const broadcastChannelRef = useRef<any>(null);
+
+  // Register service worker + prep browser notifications
+  useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+      return;
+    }
+    const register = async () => {
+      try {
+        await navigator.serviceWorker.register("/sw.js");
+      } catch (err) {
+        console.error("Service worker registration failed:", err);
+      }
+    };
+    register();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const ensurePermission = async () => {
+      try {
+        const current = Notification.permission;
+        if (current === "default") {
+          await Notification.requestPermission();
+        }
+      } catch (err) {
+        console.error("Notification permission error:", err);
+      }
+    };
+
+    const notifyBrowser = async ({
+      title,
+      body,
+    }: {
+      title: string;
+      body: string;
+    }) => {
+      try {
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "denied") return;
+        if (Notification.permission === "default") {
+          const permission = await Notification.requestPermission();
+          if (permission !== "granted") return;
+        }
+
+        const registration = await navigator.serviceWorker.getRegistration();
+        const options: NotificationOptions = {
+          body,
+          icon: "/favicon.ico",
+          tag: `${title}:${body}`,
+          data: { url: window.location.href },
+        };
+        if (registration) {
+          await registration.showNotification(title, options);
+        } else {
+          // Fallback if registration is missing
+          new Notification(title, options);
+        }
+      } catch (err) {
+        console.error("Failed to show browser notification:", err);
+      }
+    };
+
+    ensurePermission();
+    browserNotifier = notifyBrowser;
+
+    return () => {
+      if (!cancelled) {
+        browserNotifier = null;
+        cancelled = true;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;

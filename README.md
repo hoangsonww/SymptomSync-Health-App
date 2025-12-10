@@ -9,12 +9,11 @@ Build with patient care in mind, **SymptomSync** is a web application designed t
 </p>
 
 > [!NOTE]
-> Developed by [David Nguyen](https://sonnguyenhoang.com) and Erica Ocbu at UNC–Chapel Hill. **© SymptomSync Team, 2025**. 
+> Developed by [David Nguyen](https://sonnguyenhoang.com) and Erica Ocbu at UNC–Chapel Hill. **© SymptomSync Team, 2025**.
 
 ![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![JavaScript](https://img.shields.io/badge/-JavaScript-05122A?style=flat&logo=javascript) ![Node.js](https://img.shields.io/badge/-Node.js-05122A?style=flat&logo=nodedotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![CSS](https://img.shields.io/badge/-CSS-05122A?style=flat&logo=css) ![HTML5](https://img.shields.io/badge/-HTML5-05122A?style=flat&logo=html5) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-05122A?style=flat&logo=postgresql) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Docker](https://img.shields.io/badge/-Docker-05122A?style=flat&logo=docker) ![Git](https://img.shields.io/badge/-Git-05122A?style=flat&logo=git) ![GitHub](https://img.shields.io/badge/-GitHub-05122A?style=flat&logo=github) ![npm](https://img.shields.io/badge/-npm-05122A?style=flat&logo=npm) ![Webpack](https://img.shields.io/badge/-Webpack-05122A?style=flat&logo=webpack) ![Babel](https://img.shields.io/badge/-Babel-05122A?style=flat&logo=babel) ![ESLint](https://img.shields.io/badge/-ESLint-05122A?style=flat&logo=eslint) ![Prettier](https://img.shields.io/badge/-Prettier-05122A?style=flat&logo=prettier) ![Postman](https://img.shields.io/badge/-Postman-05122A?style=flat&logo=postman) ![Jest](https://img.shields.io/badge/-Jest-05122A?style=flat&logo=jest) ![Shell](https://img.shields.io/badge/-Shell-05122A?style=flat&logo=gnu-bash) ![Makefile](https://img.shields.io/badge/-Makefile-05122A?style=flat&logo=gnu) ![AWS](https://img.shields.io/badge/-Amazon%20Web%20Services-05122A?style=flat&logo=awesomewm) ![Ansible](https://img.shields.io/badge/-Ansible-05122A?style=flat&logo=ansible) ![GitHub Actions](https://img.shields.io/badge/-GitHub_Actions-05122A?style=flat&logo=githubactions)
 
-> [!IMPORTANT]
-> **Live Web App: [https://symptomsync.vercel.app](https://symptomsync.vercel.app) 🚀**
+> [!IMPORTANT] > **Live Web App: [https://symptomsync.vercel.app](https://symptomsync.vercel.app) 🚀**
 
 ## Table of Contents
 
@@ -71,6 +70,12 @@ The UI of the app was designed with Figma and Tailwind CSS. The design is respon
   <img src="docs/img/chat.png" alt="Chatbot Screenshot" width="100%"/>
 </p>
 
+### Chatbot Actions
+
+<p align="center">
+  <img src="docs/img/chatbot-actions.png" alt="Chatbot Actions Screenshot" width="100%"/>
+</p>
+
 ### Profile Page
 
 <p align="center">
@@ -116,6 +121,7 @@ SymptomSync offers a range of features to help users manage their health effecti
 - **Calendar View**: Month/week/day/agenda views for all events, with drag-and-drop support.
 - **Documents Page**: Upload/export and manage documents related to health records, prescriptions, etc.
 - **Chatbot**: AI-powered chatbot for symptom analysis and health insights.
+  - **Chatbot Actions**: The chatbot can now perform actions like fetching user data, scheduling reminders, and providing health tips based on user input on the user's behalf.
 - **User Profiles**: Create and manage user profiles with personalized settings.
 - **Medication Schedules**: Set up complex medication schedules with reminders.
 - **Login/Signup**: Secure authentication via Supabase Auth.
@@ -192,8 +198,8 @@ flowchart LR
   - Each table is protected by **Row Level Security (RLS)** policies to ensure user data isolation, so that users can only access/update/delete their own data.
 - **Realtime Broadcast**: Any create/update/delete triggers both a `postgres_changes` subscription and a broadcast message so all open clients show a toast notification.
 - **Cron Jobs**: Scheduled jobs (via Supabase Cron) that scan upcoming reminders and dispatch notifications every second.
-> [!CAUTION]
-> If the window loses focus, or when you have a slow connection, the reminder notifications may not show up. Also, the cron jobs are not guaranteed to run at the exact time specified, but they will run within a few seconds of the scheduled time.
+  > [!CAUTION]
+  > If the window loses focus, or when you have a slow connection, the reminder notifications may not show up. Also, the cron jobs are not guaranteed to run at the exact time specified, but they will run within a few seconds of the scheduled time.
 - **Postgres Triggers**: Database triggers that listen for changes in the `medication_reminders`, `appointment_reminders`, and `health_logs` tables, and send messages to the broadcast channel.
   - There is also a trigger on the `auth.users` table to create a corresponding `user_profiles` entry when a new user signs up.
 - **AI Chatbot**: The chatbot uses the Google AI API to analyze user symptoms and provide health insights.
@@ -208,8 +214,8 @@ flowchart LR
    ```
 
 2. Open the project in your favorite code editor (e.g., VSCode). When prompted by your IDE, select "Open in Container" to open the project in a Docker container. Alternatively, if using VSCode, you can use the Remote - Containers extension to open the project in a container.
-> [!CAUTION]
-> This is very important as the project uses Docker to run the database and other services. If you don't have Docker installed, please install it first.
+   > [!CAUTION]
+   > This is very important as the project uses Docker to run the database and other services. If you don't have Docker installed, please install it first.
 3. Install dependencies (Remember to use `--legacy-peer-deps` if you encounter issues with React versions being incompatible with Shadcn/ui)
    ```bash
    npm install --legacy-peer-deps
@@ -291,6 +297,7 @@ Below is a diagram of the Supabase schema used in SymptomSync:
 ## Agentic AI
 
 SymptomSync incorporates Agentic AI to enhance user experience and provide personalized health insights. The AI analyzes user data, identifies patterns, and offers tailored recommendations for medication management, appointment scheduling, and health tracking.
+
 - **Symptom Analysis**: The AI chatbot can analyze user-reported symptoms and provide insights based on medical knowledge.
 - **Personalized Reminders**: The AI can suggest optimal times for medication reminders based on user routines and habits.
 - **Health Trend Predictions**: By analyzing health logs, the AI can predict potential health trends and alert users to take preventive actions.
@@ -329,7 +336,7 @@ SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Ve
 
 > [!TIP]
 > Blue/green deployments: This strategy uses two identical environments (blue and green). One environment (e.g., blue) serves all production traffic while the other (green) is idle. When deploying a new version, it is first deployed to the idle environment (green). After testing, traffic is switched from blue to green. This allows for quick rollbacks by switching back to the previous environment if issues arise.
-> 
+>
 > Canary deployments: This strategy gradually shifts traffic to the new version in small increments (e.g., 10% every 5 minutes) while monitoring for errors. If no issues are detected, the deployment continues until all traffic is on the new version. If problems occur, the deployment can be automatically rolled back to the previous stable version.
 
 ### Directory Layout
@@ -352,24 +359,25 @@ SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Ve
 
 ### AWS CDK
 
-1. **Bootstrap & Deploy**  
-  ```bash
-   cd aws
-   npm install
-   cdk bootstrap
-   cdk deploy --require-approval never
-  ```
+1. **Bootstrap & Deploy**
+
+```bash
+ cd aws
+ npm install
+ cdk bootstrap
+ cdk deploy --require-approval never
+```
 
 2. **What’s created**
 
-   * **Cognito** User Pool & App Client
-   * **DynamoDB** tables for profiles, meds, appts, logs, notifications
-   * **S3** buckets (`avatars`, `documents`) with encryption, no public access, retained by default
-   * **Lambda** functions: REST API, reminder processor, chatbot, presigned-URL, each fronted by a `live` alias with CodeDeploy `CANARY_10PERCENT_5MINUTES` rollback
-   * **API Gateway** (REST) + Cognito authorizer + explicit `blue`/`green` stages exported as stack outputs, `/health` endpoint for smoke checks
-   * **WAF + Alarms** managed rules and rate limit on API Gateway; per-stage CloudWatch alarms for 5XX and p95 latency
-   * **SSM Parameter** `/symptomsync/active_stage` to flip traffic between blue/green (via DNS/base-path)
-   * **EventBridge** rule to run reminders every minute pinned to the `live` alias
+   - **Cognito** User Pool & App Client
+   - **DynamoDB** tables for profiles, meds, appts, logs, notifications
+   - **S3** buckets (`avatars`, `documents`) with encryption, no public access, retained by default
+   - **Lambda** functions: REST API, reminder processor, chatbot, presigned-URL, each fronted by a `live` alias with CodeDeploy `CANARY_10PERCENT_5MINUTES` rollback
+   - **API Gateway** (REST) + Cognito authorizer + explicit `blue`/`green` stages exported as stack outputs, `/health` endpoint for smoke checks
+   - **WAF + Alarms** managed rules and rate limit on API Gateway; per-stage CloudWatch alarms for 5XX and p95 latency
+   - **SSM Parameter** `/symptomsync/active_stage` to flip traffic between blue/green (via DNS/base-path)
+   - **EventBridge** rule to run reminders every minute pinned to the `live` alias
 
 ### Ansible Playbook
 
@@ -379,13 +387,14 @@ SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Ve
    cd ansible
    ansible-playbook deploy-infrastructure.yml
    ```
+
 2. **What it does**
 
-   * Installs Node.js, AWS CLI, AWS CDK on the host
-   * Verifies your `GOOGLE_AI_API_KEY` env var
-   * Bootstraps CDK in your AWS account
-   * Deploys the entire SymptomSync stack non-interactively
-   * (Optional) Run `ansible/blue-green-rollout.yml` to smoke test the inactive stage and update `/symptomsync/active_stage` after a deploy
+   - Installs Node.js, AWS CLI, AWS CDK on the host
+   - Verifies your `GOOGLE_AI_API_KEY` env var
+   - Bootstraps CDK in your AWS account
+   - Deploys the entire SymptomSync stack non-interactively
+   - (Optional) Run `ansible/blue-green-rollout.yml` to smoke test the inactive stage and update `/symptomsync/active_stage` after a deploy
 
 Ensure your AWS credentials (via `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) and `GOOGLE_AI_API_KEY` are set in your environment before running.
 
@@ -396,7 +405,7 @@ We have set up GitHub Actions for continuous integration and deployment. The wor
 - Installs dependencies
 - Runs tests
 - Builds the application
-- Deploys to Vercel 
+- Deploys to Vercel
 - Deploys the AWS stack using the Ansible playbook
 - Notifies the team on success/failure
 
@@ -454,7 +463,7 @@ We would like to acknowledge the following resources and libraries that made thi
 - [Chart.js](https://www.chartjs.org) for the data visualizations
 - [Google AI](https://ai.google) for the AI-powered chatbot
 - [Docker](https://www.docker.com) for containerization
-- [Ansible](https://www.ansible.com) for deployment automation 
+- [Ansible](https://www.ansible.com) for deployment automation
 - [AWS CDK](https://aws.amazon.com/cdk/) for infrastructure as code
 - [Figma](https://www.figma.com) for the design and prototyping
 - [Postman](https://www.postman.com) for API testing

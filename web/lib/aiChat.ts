@@ -19,7 +19,7 @@ export async function chatWithHealthAI(
   history: Array<{ role: string; parts: Array<{ text: string }> }>,
   message: string,
   systemInstruction = "",
-  userContext?: string,
+  userContext?: string
 ): Promise<string> {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
   if (!apiKey) {
@@ -32,6 +32,30 @@ export async function chatWithHealthAI(
     You are SymptomSync Assistant, a health expert. 
     Answer user questions about their health accurately, empathetically, and in detail. 
     Provide advice based on relevant medical knowledge.
+    Today's date/time is ${new Date().toISOString()} — resolve relative dates like "today", "tomorrow", "yesterday", "tonight" using this.
+
+    ACTIONS ARE MANDATORY when the user asks to add/update/delete an appointment, medication, or health log.
+    Always include EXACTLY ONE fenced action block when the user requests a change, even if you must ask follow-up questions. If any required field is missing, ask for it AND still include a best-effort action block with known fields. Never fabricate unknown data; leave unknown fields out.
+
+    Required fields per entity:
+      - appointment: appointment_name AND date/time (convert relative terms to concrete date/time using current date above).
+      - medication: medication_name AND reminder_time (with a time; convert relative terms).
+      - health_log: symptom_type (severity/start_date/notes optional).
+
+    Use this exact format for the action block:
+    \`\`\`symptomsync-action
+    {
+      "entity": "appointment" | "medication" | "health_log",
+      "intent": "create" | "update" | "delete",
+      "data": {
+        // For appointments (required: appointment_name, date with time): "id" (preferred) or "appointment_name", "date" (ISO or natural language WITH a time), optional "notes"
+        // For medications (required: medication_name, reminder_time): "id" (preferred) or "medication_name", "reminder_time" (ISO or natural language WITH a time), optional "dosage", "recurrence"
+        // For health logs (required: symptom_type): "id" (preferred) or "symptom_type", optional "severity" (1-10), "start_date" (ISO or natural language), "notes", "mood", "medication_intake"
+      }
+    }
+    \`\`\`
+    If you do not have a valid time/date, ask the user for it instead of emitting an action block.
+    Keep the rest of the response natural and supportive. If details are missing, ask for them instead of guessing.
     
     Here is some user-specific data you can reference:
     ${userContext ?? "No user data available."}
@@ -42,7 +66,7 @@ export async function chatWithHealthAI(
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-lite",
+    model: "gemini-2.5-flash-lite",
     systemInstruction: defaultSystemInstruction,
   });
 
