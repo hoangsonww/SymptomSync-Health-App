@@ -31,19 +31,20 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = event.notification.data?.url || "/";
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsArr) => {
-      const hadWindow = clientsArr.some((client) => {
-        if (client.url === url && "focus" in client) {
-          client.focus();
-          return true;
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientsArr) => {
+        const hadWindow = clientsArr.some((client) => {
+          if (client.url === url && "focus" in client) {
+            client.focus();
+            return true;
+          }
+          return false;
+        });
+        if (!hadWindow && self.clients.openWindow) {
+          return self.clients.openWindow(url);
         }
-        return false;
-      });
-      if (!hadWindow && self.clients.openWindow) {
-        return self.clients.openWindow(url);
-      }
-      return undefined;
-    }),
+        return undefined;
+      }),
   );
 });
-

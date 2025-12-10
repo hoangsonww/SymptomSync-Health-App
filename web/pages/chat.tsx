@@ -517,11 +517,16 @@ export default function AIChatPage() {
   const deriveHealthLogFromInput = (input: string): ActionPayload | null => {
     const lower = input.toLowerCase();
     const mentionsLog =
-      lower.includes("health log") || lower.includes("log") || lower.includes("record");
+      lower.includes("health log") ||
+      lower.includes("log") ||
+      lower.includes("record");
     // Quick heuristic: if it mentions log/symptom or contains severity-like numbers, try to build a health log action
     if (!mentionsLog && !/\b\d{1,2}\b/.test(lower)) return null;
 
-    const parts = input.split(",").map((p) => p.trim()).filter(Boolean);
+    const parts = input
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
     const symptomCandidate = parts[0] || input.split(" ")[0];
     const severityMatch = input.match(/\b(10|[1-9])\b/);
     const severity = severityMatch ? Number(severityMatch[1]) : null;
@@ -529,7 +534,9 @@ export default function AIChatPage() {
       parts.find((p) =>
         p.match(/today|tomorrow|tmr|yesterday|\d{4}-\d{2}-\d{2}|am|pm|:/i),
       ) || null;
-    const notesParts = parts.slice(1).filter((p) => p !== severityMatch?.[0] && p !== datePart);
+    const notesParts = parts
+      .slice(1)
+      .filter((p) => p !== severityMatch?.[0] && p !== datePart);
     if (!symptomCandidate) return null;
 
     return {
@@ -653,7 +660,9 @@ export default function AIChatPage() {
     data: Record<string, unknown>,
   ) => {
     if (typeof data.id === "string") return data.id;
-    const logs = latestLogs.length ? latestLogs : await getHealthLogsByUser(user.id);
+    const logs = latestLogs.length
+      ? latestLogs
+      : await getHealthLogsByUser(user.id);
     const symptom =
       typeof data.symptom_type === "string"
         ? data.symptom_type.toLowerCase()
@@ -662,10 +671,12 @@ export default function AIChatPage() {
       typeof data.start_date === "string" ? data.start_date : undefined,
     );
     const match = logs.find((l) => {
-      const sameSymptom = symptom && (l.symptom_type ?? "").toLowerCase() === symptom;
+      const sameSymptom =
+        symptom && (l.symptom_type ?? "").toLowerCase() === symptom;
       const sameStart =
         startIso &&
-        new Date(l.start_date).toISOString() === new Date(startIso).toISOString();
+        new Date(l.start_date).toISOString() ===
+          new Date(startIso).toISOString();
       return sameSymptom || sameStart;
     });
     return match?.id;
@@ -690,7 +701,9 @@ export default function AIChatPage() {
             typeof data.date === "string" ? data.date : undefined,
           );
           if (!dateIso) {
-            throw new Error("Valid appointment date/time is required to create. Please provide a time.");
+            throw new Error(
+              "Valid appointment date/time is required to create. Please provide a time.",
+            );
           }
           await createAppointmentReminder({
             user_profile_id: user.id,
@@ -732,7 +745,9 @@ export default function AIChatPage() {
             throw new Error("Medication name is required to create.");
           }
           const timeIso = parseDateTime(
-            typeof data.reminder_time === "string" ? data.reminder_time : undefined,
+            typeof data.reminder_time === "string"
+              ? data.reminder_time
+              : undefined,
           );
           if (!timeIso) {
             throw new Error("Valid reminder time is required to create.");
@@ -764,16 +779,15 @@ export default function AIChatPage() {
             updatePayload.medication_name = data.medication_name;
           }
           const timeIso = parseDateTime(
-            typeof data.reminder_time === "string" ? data.reminder_time : undefined,
+            typeof data.reminder_time === "string"
+              ? data.reminder_time
+              : undefined,
           );
           if (timeIso) updatePayload.reminder_time = timeIso;
           if (typeof data.dosage === "string" || data.dosage === null) {
             updatePayload.dosage = data.dosage ?? null;
           }
-          if (
-            typeof data.recurrence === "string" ||
-            data.recurrence === null
-          ) {
+          if (typeof data.recurrence === "string" || data.recurrence === null) {
             updatePayload.recurrence = data.recurrence ?? null;
           }
           if (Object.keys(updatePayload).length === 0) {
@@ -1013,21 +1027,23 @@ export default function AIChatPage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
-                        {Object.entries(pendingAction.data).map(([key, value]) => (
-                          <div
-                            key={key}
-                            className="flex flex-col gap-1 border border-primary/20 rounded-lg px-3 py-2 bg-background shadow-sm"
-                          >
-                            <span className="text-xs font-bold uppercase tracking-wide text-primary">
-                              {key.replace(/_/g, " ")}
-                            </span>
-                            <span className="text-sm font-medium text-foreground break-words">
-                              {typeof value === "object"
-                                ? JSON.stringify(value)
-                                : String(value)}
-                            </span>
-                          </div>
-                        ))}
+                        {Object.entries(pendingAction.data).map(
+                          ([key, value]) => (
+                            <div
+                              key={key}
+                              className="flex flex-col gap-1 border border-primary/20 rounded-lg px-3 py-2 bg-background shadow-sm"
+                            >
+                              <span className="text-xs font-bold uppercase tracking-wide text-primary">
+                                {key.replace(/_/g, " ")}
+                              </span>
+                              <span className="text-sm font-medium text-foreground break-words">
+                                {typeof value === "object"
+                                  ? JSON.stringify(value)
+                                  : String(value)}
+                              </span>
+                            </div>
+                          ),
+                        )}
                       </div>
 
                       <div className="flex gap-2 justify-end">
@@ -1067,7 +1083,9 @@ export default function AIChatPage() {
                             animate="visible"
                             exit={{ opacity: 0, y: -10 }}
                             className={`mb-2 flex ${
-                              msg.role === "user" ? "justify-end" : "justify-start"
+                              msg.role === "user"
+                                ? "justify-end"
+                                : "justify-start"
                             }`}
                           >
                             <div

@@ -16,8 +16,7 @@ let browserNotifier:
   | ((r: { title: string; body: string; type?: string }) => void)
   | null = null;
 let notifierInitPromise: Promise<
-  | ((r: { title: string; body: string; type?: string }) => Promise<void>)
-  | null
+  ((r: { title: string; body: string; type?: string }) => Promise<void>) | null
 > | null = null;
 let notifiedPermissionDenied = false;
 
@@ -33,23 +32,18 @@ const initBrowserNotifier = async () => {
         console.error("Service worker registration failed:", err);
       }
     }
-    const registration = "serviceWorker" in navigator
-      ? await navigator.serviceWorker.ready.catch((err) => {
-          console.error("Service worker ready failed:", err);
-          return null;
-        })
-      : null;
+    const registration =
+      "serviceWorker" in navigator
+        ? await navigator.serviceWorker.ready.catch((err) => {
+            console.error("Service worker ready failed:", err);
+            return null;
+          })
+        : null;
 
     if (Notification.permission === "default") {
       await Notification.requestPermission();
     }
-    const notify = async ({
-      title,
-      body,
-    }: {
-      title: string;
-      body: string;
-    }) => {
+    const notify = async ({ title, body }: { title: string; body: string }) => {
       if (!("Notification" in window)) return;
       if (Notification.permission === "denied") {
         if (!notifiedPermissionDenied) {

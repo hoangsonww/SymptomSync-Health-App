@@ -19,7 +19,7 @@ export async function chatWithHealthAI(
   history: Array<{ role: string; parts: Array<{ text: string }> }>,
   message: string,
   systemInstruction = "",
-  userContext?: string
+  userContext?: string,
 ): Promise<string> {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
   if (!apiKey) {

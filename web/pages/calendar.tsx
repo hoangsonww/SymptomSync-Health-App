@@ -1113,9 +1113,7 @@ export default function CalendarPage() {
               <DialogTitle>
                 Events on {moreDate ? format(moreDate, "PPP") : "this day"}
               </DialogTitle>
-              <DialogDescription>
-                Tap any item to edit it.
-              </DialogDescription>
+              <DialogDescription>Tap any item to edit it.</DialogDescription>
             </DialogHeader>
             <div className="space-y-3 max-h-[60vh] overflow-y-auto pt-2">
               {moreEvents.length === 0 && (
@@ -1146,7 +1144,10 @@ export default function CalendarPage() {
               ))}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowMoreDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowMoreDialog(false)}
+              >
                 Close
               </Button>
             </DialogFooter>
