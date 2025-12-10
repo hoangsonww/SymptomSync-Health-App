@@ -48,6 +48,12 @@ type ActionPayload = {
   data: Record<string, any>;
 };
 
+type FileSummary = {
+  filename?: string | null;
+  file_type?: string | null;
+  tags?: string[] | null;
+};
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -409,17 +415,19 @@ export default function AIChatPage() {
         userDataSummary += `- No profile found.\n`;
       }
 
-      const docSummaries = (files ?? []).slice(0, 5);
+      const docSummaries = ((files ?? []) as FileSummary[]).slice(0, 5);
       userDataSummary += `\nRecent Documents:\n`;
       if (docSummaries.length === 0) {
         userDataSummary += `- None\n`;
       } else {
-        docSummaries.forEach((f: any) => {
+        docSummaries.forEach((f) => {
+          const filename = f.filename ?? "unknown";
+          const fileType = f.file_type ?? "unknown";
           const tags =
             Array.isArray(f.tags) && f.tags.length > 0
               ? f.tags.join(", ")
               : "no tags";
-          userDataSummary += `- ${f.filename} (${f.file_type || "unknown"}, ${tags})\n`;
+          userDataSummary += `- ${filename} (${fileType}, ${tags})\n`;
         });
       }
 
@@ -495,7 +503,7 @@ export default function AIChatPage() {
         ) {
           return parsed as ActionPayload;
         }
-      } catch (err) {
+      } catch {
         return null;
       }
       return null;
