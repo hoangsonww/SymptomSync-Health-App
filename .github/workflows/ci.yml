@@ -1,5 +1,8 @@
 name: CI / CD Pipeline – SymptomSync App
 
+# Copyright: Son Nguyen, 2025
+# License: MIT
+
 on:
   push:
     branches: [main, master]
