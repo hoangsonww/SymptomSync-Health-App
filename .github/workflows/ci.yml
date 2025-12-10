@@ -17,19 +17,16 @@ jobs:
   formatting:
     name: "🔧 Format & Lint"
     runs-on: ubuntu-latest
-    env:
-      FMT_LINT_B64: ${{ secrets.SCRIPT_FORMAT_LINT }}
     steps:
       - uses: actions/checkout@v4
       - name: Use Node ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Decode & run formatter / linter
-        run: |
-          echo "$FMT_LINT_B64" | base64 --decode > fmt-lint.sh
-          chmod +x fmt-lint.sh
-          ./fmt-lint.sh
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --prefix web
+      - name: Lint
+        run: npm run lint --prefix web
 
   # ────────────────────────────────────────────────────────────────
   #  💾 0.1 Cache Dependencies                                     #
