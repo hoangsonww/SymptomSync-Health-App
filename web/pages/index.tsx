@@ -412,7 +412,8 @@ export default function Home() {
 
           .landing-hero {
             position: relative;
-            background: radial-gradient(
+            background:
+              radial-gradient(
                 1200px circle at 10% 10%,
                 rgba(56, 189, 248, 0.35),
                 transparent 55%
@@ -443,10 +444,8 @@ export default function Home() {
           .landing-grid {
             position: absolute;
             inset: 0;
-            background-image: linear-gradient(
-                rgba(148, 163, 184, 0.2) 1px,
-                transparent 1px
-              ),
+            background-image:
+              linear-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px),
               linear-gradient(
                 90deg,
                 rgba(148, 163, 184, 0.2) 1px,
@@ -536,7 +535,8 @@ export default function Home() {
 
           .landing-dark {
             position: relative;
-            background: radial-gradient(
+            background:
+              radial-gradient(
                 1000px circle at 90% 0%,
                 rgba(14, 116, 144, 0.45),
                 transparent 55%
@@ -673,21 +673,28 @@ export default function Home() {
                 </AnimatedInView>
                 <AnimatedInView delay={0.2}>
                   <p className="mt-6 text-lg text-white/70 md:text-xl">
-                    SymptomSync unifies symptom tracking, reminders, AI analysis,
-                    and secure reporting in one platform. Deploy confidently with
-                    AWS, Terraform, and enterprise-ready observability.
+                    SymptomSync unifies symptom tracking, reminders, AI
+                    analysis, and secure reporting in one platform. Deploy
+                    confidently with AWS, Terraform, and enterprise-ready
+                    observability.
                   </p>
                 </AnimatedInView>
                 <AnimatedInView delay={0.3}>
                   <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                    <motion.div
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       <Link href={user ? "/home" : "/auth/signUp"}>
                         <Button className="h-11 rounded-full bg-white text-slate-900 hover:bg-white/90">
                           {user ? "Continue your journey" : "Get started"}
                         </Button>
                       </Link>
                     </motion.div>
-                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                    <motion.div
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       <Link href="#modules">
                         <Button
                           variant="outline"
@@ -844,25 +851,27 @@ export default function Home() {
               </div>
             </AnimatedInView>
             <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {moduleHighlights.map(({ title, description, icon: Icon }, idx) => (
-                <AnimatedInView key={title} delay={0.05 * idx}>
-                  <Card className="group h-full border-slate-200/70 bg-white/80 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                    <CardHeader className="flex flex-row items-start gap-4">
-                      <div className="rounded-2xl bg-slate-900 p-3 text-white shadow">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl text-slate-900">
-                          {title}
-                        </CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="text-sm text-slate-600">
-                      {description}
-                    </CardContent>
-                  </Card>
-                </AnimatedInView>
-              ))}
+              {moduleHighlights.map(
+                ({ title, description, icon: Icon }, idx) => (
+                  <AnimatedInView key={title} delay={0.05 * idx}>
+                    <Card className="group h-full border-slate-200/70 bg-white/80 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                      <CardHeader className="flex flex-row items-start gap-4">
+                        <div className="rounded-2xl bg-slate-900 p-3 text-white shadow">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl text-slate-900">
+                            {title}
+                          </CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="text-sm text-slate-600">
+                        {description}
+                      </CardContent>
+                    </Card>
+                  </AnimatedInView>
+                ),
+              )}
             </div>
           </div>
         </section>
@@ -971,38 +980,47 @@ export default function Home() {
             </AnimatedInView>
 
             <div className="mt-12 grid gap-6 md:grid-cols-2">
-              {infraHighlights.map(({ title, description, icon: Icon }, idx) => (
-                <AnimatedInView key={title} delay={0.08 * idx}>
-                  <div className="flex h-full items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-                    <div className="rounded-xl bg-white/10 p-3">
-                      <Icon className="h-5 w-5 text-white" />
+              {infraHighlights.map(
+                ({ title, description, icon: Icon }, idx) => (
+                  <AnimatedInView key={title} delay={0.08 * idx}>
+                    <div className="flex h-full items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+                      <div className="rounded-xl bg-white/10 p-3">
+                        <Icon className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">
+                          {title}
+                        </h3>
+                        <p className="mt-2 text-sm text-white/70">
+                          {description}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">
-                        {title}
-                      </h3>
-                      <p className="mt-2 text-sm text-white/70">
-                        {description}
-                      </p>
-                    </div>
-                  </div>
-                </AnimatedInView>
-              ))}
+                  </AnimatedInView>
+                ),
+              )}
             </div>
 
             <AnimatedInView delay={0.2}>
               <div className="mt-10 flex flex-wrap gap-3">
-                {["AWS", "Terraform", "Docker", "ECS", "RDS", "S3", "Ansible", "Jenkins"].map(
-                  (item) => (
-                    <Badge
-                      key={item}
-                      variant="outline"
-                      className="border-white/20 bg-white/5 text-white"
-                    >
-                      {item}
-                    </Badge>
-                  ),
-                )}
+                {[
+                  "AWS",
+                  "Terraform",
+                  "Docker",
+                  "ECS",
+                  "RDS",
+                  "S3",
+                  "Ansible",
+                  "Jenkins",
+                ].map((item) => (
+                  <Badge
+                    key={item}
+                    variant="outline"
+                    className="border-white/20 bg-white/5 text-white"
+                  >
+                    {item}
+                  </Badge>
+                ))}
               </div>
             </AnimatedInView>
           </div>
@@ -1042,23 +1060,25 @@ export default function Home() {
               </div>
             </AnimatedInView>
             <div className="grid gap-5">
-              {securityHighlights.map(({ title, description, icon: Icon }, idx) => (
-                <AnimatedInView key={title} delay={0.1 * idx}>
-                  <Card className="border-slate-200/70 bg-white/80 shadow-sm backdrop-blur">
-                    <CardHeader className="flex flex-row items-center gap-4">
-                      <div className="rounded-2xl bg-slate-900 p-3 text-white">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <CardTitle className="text-xl text-slate-900">
-                        {title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm text-slate-600">
-                      {description}
-                    </CardContent>
-                  </Card>
-                </AnimatedInView>
-              ))}
+              {securityHighlights.map(
+                ({ title, description, icon: Icon }, idx) => (
+                  <AnimatedInView key={title} delay={0.1 * idx}>
+                    <Card className="border-slate-200/70 bg-white/80 shadow-sm backdrop-blur">
+                      <CardHeader className="flex flex-row items-center gap-4">
+                        <div className="rounded-2xl bg-slate-900 p-3 text-white">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <CardTitle className="text-xl text-slate-900">
+                          {title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-sm text-slate-600">
+                        {description}
+                      </CardContent>
+                    </Card>
+                  </AnimatedInView>
+                ),
+              )}
             </div>
           </div>
         </section>
@@ -1082,7 +1102,9 @@ export default function Home() {
                   <div key={name} className="px-4">
                     <Card className="h-full border-slate-200/70 bg-slate-50 shadow-sm">
                       <CardContent className="flex h-full flex-col justify-between p-6">
-                        <p className="text-sm text-slate-600">"{quote}"</p>
+                        <p className="text-sm text-slate-600">
+                          &quot;{quote}&quot;
+                        </p>
                         <div className="mt-6 flex items-center gap-3">
                           <div className="rounded-full bg-slate-900 p-2 text-white">
                             <Icon className="h-4 w-4" />
@@ -1141,14 +1163,20 @@ export default function Home() {
                 deployment tooling, and a delightful patient experience.
               </p>
               <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   <Link href={user ? "/home" : "/auth/signUp"}>
                     <Button className="h-11 rounded-full bg-white text-slate-900 hover:bg-white/90">
                       {user ? "Open your dashboard" : "Sign up for free"}
                     </Button>
                   </Link>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   <Link href="#ai-engine">
                     <Button
                       variant="outline"
