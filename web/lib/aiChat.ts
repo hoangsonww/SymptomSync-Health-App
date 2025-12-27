@@ -5,6 +5,74 @@ import {
   GenerationConfig,
 } from "@google/generative-ai";
 
+type GeminiModelInfo = {
+  name?: string;
+  supportedGenerationMethods?: string[];
+};
+
+type GeminiModelListResponse = {
+  models?: GeminiModelInfo[];
+};
+
+const DEFAULT_GEMINI_MODELS = [
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-001",
+  "gemini-2.0-flash-lite",
+  "gemini-2.0-flash-lite-001",
+];
+
+let geminiModelCursor = 0;
+
+const getRotatedModels = (models: string[], startIndex: number) => {
+  if (models.length === 0) return [];
+  const normalizedIndex =
+    ((startIndex % models.length) + models.length) % models.length;
+  return [
+    ...models.slice(normalizedIndex),
+    ...models.slice(0, normalizedIndex),
+  ];
+};
+
+const fetchGeminiModels = async (apiKey: string): Promise<string[]> => {
+  const url = new URL("https://generativelanguage.googleapis.com/v1/models");
+  url.searchParams.set("key", apiKey);
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(
+      `Failed to list Gemini models: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const data = (await response.json()) as GeminiModelListResponse;
+  if (!Array.isArray(data.models)) return [];
+
+  const seen = new Set<string>();
+  const models: string[] = [];
+
+  for (const model of data.models) {
+    const name = model.name;
+    if (!name || !name.startsWith("models/gemini-")) continue;
+
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes("embedding") || lowerName.includes("-pro")) continue;
+
+    const methods = Array.isArray(model.supportedGenerationMethods)
+      ? model.supportedGenerationMethods
+      : [];
+    if (!methods.includes("generateContent")) continue;
+
+    const cleanedName = name.replace(/^models\//, "");
+    if (seen.has(cleanedName)) continue;
+    seen.add(cleanedName);
+    models.push(cleanedName);
+  }
+
+  return models;
+};
+
 /**
  * Sends a chat message to Gemini AI. This helper preserves conversation history so that the context
  * is maintained between messages. The assistant is identified as "SymptomSync Assistant" and acts as a
@@ -65,10 +133,6 @@ export async function chatWithHealthAI(
   `;
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash-lite",
-    systemInstruction: defaultSystemInstruction,
-  });
 
   const generationConfig: GenerationConfig = {
     temperature: 1,
@@ -98,19 +162,57 @@ export async function chatWithHealthAI(
 
   history.push({ role: "user", parts: [{ text: message }] });
 
-  const chatSession = model.startChat({
-    generationConfig,
-    safetySettings,
-    history,
-  });
-
-  const result = await chatSession.sendMessage(message);
-
-  if (!result.response || !result.response.text) {
-    throw new Error("Failed to get text response from the AI.");
+  let modelsToTry: string[] = [];
+  try {
+    modelsToTry = await fetchGeminiModels(apiKey);
+  } catch {
+    modelsToTry = [];
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return result.response.text();
+  if (modelsToTry.length === 0) {
+    modelsToTry = DEFAULT_GEMINI_MODELS;
+  }
+  if (modelsToTry.length === 0) {
+    throw new Error("No Gemini models available to handle the request.");
+  }
+
+  const startIndex = geminiModelCursor % modelsToTry.length;
+  const orderedModels = getRotatedModels(modelsToTry, startIndex);
+  let lastError: unknown = null;
+
+  for (let i = 0; i < orderedModels.length; i += 1) {
+    const modelName = orderedModels[i];
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction: defaultSystemInstruction,
+      });
+
+      const chatSession = model.startChat({
+        generationConfig,
+        safetySettings,
+        history,
+      });
+
+      const result = await chatSession.sendMessage(message);
+
+      if (!result.response || !result.response.text) {
+        throw new Error("Failed to get text response from the AI.");
+      }
+
+      geminiModelCursor = (startIndex + i + 1) % modelsToTry.length;
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return result.response.text();
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  if (lastError instanceof Error) {
+    throw lastError;
+  }
+
+  throw new Error("Failed to get text response from the AI.");
 }
