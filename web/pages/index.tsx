@@ -60,7 +60,7 @@ function PrevArrow(props: any) {
   return (
     <button
       onClick={onClick}
-      className="absolute -left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-slate-900 shadow-lg transition-transform hover:scale-105"
+      className="absolute -left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-slate-900 shadow-lg transition-transform hover:scale-105 cursor-pointer"
     >
       <ChevronLeft className="h-5 w-5" />
     </button>
@@ -73,7 +73,7 @@ function NextArrow(props: any) {
   return (
     <button
       onClick={onClick}
-      className="absolute -right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-slate-900 shadow-lg transition-transform hover:scale-105"
+      className="absolute -right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-slate-900 shadow-lg transition-transform hover:scale-105 cursor-pointer"
     >
       <ChevronRight className="h-5 w-5" />
     </button>
@@ -321,7 +321,7 @@ const testimonials = [
   },
   {
     quote:
-      "The infrastructure story is real. We deployed to AWS in days, not weeks.",
+      "The infrastructure story is real. We deployed to AWS in days, not weeks. It's solid.",
     name: "Taylor Rios",
     icon: Cloud,
   },
@@ -646,7 +646,7 @@ export default function Home() {
               </nav>
               <div className="hidden md:block">
                 <Link href={user ? "/home" : "/auth/login"}>
-                  <Button className="rounded-full bg-white/15 text-white hover:bg-white/25">
+                  <Button className="rounded-full bg-white/15 text-white hover:bg-white/25 cursor-pointer">
                     {user ? "Open Console" : "Sign In"}
                   </Button>
                 </Link>
@@ -686,7 +686,7 @@ export default function Home() {
                       whileTap={{ scale: 0.98 }}
                     >
                       <Link href={user ? "/home" : "/auth/signUp"}>
-                        <Button className="h-11 rounded-full bg-white text-slate-900 hover:bg-white/90">
+                        <Button className="h-11 rounded-full bg-white text-slate-900 hover:bg-white/90 cursor-pointer">
                           {user ? "Continue your journey" : "Get started"}
                         </Button>
                       </Link>
@@ -698,7 +698,7 @@ export default function Home() {
                       <Link href="#modules">
                         <Button
                           variant="outline"
-                          className="h-11 rounded-full border-white/30 bg-transparent text-white hover:bg-white/10"
+                          className="h-11 rounded-full border-white/30 bg-transparent text-white hover:bg-white/10 cursor-pointer"
                         >
                           Explore the platform
                           <ArrowDown className="ml-2 h-4 w-4" />
@@ -1168,7 +1168,7 @@ export default function Home() {
                   whileTap={{ scale: 0.98 }}
                 >
                   <Link href={user ? "/home" : "/auth/signUp"}>
-                    <Button className="h-11 rounded-full bg-white text-slate-900 hover:bg-white/90">
+                    <Button className="h-11 rounded-full bg-white text-slate-900 hover:bg-white/90 cursor-pointer">
                       {user ? "Open your dashboard" : "Sign up for free"}
                     </Button>
                   </Link>
@@ -1180,7 +1180,7 @@ export default function Home() {
                   <Link href="#ai-engine">
                     <Button
                       variant="outline"
-                      className="h-11 rounded-full border-white/30 bg-transparent text-white hover:bg-white/10"
+                      className="h-11 rounded-full border-white/30 bg-transparent text-white hover:bg-white/10 cursor-pointer"
                     >
                       View the AI pipeline
                     </Button>
