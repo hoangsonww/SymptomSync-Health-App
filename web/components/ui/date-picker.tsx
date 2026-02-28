@@ -39,7 +39,7 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
               className,
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className="h-4 w-4" />
             {value ? formattedDate : "Pick a date"}
           </Button>
         </div>

@@ -350,6 +350,9 @@ export default function DocumentsPage() {
       }
 
       const pdfBytes = await mergedPdf.save();
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       const blob = new Blob([pdfBytes], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -546,7 +549,7 @@ export default function DocumentsPage() {
                     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                       <DialogTrigger asChild>
                         <Button className="whitespace-nowrap flex items-center gap-2 cursor-pointer">
-                          <Plus className="mr-2 h-4 w-4" /> New Document
+                          <Plus className="h-4 w-4" /> New Document
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
