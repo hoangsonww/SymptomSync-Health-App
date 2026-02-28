@@ -345,7 +345,7 @@ export default function ProfilePage() {
 
           <motion.div variants={fadeInUp}>
             <Card className="p-6 flex flex-col sm:flex-row items-center shadow-2xl rounded-xl bg-background gap-0 overflow-hidden">
-              <Avatar className="ml-2 w-24 h-24">
+              <Avatar className="w-24 h-24">
                 {profileToDisplay?.avatar_url ? (
                   <AvatarImage
                     src={profileToDisplay.avatar_url}
@@ -392,7 +392,7 @@ export default function ProfilePage() {
                     className="cursor-pointer"
                     onClick={() => setEditDialogOpen(true)}
                   >
-                    <Edit className="mr-2 w-4 h-4" /> Edit Profile
+                    <Edit className="w-4 h-4" /> Edit Profile
                   </Button>
                 </div>
               )}
@@ -408,7 +408,7 @@ export default function ProfilePage() {
                     setSearchQuery("");
                   }}
                 >
-                  <ChevronLeft className="mr-2 w-4 h-4" /> Back to Your Profile
+                  <ChevronLeft className="w-4 h-4" /> Back to Your Profile
                 </Button>
               </div>
             )}
@@ -513,7 +513,7 @@ export default function ProfilePage() {
                       type="submit"
                       className="hover:scale-105 transition-transform cursor-pointer"
                     >
-                      <UploadCloud className="mr-2 w-4 h-4" /> Save Changes
+                      <UploadCloud className="w-4 h-4" /> Save Changes
                     </Button>
                   </DialogFooter>
                 </form>

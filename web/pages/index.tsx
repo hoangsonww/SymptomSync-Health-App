@@ -701,7 +701,7 @@ export default function Home() {
                           className="h-11 rounded-full border-white/30 bg-transparent text-white hover:bg-white/10 cursor-pointer"
                         >
                           Explore the platform
-                          <ArrowDown className="ml-2 h-4 w-4" />
+                          <ArrowDown className="h-4 w-4" />
                         </Button>
                       </Link>
                     </motion.div>
@@ -1207,7 +1207,7 @@ export default function Home() {
                 href="https://github.com/hoangsonww/SymptomSync-Health-App"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 hover:text-white"
+                className="flex items-center gap-1 hover:text-white"
               >
                 <Github className="h-4 w-4" />
                 GitHub
