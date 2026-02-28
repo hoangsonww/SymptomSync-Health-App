@@ -1,0 +1,4 @@
+interface:
+  display_name: "SymptomSync Data"
+  short_description: "Schema and contract change workflow"
+  default_prompt: "Use $symptomsync-data-change to change SymptomSync SQL or data contracts safely."

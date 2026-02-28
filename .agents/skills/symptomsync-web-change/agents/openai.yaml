@@ -1,0 +1,4 @@
+interface:
+  display_name: "SymptomSync Web"
+  short_description: "Next.js frontend change workflow"
+  default_prompt: "Use $symptomsync-web-change to implement or review a frontend change in SymptomSync."

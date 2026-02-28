@@ -1,0 +1,4 @@
+interface:
+  display_name: "SymptomSync Docs Sync"
+  short_description: "Keep docs aligned with code changes"
+  default_prompt: "Use $symptomsync-doc-sync to update SymptomSync docs so they match the current implementation."

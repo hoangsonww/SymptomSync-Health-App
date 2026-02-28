@@ -1,0 +1,52 @@
+# Prompt before commands that can change live infrastructure, traffic routing, or published artifacts.
+
+prefix_rule(
+    pattern = ["npx", "cdk", "deploy"],
+    decision = "prompt",
+    justification = "Deploying the AWS stack changes live SymptomSync infrastructure.",
+    match = [
+        "npx cdk deploy --require-approval never --all",
+        "npx cdk deploy SymptomSyncStack",
+    ],
+    not_match = [
+        "npx cdk synth",
+    ],
+)
+
+prefix_rule(
+    pattern = ["ansible-playbook"],
+    decision = "prompt",
+    justification = "Ansible playbooks can promote blue/green traffic or alter deployment state.",
+    match = [
+        "ansible-playbook ansible/blue-green-rollout.yml",
+        "ansible-playbook ansible/deploy-infrastructure.yml",
+    ],
+)
+
+prefix_rule(
+    pattern = ["aws", "ssm", "put-parameter"],
+    decision = "prompt",
+    justification = "Updating SSM parameters can change the active production stage or runtime behavior.",
+    match = [
+        "aws ssm put-parameter --name /symptomsync/active_stage --type String --overwrite --value blue",
+    ],
+)
+
+prefix_rule(
+    pattern = ["docker", "push"],
+    decision = "prompt",
+    justification = "Pushing images publishes deployable artifacts for this repository.",
+    match = [
+        "docker push ghcr.io/example/symptomsync:latest",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "prompt",
+    justification = "Pushing branches or tags publishes repository state externally.",
+    match = [
+        "git push origin main",
+        "git push -u origin feat/my-improvement",
+    ],
+)
