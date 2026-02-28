@@ -1,0 +1,4 @@
+interface:
+  display_name: "SymptomSync Agentic AI"
+  short_description: "Python AI service change workflow"
+  default_prompt: "Use $symptomsync-agentic-ai-change to modify the agentic_ai service in SymptomSync."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "SymptomSync Review"
+  short_description: "Repo-specific review checklist"
+  default_prompt: "Use $symptomsync-review to review a SymptomSync change with repo-specific risk checks."

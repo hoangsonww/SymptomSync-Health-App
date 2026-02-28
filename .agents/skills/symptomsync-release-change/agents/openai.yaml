@@ -1,0 +1,4 @@
+interface:
+  display_name: "SymptomSync Release"
+  short_description: "Infra and deployment safety workflow"
+  default_prompt: "Use $symptomsync-release-change to update SymptomSync infrastructure or delivery flows safely."
