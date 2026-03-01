@@ -107,3 +107,9 @@ clean: clean-node_modules
 clean-node_modules:
 	@echo "👉 Removing node_modules from frontend"
 	find $(FRONT_DIR) -maxdepth 2 -name node_modules | xargs rm -rf || true
+
+.PHONY: show-runtime-info
+show-runtime-info:
+	@echo "Node: $$(node --version 2>/dev/null || echo unavailable)"
+	@echo "npm: $$(npm --version 2>/dev/null || echo unavailable)"
+	@echo "Python: $$(python3 --version 2>/dev/null || python --version 2>/dev/null || echo unavailable)"
