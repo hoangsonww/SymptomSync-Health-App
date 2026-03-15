@@ -3,7 +3,7 @@
 A sophisticated multi-agent AI system for health symptom analysis built with LangGraph, LangChain, and Model Context Protocol (MCP) server architecture.
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/release/python-3110/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.95.2-green.svg)](https://fastapi.tiangolo.com/)
+[![MCP Python SDK](https://img.shields.io/badge/MCP_Python_SDK-1.26.0-green.svg)](https://github.com/modelcontextprotocol/python-sdk)
 [![LangChain](https://img.shields.io/badge/LangChain-0.1.0-yellow.svg)](https://www.langchain.com/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.1.0-orange.svg)](https://www.langgraph.com/)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-red.svg)](https://www.modelcontextprotocol.com/)
@@ -19,7 +19,9 @@ This production-ready agentic AI pipeline implements an **assembly line architec
 - 🔄 **Assembly Line Architecture**: Sequential processing with state management
 - 📊 **LangGraph State Machine**: Sophisticated workflow orchestration
 - 🔗 **LangChain Integration**: Powerful LLM chains and components
-- 🌐 **MCP Server**: FastAPI-based Model Context Protocol server
+- 🌐 **Standalone MCP Server**: Official Python SDK with modular primitive registration
+- 🧰 **Expanded Primitive Surface**: 21 tools, 8 resources, and 6 prompts for core, triage, and ops workflows
+- 🧱 **Production Hardening**: Optional auth, per-identity rate limiting, runtime policy validation/fail-fast
 - ☁️ **Cloud-Ready**: Full AWS and Azure deployment configurations
 - 📈 **Production Monitoring**: Prometheus metrics and Grafana dashboards
 - 🔒 **Security First**: HIPAA-compliant design patterns
@@ -33,7 +35,7 @@ This production-ready agentic AI pipeline implements an **assembly line architec
 graph TB
     subgraph "Client Layer"
         Client[Client Application]
-        API[REST API / MCP Server]
+        API[MCP Server / Optional HTTP Gateway]
     end
 
     subgraph "Agentic AI Pipeline"
@@ -136,7 +138,7 @@ sequenceDiagram
     participant VS as Vector Store
     participant LLM as LLM Provider
 
-    User->>API: POST /api/v1/analyze
+    User->>API: MCP tools/call analyze_symptoms
     API->>SE: Initialize State
 
     SE->>LLM: Extract Symptoms
@@ -161,7 +163,7 @@ sequenceDiagram
     LLM-->>RG: Personalized Advice
     RG->>API: Final State
 
-    API-->>User: JSON Response
+    API-->>User: MCP Tool Result
 ```
 
 ### Agent Interaction Model
@@ -270,22 +272,102 @@ docker-compose up -d
 
 The API will be available at: `http://localhost:8000`
 
-## 📖 API Usage
+## 📖 MCP Usage
 
-### Analyze Symptoms
+### Option 1: STDIO (default)
+
+Run the server:
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/analyze" \
+python main.py --transport stdio
+```
+
+Connect with an MCP host (for example Claude Desktop or MCP Inspector) and call the `analyze_symptoms` tool.
+
+Core capability groups exposed by the standalone server:
+- Core graph/runtime tools:
+  - `analyze_symptoms`, `batch_analyze_symptoms`, `visualize_graph`, `get_runtime_config`, `health_check`
+- Deterministic triage/safety tools:
+  - `triage_text_heuristics`, `extract_triage_facts`, `generate_clarification_questions`
+  - `build_clinician_handoff`, `compare_symptom_snapshots`, `explain_urgency_level`
+  - `compute_risk_score`, `recommend_care_setting`, `generate_self_care_plan`
+  - `generate_monitoring_schedule`, `emergency_action_checklist`, `redact_sensitive_text`
+- Operations tools:
+  - `get_metrics_snapshot`, `check_dependencies`, `validate_runtime_policy`, `get_capability_catalog`
+
+Additional resources and prompts are available for triage guidance, urgency matrices, capability catalogs, and workflow templates.
+
+Resources:
+- `symptomsync://health`, `symptomsync://config`
+- `symptomsync://guidelines/triage`, `symptomsync://guidelines/urgency-matrix`
+- `symptomsync://ops/metrics-snapshot`, `symptomsync://ops/dependency-status`, `symptomsync://ops/runtime-policy`
+- `symptomsync://catalog/capabilities`
+
+Prompts:
+- `symptom_triage_prompt`
+- `emergency_escalation_prompt`
+- `follow_up_checkin_prompt`
+- `clinician_handoff_prompt`
+- `self_care_planning_prompt`
+- `safety_audit_prompt`
+
+### Option 2: Streamable HTTP
+
+Run the MCP HTTP gateway:
+
+```bash
+python main.py --transport streamable-http --host 0.0.0.0 --port 8000
+```
+
+The MCP endpoint is available at: `http://localhost:8000/mcp`
+
+Operational endpoints:
+- `GET /health` basic health check
+- `GET /livez` liveness probe
+- `GET /readyz` readiness probe (optionally performs deep graph init check)
+- `GET /metrics` Prometheus metrics (when enabled)
+
+Example JSON-RPC tool call (`tools/call`) against `/mcp`:
+
+```bash
+curl -X POST "http://localhost:8000/mcp" \
   -H "Content-Type: application/json" \
   -d '{
-    "user_input": "I have a headache and feel dizzy",
-    "age": 35,
-    "gender": "female",
-    "medical_history": ["hypertension"],
-    "current_medications": ["lisinopril"],
-    "allergies": []
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "analyze_symptoms",
+      "arguments": {
+        "user_input": "I have a headache and feel dizzy",
+        "age": 35,
+        "gender": "female",
+        "medical_history": ["hypertension"],
+        "current_medications": ["lisinopril"],
+        "allergies": []
+      }
+    }
   }'
 ```
+
+Optional production auth for HTTP endpoints:
+
+```bash
+SYMPTOMSYNC_MCP_REQUIRE_AUTH=true
+SYMPTOMSYNC_MCP_AUTH_TOKEN=<strong-random-token>
+```
+
+Then pass `Authorization: Bearer <token>` for non-health endpoints.
+
+Optional gateway protections:
+
+```bash
+SYMPTOMSYNC_RATE_LIMIT_PER_MINUTE=60
+SYMPTOMSYNC_MCP_READINESS_CHECK_GRAPH=true
+```
+
+Rate limiting is applied per identity+endpoint for non-health routes in streamable HTTP mode.
+Runtime policy validation rejects unsafe production/staging HTTP startup configurations (for example, auth disabled).
 
 ### Response Example
 
@@ -313,23 +395,41 @@ curl -X POST "http://localhost:8000/api/v1/analyze" \
 }
 ```
 
-### Batch Analysis
+### Batch Analysis Tool
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/analyze/batch" \
+curl -X POST "http://localhost:8000/mcp" \
   -H "Content-Type: application/json" \
   -d '{
-    "requests": [
-      {"user_input": "I have a headache"},
-      {"user_input": "My throat is sore"}
-    ]
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "batch_analyze_symptoms",
+      "arguments": {
+        "requests": [
+          {"user_input": "I have a headache"},
+          {"user_input": "My throat is sore"}
+        ]
+      }
+    }
   }'
 ```
 
-### Visualize Graph
+### Graph Visualization Tool
 
 ```bash
-curl "http://localhost:8000/api/v1/graph/visualize"
+curl -X POST "http://localhost:8000/mcp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "visualize_graph",
+      "arguments": {}
+    }
+  }'
 ```
 
 ## 🏭 Production Deployment
@@ -368,13 +468,15 @@ bash deploy.sh
 
 ## 🧪 Testing
 
-Run the test suite:
+Recommended validation commands:
 
 ```bash
-# Run all tests
-pytest tests/ -v
+# Match CI gate behavior first
+make lint
+make test
 
-# Run with coverage
+# Optional: direct pytest invocations
+pytest tests/ -v
 pytest tests/ --cov=. --cov-report=html
 
 # Run specific test file
@@ -388,10 +490,13 @@ pytest tests/test_agents.py -v
 Access Prometheus at: `http://localhost:9090`
 
 Available metrics:
-- `symptomsync_requests_total` - Total API requests
+- `symptomsync_active_requests` - Number of active requests
 - `symptomsync_agent_executions_total` - Agent execution counts
-- `symptomsync_pipeline_duration_seconds` - Pipeline execution time
+- `symptomsync_pipeline_executions_total` - Pipeline execution counts
+- `symptomsync_pipeline_duration_seconds` - Pipeline execution duration
 - `symptomsync_llm_calls_total` - LLM API calls
+- `symptomsync_llm_tokens_total` - Prompt/completion token usage
+- `symptomsync_vector_queries_total` - Vector store query counts
 - `symptomsync_errors_total` - Error counts
 
 ### Grafana Dashboards
@@ -444,10 +549,22 @@ agentic_ai/
 ├── chains/                      # LangChain components
 │   ├── symptom_chain.py        # Symptom analysis chain
 │   └── retrieval_chain.py      # RAG chain
-├── mcp_server/                  # MCP Server
-│   ├── server.py               # FastAPI server
-│   ├── routes.py               # API routes
-│   └── models.py               # Pydantic models
+├── model_context_server/        # Standalone MCP server
+│   ├── mcp_instance.py         # FastMCP construction + protocol metadata
+│   ├── primitives.py           # Primitive registration aggregator
+│   ├── primitives_core.py      # Core graph-backed tools/resources/prompts
+│   ├── primitives_extended.py  # Extended primitive aggregation entrypoint
+│   ├── primitives_triage.py    # Triage, safety, and handoff tools
+│   ├── primitives_ops.py       # Operational diagnostics and policy tools
+│   ├── primitives_resources.py # Operational and guideline resources
+│   ├── primitives_prompts.py   # Reusable prompt templates
+│   ├── http_gateway.py         # Streamable HTTP gateway + middleware
+│   ├── runtime.py              # Transport startup orchestration
+│   ├── decision_support.py     # Deterministic triage/risk helper logic
+│   ├── service.py              # Graph-backed business logic
+│   ├── models.py               # Pydantic request/response contracts
+│   ├── server.py               # Thin compatibility facade
+│   └── __init__.py
 ├── config/                      # Configuration
 │   ├── settings.py             # Application settings
 │   ├── aws/                    # AWS deployment configs
@@ -462,7 +579,7 @@ agentic_ai/
 ├── tests/                       # Test suite
 │   ├── test_agents.py
 │   ├── test_graph.py
-│   └── test_mcp_server.py
+│   └── test_mcp_server.py      # MCP primitive registration and tool tests
 ├── Dockerfile                   # Docker image definition
 ├── docker-compose.yml           # Docker Compose configuration
 ├── requirements.txt             # Python dependencies
@@ -517,7 +634,7 @@ Contributions are welcome! Please:
 
 ## 📞 Support
 
-- **Documentation**: See `/docs` endpoint when server is running
+- **Runtime endpoints**: `/health`, `/livez`, `/readyz`, `/metrics`, and MCP endpoint at `/mcp` when running `streamable-http`
 - **Issues**: Report bugs via GitHub Issues
 - **Email**: support@symptomsync.com
 
@@ -533,5 +650,5 @@ Built with:
 ---
 
 **Version**: 1.0.0
-**Last Updated**: 2025
+**Last Updated**: 2026-03-15
 **Maintained by**: SymptomSync Team

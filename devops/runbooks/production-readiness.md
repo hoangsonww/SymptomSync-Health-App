@@ -13,6 +13,12 @@ Use this before any prod cutover.
 - Canary deploys succeeding (CodeDeploy) with no alarm-triggered rollbacks.
 - Smoke tests pass via `ansible/blue-green-rollout.yml` prior to traffic shift.
 
+## Agentic AI (if deployed)
+- `agentic_ai` validation passes: `cd agentic_ai && make lint && make test`.
+- MCP HTTP mode is authenticated (`SYMPTOMSYNC_MCP_REQUIRE_AUTH=true`) with token configured.
+- MCP operational endpoints respond correctly: `/livez`, `/readyz`, `/metrics`.
+- Rate limiting is configured for network-exposed MCP gateway (`SYMPTOMSYNC_RATE_LIMIT_PER_MINUTE`).
+
 ## Data & Secrets
 - SSM/Secrets Manager contains all runtime secrets; no plaintext secrets in env files.
 - Backups: RDS/Postgres snapshots or Supabase backups scheduled and verified.

@@ -2,9 +2,9 @@
 Monitoring and metrics collection
 """
 
-from typing import Dict, Any
-from prometheus_client import Counter, Histogram, Gauge, Info
 import structlog
+from prometheus_client import Counter, Gauge, Histogram, Info
+
 from ..config.settings import settings
 
 logger = structlog.get_logger()
@@ -59,7 +59,7 @@ class MetricsCollector:
         self.llm_tokens = Counter(
             'symptomsync_llm_tokens_total',
             'Total tokens used',
-            ['model', 'type']  # type: prompt or completion
+            ['model', 'type']  # token type is either "prompt" or "completion"
         )
 
         # Vector store metrics

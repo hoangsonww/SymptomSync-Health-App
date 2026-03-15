@@ -2,11 +2,13 @@
 Symptom Analysis Chain - Simplified chain for direct symptom analysis
 """
 
-from typing import Dict, Any, Optional
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough, RunnableParallel
+from typing import Any
+
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_openai import ChatOpenAI
+
 from ..config.settings import settings
 
 
@@ -18,7 +20,7 @@ class SymptomAnalysisChain:
     for simple queries.
     """
 
-    def __init__(self, llm: Optional[ChatOpenAI] = None):
+    def __init__(self, llm: ChatOpenAI | None = None):
         """Initialize the chain"""
         self.llm = llm or ChatOpenAI(
             model=settings.primary_model,
@@ -59,11 +61,16 @@ information about the symptoms mentioned. This is NOT medical advice."""),
 
         return chain
 
-    async def analyze(self, user_input: str) -> Dict[str, Any]:
+    async def analyze(self, user_input: str) -> dict[str, Any]:
         """Analyze symptoms from user input"""
         result = await self.chain.ainvoke({"input": user_input})
-        return result
+        if isinstance(result, dict):
+            return result
+        return {"analysis": str(result)}
 
-    def invoke_sync(self, user_input: str) -> Dict[str, Any]:
+    def invoke_sync(self, user_input: str) -> dict[str, Any]:
         """Synchronous analysis"""
-        return self.chain.invoke({"input": user_input})
+        result = self.chain.invoke({"input": user_input})
+        if isinstance(result, dict):
+            return result
+        return {"analysis": str(result)}

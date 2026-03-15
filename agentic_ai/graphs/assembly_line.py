@@ -3,22 +3,23 @@ LangGraph Assembly Line - Main orchestration graph
 Implements the multi-agent assembly line architecture
 """
 
-from typing import Dict, Any, Literal
-from datetime import datetime
 import time
-from langgraph.graph import StateGraph, END
-from langchain_core.messages import HumanMessage, AIMessage
+from datetime import datetime
+from typing import Literal
 
-from .state import AgentState, SymptomAnalysisInput, SymptomAnalysisOutput
-from ..agents import (
-    SymptomExtractorAgent,
-    KnowledgeRetrieverAgent,
-    DiagnosticAnalyzerAgent,
-    RiskAssessorAgent,
-    RecommendationGeneratorAgent,
-    OrchestratorAgent,
-)
 import structlog
+from langchain_core.messages import HumanMessage
+from langgraph.graph import END, StateGraph
+
+from ..agents import (
+    DiagnosticAnalyzerAgent,
+    KnowledgeRetrieverAgent,
+    OrchestratorAgent,
+    RecommendationGeneratorAgent,
+    RiskAssessorAgent,
+    SymptomExtractorAgent,
+)
+from .state import AgentState, SymptomAnalysisInput, SymptomAnalysisOutput
 
 logger = structlog.get_logger()
 

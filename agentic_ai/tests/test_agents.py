@@ -2,10 +2,14 @@
 Tests for individual agents
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
-from agents.symptom_extractor import SymptomExtractorAgent
-from agents.knowledge_retriever import KnowledgeRetrieverAgent
+
+pytest.importorskip("langchain_core")
+
+from agentic_ai.agents.knowledge_retriever import KnowledgeRetrieverAgent  # noqa: E402
+from agentic_ai.agents.symptom_extractor import SymptomExtractorAgent  # noqa: E402
 
 
 @pytest.mark.asyncio
@@ -25,7 +29,7 @@ class TestSymptomExtractorAgent:
             "errors": [],
         }
 
-        with patch.object(agent, 'llm', new_callable=AsyncMock) as mock_llm:
+        with patch.object(agent, "llm", new_callable=AsyncMock) as mock_llm:
             mock_llm.ainvoke.return_value = Mock(
                 content='{"symptoms": ["headache", "dizziness"], "severity": {"headache": 5, "dizziness": 4}, "duration": {"headache": "2 days", "dizziness": "2 days"}, "entities": {}}'
             )

@@ -1,9 +1,9 @@
 # Agentic AI Notes
 
 - This workspace is Python 3.11 with `pyproject.toml`, `requirements.txt`, and its own `Makefile`.
-- The actual executable surface is a FastAPI app in `mcp_server/server.py` with routes in `mcp_server/routes.py`.
+- The executable surface is now a standalone MCP server in `model_context_server/server.py`, with optional streamable-HTTP gateway paths.
 - Runtime settings live in `config/settings.py` and use the `SYMPTOMSYNC_` env prefix.
-- If request or response models change, inspect `mcp_server/models.py`, `mcp_server/routes.py`, and tests together.
+- If request or response models change, inspect `model_context_server/models.py`, `model_context_server/service.py`, `model_context_server/server.py`, and tests together.
 
 ## Validation
 

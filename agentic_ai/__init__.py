@@ -6,7 +6,19 @@ A sophisticated multi-agent system for health symptom analysis and recommendatio
 __version__ = "1.0.0"
 __author__ = "SymptomSync Team"
 
-from .graphs.assembly_line import SymptomSyncGraph
-from .mcp_server.server import MCPServer
-
 __all__ = ["SymptomSyncGraph", "MCPServer"]
+
+
+def __getattr__(name: str):
+    """Lazy imports to avoid importing heavy optional dependencies at package import time."""
+    if name == "SymptomSyncGraph":
+        from .graphs.assembly_line import SymptomSyncGraph
+
+        return SymptomSyncGraph
+
+    if name == "MCPServer":
+        from .model_context_server.server import MCPServer
+
+        return MCPServer
+
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

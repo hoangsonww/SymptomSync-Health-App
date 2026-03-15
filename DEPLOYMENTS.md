@@ -5,6 +5,24 @@ This project ships with production-ready delivery flows that combine canary Lamb
 ## Paths to production
 - **AWS (primary)**: CDK stack in `aws/` provisions Cognito, DynamoDB, S3 (encrypted/retained), Lambda functions fronted by `live` aliases, API Gateway with `blue` and `green` stages, EventBridge scheduler, and SSM flag `/symptomsync/active_stage`.
 - **Vercel (marketing/UI)**: Next.js UI can still be hosted on Vercel; AWS stack handles authenticated API + reminders.
+- **Agentic AI MCP service (optional)**: `agentic_ai/` can run as a separate process/service using `python main.py --transport stdio|streamable-http|sse`.
+
+## Agentic AI service deployment notes
+
+When deploying `agentic_ai/` as a networked service (`streamable-http`):
+
+- Enable auth for non-health routes:
+  - `SYMPTOMSYNC_MCP_REQUIRE_AUTH=true`
+  - `SYMPTOMSYNC_MCP_AUTH_TOKEN=<strong-random-token>`
+- Configure rate limiting:
+  - `SYMPTOMSYNC_RATE_LIMIT_PER_MINUTE=<value>`
+- Use readiness and liveness probes:
+  - `/livez`, `/readyz`, `/health`
+- Run service-level checks before release:
+  - `cd agentic_ai && make lint`
+  - `cd agentic_ai && make test`
+
+The runtime now fails fast if streamable HTTP is started in production/staging without auth enabled.
 
 ## Pipelines
 - **Jenkins** (`jenkins/Jenkinsfile`): stages for lint/test/build, image push, Trivy scan, optional Cosign signing, CDK deploy (`npx cdk deploy --require-approval never --all`), and blue/green promotion via Ansible.
@@ -74,9 +92,13 @@ sequenceDiagram
 - Keep WAF enabled on API Gateway; managed rule set + rate limit (2k rpm) are applied by CDK.
 - Buckets are encrypted and retained; no public access by default.
 - Sign images when possible: `cosign sign ghcr.io/<org>/symptomsync:<tag>`.
+- For the MCP gateway, monitor `/metrics` plus HTTP 401/429 rates after enabling auth and rate limiting.
 
 ## Artifacts and references
 - Infra: `aws/lib/symptomsync-stack.js`
 - Pipeline: `jenkins/Jenkinsfile`, `jenkins/README.md`
 - Promotion playbook: `ansible/blue-green-rollout.yml`
 - Runbooks: `devops/runbooks/progressive-delivery.md`, `devops/runbooks/production-readiness.md`
+- Agentic AI docs: `agentic_ai/README.md`, `agentic_ai/model_context_server/`
+
+> Note: `aws/lambda/chatbotHandler.js` currently points at a placeholder Vertex endpoint (`projects/YOUR_PROJECT/...`). Configure project-specific model routing before promoting that Lambda path.

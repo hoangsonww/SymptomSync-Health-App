@@ -16,10 +16,11 @@ faiss-cpu==1.8.0
 pinecone-client==3.2.2
 
 # MCP Server Dependencies
-fastapi==0.110.3
-uvicorn[standard]==0.29.0
-pydantic==2.7.1
-pydantic-settings==2.2.1
+mcp[cli]==1.26.0
+fastapi==0.121.3
+uvicorn[standard]==0.38.0
+pydantic==2.12.4
+pydantic-settings==2.12.0
 
 # AWS Dependencies
 boto3==1.34.96

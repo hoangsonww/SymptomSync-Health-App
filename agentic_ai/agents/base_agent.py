@@ -3,12 +3,14 @@ Base agent class for all agents in the pipeline
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
-from langchain_core.language_models import BaseChatModel
-from langchain_openai import ChatOpenAI
-from langchain_anthropic import ChatAnthropic
-from langchain_google_genai import ChatGoogleGenerativeAI
+from typing import Any, Dict, Optional
+
 import structlog
+from langchain_anthropic import ChatAnthropic
+from langchain_core.language_models import BaseChatModel
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
+
 from ..config.settings import settings
 
 logger = structlog.get_logger()

@@ -3,10 +3,12 @@ Recommendation Generator Agent - Fifth stage in the assembly line
 Generates personalized health recommendations and advice
 """
 
-from typing import Dict, Any, List
-from langchain_core.prompts import ChatPromptTemplate
+from typing import Any, Dict, List
+
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+
 from .base_agent import BaseAgent
 
 
