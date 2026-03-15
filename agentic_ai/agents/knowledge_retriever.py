@@ -3,14 +3,16 @@ Knowledge Retriever Agent - Second stage in the assembly line
 Retrieves relevant medical knowledge from vector stores
 """
 
-from typing import Dict, Any, List, Optional
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from typing import Any, Dict, List, Optional
+
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from .base_agent import BaseAgent
+from langchain_community.vectorstores import Chroma
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
+
 from ..config.settings import settings
+from .base_agent import BaseAgent
 
 
 class KnowledgeRetrieverAgent(BaseAgent):
@@ -156,7 +158,7 @@ Provide a synthesized summary of the most relevant medical knowledge."""),
                 ])
             })
 
-            return result.content
+            return str(result.content)
 
         except Exception as e:
             self.logger.error(f"Knowledge synthesis failed: {str(e)}")

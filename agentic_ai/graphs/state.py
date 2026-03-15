@@ -2,9 +2,10 @@
 State definitions for the LangGraph assembly line
 """
 
-from typing import TypedDict, Annotated, List, Dict, Optional, Any
-from langgraph.graph import add_messages
+from typing import Annotated, Any, Dict, List, Optional, TypedDict
+
 from langchain_core.messages import BaseMessage
+from langgraph.graph import add_messages
 
 
 class AgentState(TypedDict):

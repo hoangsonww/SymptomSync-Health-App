@@ -1,10 +1,7 @@
-"""
-Configuration settings for the Agentic AI Pipeline
-"""
+"""Configuration settings for the Agentic AI Pipeline."""
 
-from typing import Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -14,7 +11,8 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-        extra="allow"
+        extra="allow",
+        env_prefix="SYMPTOMSYNC_",
     )
 
     # Application Settings
@@ -24,9 +22,9 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False, description="Debug mode")
 
     # LLM Provider Settings
-    openai_api_key: Optional[str] = Field(default=None, description="OpenAI API Key")
-    anthropic_api_key: Optional[str] = Field(default=None, description="Anthropic API Key")
-    google_ai_api_key: Optional[str] = Field(default=None, description="Google AI API Key")
+    openai_api_key: str | None = Field(default=None, description="OpenAI API Key")
+    anthropic_api_key: str | None = Field(default=None, description="Anthropic API Key")
+    google_ai_api_key: str | None = Field(default=None, description="Google AI API Key")
 
     # Model Configuration
     primary_model: str = Field(default="gpt-4-turbo-preview", description="Primary LLM model")
@@ -37,8 +35,8 @@ class Settings(BaseSettings):
     # Vector Store Settings
     vector_store_type: str = Field(default="chroma", description="Vector store type: chroma, pinecone, faiss")
     chroma_persist_directory: str = Field(default="./data/chroma", description="ChromaDB persistence directory")
-    pinecone_api_key: Optional[str] = Field(default=None, description="Pinecone API Key")
-    pinecone_environment: Optional[str] = Field(default=None, description="Pinecone environment")
+    pinecone_api_key: str | None = Field(default=None, description="Pinecone API Key")
+    pinecone_environment: str | None = Field(default=None, description="Pinecone environment")
     pinecone_index_name: str = Field(default="symptomsync", description="Pinecone index name")
 
     # Database Settings
@@ -51,24 +49,56 @@ class Settings(BaseSettings):
     redis_host: str = Field(default="localhost", description="Redis host")
     redis_port: int = Field(default=6379, description="Redis port")
     redis_db: int = Field(default=0, description="Redis database number")
-    redis_password: Optional[str] = Field(default=None, description="Redis password")
+    redis_password: str | None = Field(default=None, description="Redis password")
 
     # AWS Settings
     aws_region: str = Field(default="us-east-1", description="AWS region")
-    aws_access_key_id: Optional[str] = Field(default=None, description="AWS access key ID")
-    aws_secret_access_key: Optional[str] = Field(default=None, description="AWS secret access key")
-    aws_s3_bucket: Optional[str] = Field(default=None, description="AWS S3 bucket name")
+    aws_access_key_id: str | None = Field(default=None, description="AWS access key ID")
+    aws_secret_access_key: str | None = Field(default=None, description="AWS secret access key")
+    aws_s3_bucket: str | None = Field(default=None, description="AWS S3 bucket name")
 
     # Azure Settings
-    azure_subscription_id: Optional[str] = Field(default=None, description="Azure subscription ID")
-    azure_resource_group: Optional[str] = Field(default=None, description="Azure resource group")
-    azure_storage_account: Optional[str] = Field(default=None, description="Azure storage account name")
-    azure_storage_key: Optional[str] = Field(default=None, description="Azure storage account key")
+    azure_subscription_id: str | None = Field(default=None, description="Azure subscription ID")
+    azure_resource_group: str | None = Field(default=None, description="Azure resource group")
+    azure_storage_account: str | None = Field(default=None, description="Azure storage account name")
+    azure_storage_key: str | None = Field(default=None, description="Azure storage account key")
 
     # MCP Server Settings
+    mcp_transport: str = Field(
+        default="stdio",
+        description="MCP transport: stdio, streamable-http, or sse",
+    )
     mcp_server_host: str = Field(default="0.0.0.0", description="MCP server host")
-    mcp_server_port: int = Field(default=8000, description="MCP server port")
-    mcp_workers: int = Field(default=4, description="Number of MCP server workers")
+    mcp_server_port: int = Field(default=8000, ge=1, le=65535, description="MCP server port")
+    mcp_http_path: str = Field(default="/mcp", description="MCP HTTP path")
+    mcp_workers: int = Field(default=4, ge=1, description="Number of MCP server workers")
+    mcp_tool_timeout_seconds: int = Field(
+        default=60,
+        ge=1,
+        description="Tool execution timeout in seconds",
+    )
+    mcp_batch_max_requests: int = Field(
+        default=10,
+        ge=1,
+        description="Maximum number of batch requests per tool call",
+    )
+    mcp_batch_max_concurrency: int = Field(
+        default=3,
+        ge=1,
+        description="Maximum in-flight analyses for batch requests",
+    )
+    mcp_require_auth: bool = Field(
+        default=False,
+        description="Require bearer token auth for non-health HTTP endpoints",
+    )
+    mcp_auth_token: str | None = Field(
+        default=None,
+        description="Bearer token for HTTP MCP authentication",
+    )
+    mcp_readiness_check_graph: bool = Field(
+        default=False,
+        description="If true, readiness checks attempt graph initialization",
+    )
 
     # Agent Settings
     max_agent_iterations: int = Field(default=10, description="Maximum agent iterations")
@@ -80,12 +110,7 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", description="Logging level")
 
     # Rate Limiting
-    rate_limit_per_minute: int = Field(default=60, description="API rate limit per minute")
-
-    class Config:
-        """Pydantic configuration"""
-        env_prefix = "SYMPTOMSYNC_"
-
+    rate_limit_per_minute: int = Field(default=60, ge=1, description="API rate limit per minute")
 
 # Global settings instance
 settings = Settings()

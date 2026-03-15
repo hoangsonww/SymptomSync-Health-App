@@ -2,10 +2,15 @@
 Tests for LangGraph assembly line
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
-from graphs.assembly_line import SymptomSyncGraph
-from graphs.state import SymptomAnalysisInput
+
+pytest.importorskip("langgraph")
+pytest.importorskip("langchain_core")
+
+from agentic_ai.graphs.assembly_line import SymptomSyncGraph  # noqa: E402
+from agentic_ai.graphs.state import SymptomAnalysisInput  # noqa: E402
 
 
 @pytest.mark.asyncio
@@ -33,7 +38,7 @@ class TestSymptomSyncGraph:
         assert "Symptom Extractor" in diagram
         assert "Knowledge Retriever" in diagram
 
-    @patch('graphs.assembly_line.SymptomSyncGraph.graph')
+    @patch("agentic_ai.graphs.assembly_line.SymptomSyncGraph.graph")
     async def test_analyze_symptoms_success(self, mock_graph):
         """Test successful symptom analysis"""
         graph = SymptomSyncGraph()
@@ -60,7 +65,7 @@ class TestSymptomSyncGraph:
             "allergies": None,
         }
 
-        with patch.object(graph, 'graph', mock_graph):
+        with patch.object(graph, "graph", mock_graph):
             result = await graph.analyze_symptoms(input_data)
 
             assert "symptoms" in result

@@ -2,13 +2,15 @@
 Medical Knowledge Retrieval Chain - RAG chain for medical knowledge
 """
 
-from typing import List, Dict, Any, Optional
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough, RunnableParallel
-from langchain_core.output_parsers import StrOutputParser
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from typing import Any
+
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+
 from ..config.settings import settings
 
 
@@ -22,8 +24,8 @@ class MedicalKnowledgeChain:
 
     def __init__(
         self,
-        llm: Optional[ChatOpenAI] = None,
-        vector_store: Optional[Chroma] = None,
+        llm: ChatOpenAI | None = None,
+        vector_store: Chroma | None = None,
     ):
         """Initialize the RAG chain"""
         self.llm = llm or ChatOpenAI(
@@ -37,7 +39,7 @@ class MedicalKnowledgeChain:
         self.vector_store = vector_store or self._initialize_vector_store()
         self.chain = self._build_chain()
 
-    def _initialize_vector_store(self) -> Optional[Chroma]:
+    def _initialize_vector_store(self) -> Chroma | None:
         """Initialize vector store"""
         try:
             return Chroma(
@@ -65,7 +67,7 @@ Provide an informative response based on the context."""),
         ])
 
         # Build the chain
-        def format_docs(docs: List[Document]) -> str:
+        def format_docs(docs: list[Document]) -> str:
             return "\n\n".join([doc.page_content for doc in docs])
 
         if self.vector_store:
@@ -96,11 +98,11 @@ Provide an informative response based on the context."""),
                     "context": "No knowledge base available",
                     "question": question,
                 })
-            return result
+            return str(result)
         except Exception as e:
             return f"Error retrieving information: {str(e)}"
 
-    async def add_documents(self, documents: List[Dict[str, Any]]):
+    async def add_documents(self, documents: list[dict[str, Any]]):
         """Add documents to the vector store"""
         if not self.vector_store:
             return

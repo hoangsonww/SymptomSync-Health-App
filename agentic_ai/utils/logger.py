@@ -4,7 +4,9 @@ Logging configuration using structlog
 
 import logging
 import sys
+
 import structlog
+
 from ..config.settings import settings
 
 
@@ -14,7 +16,7 @@ def setup_logging():
     # Configure stdlib logging
     logging.basicConfig(
         format="%(message)s",
-        stream=sys.stdout,
+        stream=sys.stderr,
         level=getattr(logging, settings.log_level.upper(), logging.INFO),
     )
 
@@ -33,7 +35,8 @@ def setup_logging():
             getattr(logging, settings.log_level.upper(), logging.INFO)
         ),
         context_class=dict,
-        logger_factory=structlog.PrintLoggerFactory(),
+        # stderr keeps stdio MCP transport clean (stdout is reserved for protocol frames).
+        logger_factory=structlog.PrintLoggerFactory(file=sys.stderr),
         cache_logger_on_first_use=True,
     )
 

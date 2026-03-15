@@ -24,7 +24,7 @@ test-integration: ## Run integration tests only
 
 lint: ## Run linters
 	ruff check .
-	mypy .
+	mypy --explicit-package-bases .
 
 format: ## Format code
 	black .
@@ -53,11 +53,11 @@ docker-down: ## Stop Docker Compose services
 docker-logs: ## View Docker Compose logs
 	docker-compose logs -f
 
-run: ## Run the MCP server locally
+run: ## Run the standalone MCP server locally (stdio transport)
 	python main.py
 
-run-dev: ## Run in development mode
-	uvicorn mcp_server.server:app --reload --host 0.0.0.0 --port 8000
+run-dev: ## Run in development mode (streamable HTTP transport)
+	python main.py --transport streamable-http --host 0.0.0.0 --port 8000
 
 deploy-aws: ## Deploy to AWS
 	cd config/aws && bash deploy.sh

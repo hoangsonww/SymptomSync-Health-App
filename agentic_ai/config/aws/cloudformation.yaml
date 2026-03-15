@@ -387,7 +387,7 @@ Outputs:
 
   APIEndpoint:
     Description: API endpoint URL
-    Value: !Sub http://${LoadBalancer.DNSName}/api/v1
+    Value: !Sub http://${LoadBalancer.DNSName}/mcp
 
   DatabaseEndpoint:
     Description: Database endpoint

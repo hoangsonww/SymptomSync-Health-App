@@ -3,7 +3,8 @@ Orchestrator Agent - Manages the flow through the assembly line
 Determines routing and next steps
 """
 
-from typing import Dict, Any
+from typing import Any, Dict
+
 from .base_agent import BaseAgent
 
 

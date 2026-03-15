@@ -249,7 +249,7 @@
     },
     "apiEndpoint": {
       "type": "string",
-      "value": "[concat('http://', reference(resourceId('Microsoft.ContainerInstance/containerGroups', variables('containerGroupName'))).ipAddress.fqdn, ':8000/api/v1')]"
+      "value": "[concat('http://', reference(resourceId('Microsoft.ContainerInstance/containerGroups', variables('containerGroupName'))).ipAddress.fqdn, ':8000/mcp')]"
     },
     "postgresServer": {
       "type": "string",
