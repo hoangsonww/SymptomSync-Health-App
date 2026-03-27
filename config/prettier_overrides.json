@@ -1,0 +1,6 @@
+{
+  "name": "prettier-overrides",
+  "description": "prettier overrides configuration for SymptomSync",
+  "version": "1.0.0",
+  "enabled": true
+}
