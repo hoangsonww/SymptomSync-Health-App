@@ -1,0 +1,7 @@
+# Example: notification template configuration
+# Copy and customize for your SymptomSync deployment
+
+notification_template:
+  enabled: true
+  description: "notification template example configuration"
+  version: "1.0.0"
