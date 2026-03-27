@@ -1,0 +1,16 @@
+{
+  "chat-messages": [
+    {
+      "id": "mock-001",
+      "name": "Sample chat messages entry",
+      "status": "active",
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "mock-002",
+      "name": "Another chat messages entry",
+      "status": "inactive",
+      "createdAt": "2025-06-15T12:00:00Z"
+    }
+  ]
+}
