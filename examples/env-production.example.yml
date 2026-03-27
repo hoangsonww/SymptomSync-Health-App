@@ -1,0 +1,7 @@
+# Example: env production configuration
+# Copy and customize for your SymptomSync deployment
+
+env_production:
+  enabled: true
+  description: "env production example configuration"
+  version: "1.0.0"
