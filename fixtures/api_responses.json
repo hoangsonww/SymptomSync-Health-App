@@ -1,0 +1,9 @@
+{
+  "fixture": "api responses",
+  "data": {
+    "sample_key": "sample_value",
+    "count": 42,
+    "active": true,
+    "tags": ["symptomsync", "api-responses"]
+  }
+}
