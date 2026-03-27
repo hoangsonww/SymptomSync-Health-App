@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: SymptomSync notification api Spec
+  version: 1.0.0
+paths:
+  /notification/api:
+    get:
+      summary: List notification api resources
+      responses:
+        '200':
+          description: Successful response
+    post:
+      summary: Create notification api resource
+      responses:
+        '201':
+          description: Created
