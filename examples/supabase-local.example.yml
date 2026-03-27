@@ -1,0 +1,7 @@
+# Example: supabase local configuration
+# Copy and customize for your SymptomSync deployment
+
+supabase_local:
+  enabled: true
+  description: "supabase local example configuration"
+  version: "1.0.0"
