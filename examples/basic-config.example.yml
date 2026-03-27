@@ -1,0 +1,7 @@
+# Example: basic config configuration
+# Copy and customize for your SymptomSync deployment
+
+basic_config:
+  enabled: true
+  description: "basic config example configuration"
+  version: "1.0.0"
