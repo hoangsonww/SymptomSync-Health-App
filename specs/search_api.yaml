@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: SymptomSync search api Spec
+  version: 1.0.0
+paths:
+  /search/api:
+    get:
+      summary: List search api resources
+      responses:
+        '200':
+          description: Successful response
+    post:
+      summary: Create search api resource
+      responses:
+        '201':
+          description: Created
