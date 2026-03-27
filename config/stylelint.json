@@ -1,0 +1,6 @@
+{
+  "name": "stylelint",
+  "description": "stylelint configuration for SymptomSync",
+  "version": "1.0.0",
+  "enabled": true
+}
