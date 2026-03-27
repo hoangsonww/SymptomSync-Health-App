@@ -1,0 +1,6 @@
+{
+  "name": "vitest-config",
+  "description": "vitest config configuration for SymptomSync",
+  "version": "1.0.0",
+  "enabled": true
+}
