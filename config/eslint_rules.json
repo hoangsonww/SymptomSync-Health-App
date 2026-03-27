@@ -1,0 +1,6 @@
+{
+  "name": "eslint-rules",
+  "description": "eslint rules configuration for SymptomSync",
+  "version": "1.0.0",
+  "enabled": true
+}
