@@ -1,0 +1,9 @@
+{
+  "fixture": "db seed data",
+  "data": {
+    "sample_key": "sample_value",
+    "count": 42,
+    "active": true,
+    "tags": ["symptomsync", "db-seed-data"]
+  }
+}
