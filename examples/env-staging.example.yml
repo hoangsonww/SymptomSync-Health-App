@@ -1,0 +1,7 @@
+# Example: env staging configuration
+# Copy and customize for your SymptomSync deployment
+
+env_staging:
+  enabled: true
+  description: "env staging example configuration"
+  version: "1.0.0"
