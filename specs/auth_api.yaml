@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: SymptomSync auth api Spec
+  version: 1.0.0
+paths:
+  /auth/api:
+    get:
+      summary: List auth api resources
+      responses:
+        '200':
+          description: Successful response
+    post:
+      summary: Create auth api resource
+      responses:
+        '201':
+          description: Created
