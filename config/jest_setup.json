@@ -1,0 +1,6 @@
+{
+  "name": "jest-setup",
+  "description": "jest setup configuration for SymptomSync",
+  "version": "1.0.0",
+  "enabled": true
+}
