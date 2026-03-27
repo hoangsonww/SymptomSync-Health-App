@@ -1,0 +1,9 @@
+{
+  "fixture": "ws events",
+  "data": {
+    "sample_key": "sample_value",
+    "count": 42,
+    "active": true,
+    "tags": ["symptomsync", "ws-events"]
+  }
+}
