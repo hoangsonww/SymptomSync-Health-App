@@ -1,0 +1,6 @@
+{
+  "name": "husky-config",
+  "description": "husky config configuration for SymptomSync",
+  "version": "1.0.0",
+  "enabled": true
+}
