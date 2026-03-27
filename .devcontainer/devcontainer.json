@@ -1,8 +1,6 @@
 {
     "name": "SymptomSync Project Container",
     "dockerFile": "Dockerfile",
-    
-    // Forward ports
     "forwardPorts": [3000],
     "customizations": {
         "vscode": {
