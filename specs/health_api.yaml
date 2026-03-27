@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: SymptomSync health api Spec
+  version: 1.0.0
+paths:
+  /health/api:
+    get:
+      summary: List health api resources
+      responses:
+        '200':
+          description: Successful response
+    post:
+      summary: Create health api resource
+      responses:
+        '201':
+          description: Created
