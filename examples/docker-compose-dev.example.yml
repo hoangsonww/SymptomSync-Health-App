@@ -1,0 +1,7 @@
+# Example: docker compose dev configuration
+# Copy and customize for your SymptomSync deployment
+
+docker_compose_dev:
+  enabled: true
+  description: "docker compose dev example configuration"
+  version: "1.0.0"
