@@ -1,0 +1,6 @@
+{
+  "name": "commitlint",
+  "description": "commitlint configuration for SymptomSync",
+  "version": "1.0.0",
+  "enabled": true
+}
