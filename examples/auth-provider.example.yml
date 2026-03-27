@@ -1,0 +1,7 @@
+# Example: auth provider configuration
+# Copy and customize for your SymptomSync deployment
+
+auth_provider:
+  enabled: true
+  description: "auth provider example configuration"
+  version: "1.0.0"
