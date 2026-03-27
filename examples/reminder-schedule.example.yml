@@ -1,0 +1,7 @@
+# Example: reminder schedule configuration
+# Copy and customize for your SymptomSync deployment
+
+reminder_schedule:
+  enabled: true
+  description: "reminder schedule example configuration"
+  version: "1.0.0"
