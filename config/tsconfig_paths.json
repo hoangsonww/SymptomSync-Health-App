@@ -1,0 +1,6 @@
+{
+  "name": "tsconfig-paths",
+  "description": "tsconfig paths configuration for SymptomSync",
+  "version": "1.0.0",
+  "enabled": true
+}
