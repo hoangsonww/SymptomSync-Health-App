@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: SymptomSync medication api Spec
+  version: 1.0.0
+paths:
+  /medication/api:
+    get:
+      summary: List medication api resources
+      responses:
+        '200':
+          description: Successful response
+    post:
+      summary: Create medication api resource
+      responses:
+        '201':
+          description: Created
