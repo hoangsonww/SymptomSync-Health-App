@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: SymptomSync file api Spec
+  version: 1.0.0
+paths:
+  /file/api:
+    get:
+      summary: List file api resources
+      responses:
+        '200':
+          description: Successful response
+    post:
+      summary: Create file api resource
+      responses:
+        '201':
+          description: Created
