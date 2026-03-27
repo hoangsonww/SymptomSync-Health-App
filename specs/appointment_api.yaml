@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: SymptomSync appointment api Spec
+  version: 1.0.0
+paths:
+  /appointment/api:
+    get:
+      summary: List appointment api resources
+      responses:
+        '200':
+          description: Successful response
+    post:
+      summary: Create appointment api resource
+      responses:
+        '201':
+          description: Created
