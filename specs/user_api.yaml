@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: SymptomSync user api Spec
+  version: 1.0.0
+paths:
+  /user/api:
+    get:
+      summary: List user api resources
+      responses:
+        '200':
+          description: Successful response
+    post:
+      summary: Create user api resource
+      responses:
+        '201':
+          description: Created
