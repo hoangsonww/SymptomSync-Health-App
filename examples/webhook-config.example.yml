@@ -1,0 +1,7 @@
+# Example: webhook config configuration
+# Copy and customize for your SymptomSync deployment
+
+webhook_config:
+  enabled: true
+  description: "webhook config example configuration"
+  version: "1.0.0"
