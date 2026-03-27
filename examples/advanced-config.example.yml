@@ -1,0 +1,7 @@
+# Example: advanced config configuration
+# Copy and customize for your SymptomSync deployment
+
+advanced_config:
+  enabled: true
+  description: "advanced config example configuration"
+  version: "1.0.0"
