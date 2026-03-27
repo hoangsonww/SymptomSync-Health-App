@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: SymptomSync chat api Spec
+  version: 1.0.0
+paths:
+  /chat/api:
+    get:
+      summary: List chat api resources
+      responses:
+        '200':
+          description: Successful response
+    post:
+      summary: Create chat api resource
+      responses:
+        '201':
+          description: Created
