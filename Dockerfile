@@ -30,12 +30,6 @@
   # copy the compiled bundle
   COPY --from=builder /app/web /app/web
   
-  # Datadog APM auto-instrumentation
-  RUN npm install --save dd-trace
-  ENV NODE_OPTIONS="--require dd-trace/init"
-  ENV DD_SERVICE=symptomsync-frontend
-  ENV DD_ENV=production
-
   EXPOSE 3000
   CMD ["npm", "start"]
   
