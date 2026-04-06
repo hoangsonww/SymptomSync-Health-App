@@ -1,6 +1,6 @@
 # SymptomSync Architecture
 
-SymptomSync is a multi-surface system with a Next.js pages-router frontend (`web/`), a Supabase-backed operational data plane (`supabase/` + mirrored SQL in `database/`), an optional standalone Agentic AI MCP service (`agentic_ai/`), and optional AWS infrastructure (`aws/`, `ansible/`, `jenkins/`).
+SymptomSync is a multi-surface system with a Next.js pages-router frontend (`web/`), a Supabase-backed operational data plane (`supabase/` + mirrored SQL in `database/`), an optional standalone Agentic AI MCP service (`agentic_ai/`), optional AWS infrastructure (`aws/`, `ansible/`, `jenkins/`), and Datadog-powered observability across all deployment surfaces (`devops/monitoring/datadog/`, `devops/terraform/modules/datadog/`).
 
 This document is implementation-backed: claims here map to checked-in code paths.
 
@@ -55,6 +55,13 @@ flowchart TD
     S3["S3 Buckets"]
     EventBridge["Reminder Schedule"]
     WAF["WAF + Alarms"]
+    DDLayers["Datadog Extension + Tracing Layers"]
+  end
+
+  subgraph Observability["Observability"]
+    Datadog["Datadog APM + Monitors + Dashboards"]
+    CW["CloudWatch Alarms"]
+    TFDatadog["Terraform Datadog Module"]
   end
 
   subgraph ExternalAI["External AI Providers"]
@@ -86,6 +93,10 @@ flowchart TD
   Lambdas --> S3
   EventBridge --> Lambdas
   APIGW --> WAF
+  Lambdas --> DDLayers
+  DDLayers --> Datadog
+  CW --> Datadog
+  TFDatadog --> Datadog
 ```
 
 ## 2. Repository Topology and Ownership Boundaries
@@ -455,6 +466,18 @@ flowchart TB
   ReminderLambda --> DDB5
 
   WAF["WAF + alarms"] --> APIGW
+
+  subgraph DatadogAPM["Datadog APM"]
+    DDExt["Lambda Extension Layer"]
+    DDNode["Node Tracing Layer"]
+  end
+
+  ApiLambda --> DDExt
+  ChatLambda --> DDExt
+  StorageLambda --> DDExt
+  ReminderLambda --> DDExt
+  DDExt --> DDIntake["Datadog Intake"]
+  DDNode --> DDIntake
 ```
 
 ### 7.3 Blue/Green + Canary Promotion Model
@@ -466,16 +489,19 @@ sequenceDiagram
   participant API as API Gateway Stages
   participant SSM as /symptomsync/active_stage
   participant Ansible as blue-green-rollout.yml
+  participant DD as Datadog
   participant Users
 
   CDK->>CodeDeploy: Deploy Lambda versions via live aliases
   CodeDeploy->>CodeDeploy: CANARY_10PERCENT_5MINUTES + rollback alarms
+  CodeDeploy->>DD: Traces via Lambda Extension layer
 
   CDK->>API: Deploy blue and green stages
   SSM-->>API: Current active color
 
   Ansible->>API: Smoke-test inactive stage /health
   Ansible->>SSM: Update active stage on pass
+  Ansible->>DD: POST deployment event (stage promotion)
 
   Users->>API: Traffic routed to active stage
 ```
@@ -499,6 +525,7 @@ flowchart LR
   GHA --> GHADocker["GHCR image build/push"]
   GHA --> GHAScan["Trivy"]
   GHA --> GHADeploy["Decoded deploy script"]
+  GHA --> GHADD["Datadog deployment marker"]
 
   Jenkins --> JLint["Lint"]
   Jenkins --> JSec["Audit/semgrep/license"]
@@ -508,12 +535,24 @@ flowchart LR
   Jenkins --> JSign["Cosign (optional)"]
   Jenkins --> JCDK["AWS CDK deploy"]
   Jenkins --> JRoll["Ansible rollout"]
+  Jenkins --> JDD["Datadog deployment event"]
 ```
 
 ## 9. Observability and Operations
 
+SymptomSync uses Datadog as the primary APM and monitoring solution, with CloudWatch alarms as a baseline for AWS-deployed instances. Key observability features include:
+
 ```mermaid
 flowchart TD
+  subgraph DatadogPlatform["Datadog (Primary APM)"]
+    DDDash["Production Dashboard"]
+    DDMonitors["10 Monitors (P1–P3)"]
+    DDSynthetics["Synthetic Health Checks"]
+    DDTracing["Lambda APM Tracing"]
+    DDEvents["Deployment Events"]
+    DDAlerts["Slack + PagerDuty Alerts"]
+  end
+
   subgraph AppMetrics["Agentic AI Metrics"]
     Requests["symptomsync_active_requests"]
     Pipeline["symptomsync_pipeline_executions_total / duration"]
@@ -529,11 +568,27 @@ flowchart TD
     Metrics["/metrics"]
   end
 
-  subgraph InfraObs["Infrastructure Observability"]
-    CW["CloudWatch alarms"]
+  subgraph InfraObs["CloudWatch (Baseline)"]
+    CW["CloudWatch alarms (5XX, latency)"]
     WAFMetrics["WAF metrics"]
     DeployAlarms["CodeDeploy rollback alarms"]
   end
+
+  subgraph CICDSources["CI/CD Event Sources"]
+    GHActions["GitHub Actions"]
+    JenkinsPipe["Jenkins"]
+    AnsibleRoll["Ansible Rollout"]
+  end
+
+  DDTracing --> DDDash
+  DDMonitors --> DDAlerts
+  DDSynthetics --> DDMonitors
+  CW --> DDDash
+
+  GHActions -->|"datadog-ci"| DDEvents
+  JenkinsPipe -->|"datadog-ci"| DDEvents
+  AnsibleRoll -->|"Events API"| DDEvents
+  DDEvents --> DDDash
 
   AppMetrics --> Metrics
   Health --> Operator["Operators / automation"]
@@ -546,11 +601,75 @@ flowchart TD
   DeployAlarms --> Operator
 ```
 
+### 9.1 Datadog Integration Architecture
+
+```mermaid
+flowchart LR
+  subgraph LambdaFunctions["Lambda Functions (live aliases)"]
+    API["ApiHandler"]
+    Reminder["ReminderProcessor"]
+    Chatbot["ChatbotHandler"]
+    Storage["StorageHandler"]
+  end
+
+  subgraph DDLayers["Datadog Layers"]
+    Ext["Extension Layer"]
+    Trace["Node Tracing Layer"]
+  end
+
+  subgraph DDBackend["Datadog Backend"]
+    Intake["Datadog Intake"]
+    Dashboard["Dashboard (27 widgets)"]
+    Monitors["Monitors (10 alerts)"]
+    Synthetics["Synthetic Tests (3 regions)"]
+  end
+
+  subgraph TerraformIaC["Terraform IaC"]
+    Module["modules/datadog/"]
+    Prod["environments/prod/"]
+    Staging["environments/staging/"]
+  end
+
+  API --> Ext
+  Reminder --> Ext
+  Chatbot --> Ext
+  Storage --> Ext
+  Ext --> Intake
+  Trace --> Intake
+
+  Intake --> Dashboard
+  Intake --> Monitors
+  Monitors -->|"P1: Slack + PagerDuty"| Escalation["Alert Routing"]
+  Monitors -->|"P2-P3: Slack"| Escalation
+
+  Module --> Dashboard
+  Module --> Monitors
+  Module --> Synthetics
+  Prod --> Module
+  Staging --> Module
+```
+
 Operational checks that should be considered mandatory before production cutover:
 
 - `web/`: `npm run lint` and `npm run build`
 - `agentic_ai/`: `make lint` and `make test`
 - deploy/traffic-shift checks: smoke `/health` on inactive stage before SSM cutover
+- Datadog: verify all P1/P2 monitors in OK state; confirm deployment events appear in Events stream
+- Terraform: `cd devops/terraform/environments/prod && terraform plan` to validate Datadog monitor/dashboard drift
+
+### 9.2 Runbooks and Incident Response
+
+- **SymptomSync MCP Service Unhealthy**:
+  - Verify MCP HTTP endpoint health (`/health`, `/livez`, `/readyz`)
+  - Check recent deployment events for potential breaking changes
+  - Review Datadog APM traces for error hotspots or latency spikes
+  - If deployed on AWS, check CloudWatch alarms and WAF metrics for traffic anomalies
+  - Roll back to last known good version if issue correlates with recent deploy
+- **Reminder Notifications Not Triggering**:
+  - Check pg_cron job status and logs in Supabase
+  - Verify `notify_due_reminders()` function execution and error logs
+  - Review Realtime channel events for notification broadcasts
+  - If using AWS topology, check EventBridge schedule and Lambda execution logs
 
 ## 10. Change Impact Map
 

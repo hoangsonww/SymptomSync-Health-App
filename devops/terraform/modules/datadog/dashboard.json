@@ -1,0 +1,917 @@
+{
+  "title": "SymptomSync Service Overview",
+  "description": "Production dashboard for SymptomSync health app — Lambda, API Gateway (blue/green), DynamoDB, WAF, CodeDeploy canary, and cost.",
+  "layout_type": "ordered",
+  "reflow_type": "fixed",
+  "notify_list": [],
+  "tags": ["project:symptomsync", "team:platform"],
+  "widgets": [
+    {
+      "definition": {
+        "title": "Service Health & Deployment Overview",
+        "show_title": true,
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Service Health Summary",
+              "title_size": "16",
+              "title_align": "left",
+              "type": "check_status",
+              "check": "aws.lambda.errors",
+              "grouping": "cluster",
+              "group_by": ["functionname"],
+              "tags": ["project:symptomsync"]
+            },
+            "layout": { "x": 0, "y": 0, "width": 3, "height": 2 }
+          },
+          {
+            "definition": {
+              "title": "Active Deployments",
+              "title_size": "16",
+              "title_align": "left",
+              "type": "query_value",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.codedeploy.deployments{project:symptomsync,status:in_progress}.as_count()",
+                      "aggregator": "last"
+                    }
+                  ],
+                  "response_format": "scalar",
+                  "conditional_formats": [
+                    { "comparator": ">", "value": 0, "palette": "yellow_on_white" },
+                    { "comparator": "<=", "value": 0, "palette": "green_on_white" }
+                  ]
+                }
+              ],
+              "precision": 0
+            },
+            "layout": { "x": 3, "y": 0, "width": 3, "height": 2 }
+          },
+          {
+            "definition": {
+              "title": "API Gateway 5XX (All Stages, 24h)",
+              "title_size": "16",
+              "title_align": "left",
+              "type": "query_value",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.apigateway.5xx{apiname:symptomsync_service}.as_count()",
+                      "aggregator": "sum"
+                    }
+                  ],
+                  "response_format": "scalar",
+                  "conditional_formats": [
+                    { "comparator": ">", "value": 50, "palette": "red_on_white" },
+                    { "comparator": ">", "value": 10, "palette": "yellow_on_white" },
+                    { "comparator": "<=", "value": 10, "palette": "green_on_white" }
+                  ]
+                }
+              ],
+              "precision": 0
+            },
+            "layout": { "x": 6, "y": 0, "width": 3, "height": 2 }
+          },
+          {
+            "definition": {
+              "title": "Deployment Events (24h)",
+              "title_size": "16",
+              "title_align": "left",
+              "type": "event_timeline",
+              "query": "sources:codedeploy project:symptomsync",
+              "tags_execution": "and"
+            },
+            "layout": { "x": 0, "y": 2, "width": 12, "height": 2 }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 0, "width": 12, "height": 4 }
+    },
+    {
+      "definition": {
+        "title": "Lambda Metrics",
+        "show_title": true,
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Invocations by Function",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "sum", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Invocations" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.lambda.invocations{project:symptomsync} by {functionname}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "dog_classic", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 0, "y": 0, "width": 6, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Errors by Function",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "sum", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Errors" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.lambda.errors{project:symptomsync} by {functionname}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "warm", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 6, "y": 0, "width": 6, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Duration Percentiles by Function (p50 / p95 / p99)",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "max", "value"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [
+                    { "formula": "query1", "alias": "p50" },
+                    { "formula": "query2", "alias": "p95" },
+                    { "formula": "query3", "alias": "p99" }
+                  ],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "avg:aws.lambda.duration{project:symptomsync} by {functionname}"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query2",
+                      "query": "p95:aws.lambda.duration{project:symptomsync} by {functionname}"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query3",
+                      "query": "p99:aws.lambda.duration{project:symptomsync} by {functionname}"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "cool", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "line"
+                }
+              ],
+              "yaxis": { "label": "ms", "include_zero": true }
+            },
+            "layout": { "x": 0, "y": 3, "width": 6, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Throttles by Function",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["sum", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Throttles" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.lambda.throttles{project:symptomsync} by {functionname}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "orange", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 6, "y": 3, "width": 3, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Concurrent Executions",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Concurrent" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "max:aws.lambda.concurrent_executions{project:symptomsync} by {functionname}"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "purple", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "line"
+                }
+              ]
+            },
+            "layout": { "x": 9, "y": 3, "width": 3, "height": 3 }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 4, "width": 12, "height": 6 }
+    },
+    {
+      "definition": {
+        "title": "API Gateway (Blue / Green Stages)",
+        "show_title": true,
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Request Count by Stage",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "sum"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Requests" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.apigateway.count{apiname:symptomsync_service} by {stage}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "dog_classic", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 0, "y": 0, "width": 4, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "4XX Rate by Stage",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "sum"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "4XX" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.apigateway.4xx{apiname:symptomsync_service} by {stage}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "warm", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 4, "y": 0, "width": 4, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "5XX Rate by Stage",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "sum"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "5XX" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.apigateway.5xx{apiname:symptomsync_service} by {stage}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "red", "line_type": "solid", "line_width": "thick" },
+                  "display_type": "bars"
+                }
+              ],
+              "markers": [
+                {
+                  "value": "y = 10",
+                  "display_type": "error dashed",
+                  "label": "Alert threshold"
+                }
+              ]
+            },
+            "layout": { "x": 8, "y": 0, "width": 4, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Latency Percentiles by Stage (p50 / p95 / p99)",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "max", "value"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [
+                    { "formula": "query1", "alias": "p50" },
+                    { "formula": "query2", "alias": "p95" },
+                    { "formula": "query3", "alias": "p99" }
+                  ],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "avg:aws.apigateway.latency{apiname:symptomsync_service} by {stage}"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query2",
+                      "query": "p95:aws.apigateway.latency{apiname:symptomsync_service} by {stage}"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query3",
+                      "query": "p99:aws.apigateway.latency{apiname:symptomsync_service} by {stage}"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "cool", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "line"
+                }
+              ],
+              "yaxis": { "label": "ms", "include_zero": true },
+              "markers": [
+                {
+                  "value": "y = 2000",
+                  "display_type": "warning dashed",
+                  "label": "P95 alert threshold"
+                }
+              ]
+            },
+            "layout": { "x": 0, "y": 3, "width": 12, "height": 3 }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 10, "width": 12, "height": 6 }
+    },
+    {
+      "definition": {
+        "title": "DynamoDB",
+        "show_title": true,
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Consumed Read Capacity by Table",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Read CU" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.dynamodb.consumed_read_capacity_units{project:symptomsync} by {tablename}"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "dog_classic", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "line"
+                }
+              ]
+            },
+            "layout": { "x": 0, "y": 0, "width": 4, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Consumed Write Capacity by Table",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Write CU" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.dynamodb.consumed_write_capacity_units{project:symptomsync} by {tablename}"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "cool", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "line"
+                }
+              ]
+            },
+            "layout": { "x": 4, "y": 0, "width": 4, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Throttled Requests by Table",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["sum", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Throttled" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.dynamodb.throttled_requests{project:symptomsync} by {tablename}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "red", "line_type": "solid", "line_width": "thick" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 8, "y": 0, "width": 4, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "DynamoDB Successful Request Latency by Table",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Latency (ms)" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "avg:aws.dynamodb.successful_request_latency{project:symptomsync} by {tablename}"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "purple", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "line"
+                }
+              ],
+              "yaxis": { "label": "ms", "include_zero": true }
+            },
+            "layout": { "x": 0, "y": 3, "width": 12, "height": 3 }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 16, "width": 12, "height": 6 }
+    },
+    {
+      "definition": {
+        "title": "WAF & Security",
+        "show_title": true,
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Allowed vs Blocked Requests",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["sum"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [
+                    { "formula": "query1", "alias": "Allowed" },
+                    { "formula": "query2", "alias": "Blocked" }
+                  ],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.wafv2.allowed_requests{webacl:symptomsync-waf}.as_count()"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query2",
+                      "query": "sum:aws.wafv2.blocked_requests{webacl:symptomsync-waf}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "dog_classic", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 0, "y": 0, "width": 6, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Top Blocked Rules",
+              "title_size": "16",
+              "title_align": "left",
+              "type": "toplist",
+              "requests": [
+                {
+                  "formulas": [
+                    {
+                      "formula": "query1",
+                      "limit": { "count": 10, "order": "desc" }
+                    }
+                  ],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.wafv2.blocked_requests{webacl:symptomsync-waf} by {rule}.as_count()",
+                      "aggregator": "sum"
+                    }
+                  ],
+                  "response_format": "scalar",
+                  "conditional_formats": [
+                    { "comparator": ">", "value": 100, "palette": "red_on_white" },
+                    { "comparator": ">", "value": 50, "palette": "yellow_on_white" },
+                    { "comparator": "<=", "value": 50, "palette": "green_on_white" }
+                  ]
+                }
+              ]
+            },
+            "layout": { "x": 6, "y": 0, "width": 6, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Rate-Limited Requests (2k rpm limit)",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["sum", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Rate Limited" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.wafv2.blocked_requests{webacl:symptomsync-waf,rule:rate-limit}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "orange", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 0, "y": 3, "width": 12, "height": 2 }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 22, "width": 12, "height": 5 }
+    },
+    {
+      "definition": {
+        "title": "CodeDeploy & Canary Progression",
+        "show_title": true,
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Deployment Status",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["sum"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [
+                    { "formula": "query1", "alias": "Succeeded" },
+                    { "formula": "query2", "alias": "Failed" },
+                    { "formula": "query3", "alias": "Stopped" }
+                  ],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.codedeploy.deployments{project:symptomsync,status:succeeded}.as_count()"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query2",
+                      "query": "sum:aws.codedeploy.deployments{project:symptomsync,status:failed}.as_count()"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query3",
+                      "query": "sum:aws.codedeploy.deployments{project:symptomsync,status:stopped}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "semantic", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 0, "y": 0, "width": 6, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Canary Error Rate During Bake (CANARY_10PERCENT_5MINUTES)",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["avg", "sum", "max"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "query1", "alias": "Errors" }],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.lambda.errors{project:symptomsync,executedversion:*} by {functionname}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "warm", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "bars"
+                }
+              ]
+            },
+            "layout": { "x": 6, "y": 0, "width": 6, "height": 3 }
+          },
+          {
+            "definition": {
+              "title": "Deployment Events Timeline",
+              "title_size": "16",
+              "title_align": "left",
+              "type": "event_stream",
+              "query": "sources:codedeploy project:symptomsync",
+              "event_size": "s",
+              "tags_execution": "and"
+            },
+            "layout": { "x": 0, "y": 3, "width": 12, "height": 3 }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 27, "width": 12, "height": 6 }
+    },
+    {
+      "definition": {
+        "title": "Estimated Cost (AWS)",
+        "show_title": true,
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Lambda Estimated Cost (invocation + duration)",
+              "title_size": "16",
+              "title_align": "left",
+              "type": "query_value",
+              "requests": [
+                {
+                  "formulas": [
+                    {
+                      "formula": "(query1 * 0.0000002) + (query2 * 0.0000166667 / 1000)",
+                      "alias": "Estimated Cost ($)"
+                    }
+                  ],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.lambda.invocations{project:symptomsync}.as_count()",
+                      "aggregator": "sum"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query2",
+                      "query": "sum:aws.lambda.duration{project:symptomsync}",
+                      "aggregator": "sum"
+                    }
+                  ],
+                  "response_format": "scalar",
+                  "conditional_formats": [
+                    { "comparator": ">", "value": 100, "palette": "red_on_white" },
+                    { "comparator": ">", "value": 50, "palette": "yellow_on_white" },
+                    { "comparator": "<=", "value": 50, "palette": "green_on_white" }
+                  ]
+                }
+              ],
+              "precision": 2,
+              "custom_unit": "$"
+            },
+            "layout": { "x": 0, "y": 0, "width": 4, "height": 2 }
+          },
+          {
+            "definition": {
+              "title": "DynamoDB Estimated Cost (Read + Write CU)",
+              "title_size": "16",
+              "title_align": "left",
+              "type": "query_value",
+              "requests": [
+                {
+                  "formulas": [
+                    {
+                      "formula": "(query1 * 0.00000025) + (query2 * 0.00000125)",
+                      "alias": "Estimated Cost ($)"
+                    }
+                  ],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.dynamodb.consumed_read_capacity_units{project:symptomsync}",
+                      "aggregator": "sum"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query2",
+                      "query": "sum:aws.dynamodb.consumed_write_capacity_units{project:symptomsync}",
+                      "aggregator": "sum"
+                    }
+                  ],
+                  "response_format": "scalar",
+                  "conditional_formats": [
+                    { "comparator": ">", "value": 50, "palette": "red_on_white" },
+                    { "comparator": ">", "value": 20, "palette": "yellow_on_white" },
+                    { "comparator": "<=", "value": 20, "palette": "green_on_white" }
+                  ]
+                }
+              ],
+              "precision": 2,
+              "custom_unit": "$"
+            },
+            "layout": { "x": 4, "y": 0, "width": 4, "height": 2 }
+          },
+          {
+            "definition": {
+              "title": "API Gateway Estimated Cost ($3.50/million requests)",
+              "title_size": "16",
+              "title_align": "left",
+              "type": "query_value",
+              "requests": [
+                {
+                  "formulas": [
+                    {
+                      "formula": "query1 * 0.0000035",
+                      "alias": "Estimated Cost ($)"
+                    }
+                  ],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.apigateway.count{apiname:symptomsync_service}.as_count()",
+                      "aggregator": "sum"
+                    }
+                  ],
+                  "response_format": "scalar",
+                  "conditional_formats": [
+                    { "comparator": ">", "value": 30, "palette": "red_on_white" },
+                    { "comparator": ">", "value": 10, "palette": "yellow_on_white" },
+                    { "comparator": "<=", "value": 10, "palette": "green_on_white" }
+                  ]
+                }
+              ],
+              "precision": 2,
+              "custom_unit": "$"
+            },
+            "layout": { "x": 8, "y": 0, "width": 4, "height": 2 }
+          },
+          {
+            "definition": {
+              "title": "Combined Lambda + DynamoDB + API GW Cost Trend",
+              "title_size": "16",
+              "title_align": "left",
+              "show_legend": true,
+              "legend_layout": "horizontal",
+              "legend_columns": ["sum"],
+              "type": "timeseries",
+              "requests": [
+                {
+                  "formulas": [
+                    {
+                      "formula": "(query1 * 0.0000002) + (query2 * 0.0000166667 / 1000)",
+                      "alias": "Lambda ($)"
+                    },
+                    {
+                      "formula": "(query3 * 0.00000025) + (query4 * 0.00000125)",
+                      "alias": "DynamoDB ($)"
+                    },
+                    {
+                      "formula": "query5 * 0.0000035",
+                      "alias": "API GW ($)"
+                    }
+                  ],
+                  "queries": [
+                    {
+                      "data_source": "metrics",
+                      "name": "query1",
+                      "query": "sum:aws.lambda.invocations{project:symptomsync}.as_count()"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query2",
+                      "query": "sum:aws.lambda.duration{project:symptomsync}"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query3",
+                      "query": "sum:aws.dynamodb.consumed_read_capacity_units{project:symptomsync}"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query4",
+                      "query": "sum:aws.dynamodb.consumed_write_capacity_units{project:symptomsync}"
+                    },
+                    {
+                      "data_source": "metrics",
+                      "name": "query5",
+                      "query": "sum:aws.apigateway.count{apiname:symptomsync_service}.as_count()"
+                    }
+                  ],
+                  "response_format": "timeseries",
+                  "style": { "palette": "dog_classic", "line_type": "solid", "line_width": "normal" },
+                  "display_type": "line"
+                }
+              ],
+              "yaxis": { "label": "$", "include_zero": true }
+            },
+            "layout": { "x": 0, "y": 2, "width": 12, "height": 3 }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 33, "width": 12, "height": 5 }
+    }
+  ]
+}

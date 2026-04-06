@@ -7,6 +7,10 @@ Use this before any prod cutover.
 - TLS certs valid (ACM) for all domains.
 - WAF enabled on API Gateway with core managed rules + rate limits.
 - CloudWatch alarms deployed for 5XX rate, latency, Lambda errors, and reminder job failures.
+- Datadog Lambda Extension + Node tracing layer deployed on all Lambda functions.
+- Datadog monitors active for Lambda errors (P1), 5XX rate (P1), latency (P2), throttles (P2), DynamoDB throttles (P2), WAF blocked spikes (P3), canary failures (P1), and health endpoint (P1 synthetic).
+- Datadog dashboard deployed via Terraform (`devops/terraform/modules/datadog/`).
+- `DD_API_KEY` configured in SSM (`/symptomsync/datadog/api_key`), GitHub Actions secrets, and Jenkins credentials.
 
 ## App
 - Health endpoint responds 200 from both blue and green stages.
@@ -32,4 +36,6 @@ Use this before any prod cutover.
 ## Reliability
 - Error budgets and SLOs defined (e.g., 99.9% uptime, P95 < 2s).
 - Load/perf smoke run (Artillery) on new release.
+- Datadog synthetic health check running every 60s from 3 regions (us-east-1, us-west-2, eu-west-1).
 - Runbook links: `progressive-delivery.md`, monitoring escalation paths, on-call rotation.
+- Datadog dashboard and monitors reviewed: `devops/monitoring/datadog/`.

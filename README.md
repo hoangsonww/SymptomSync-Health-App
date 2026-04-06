@@ -12,7 +12,8 @@ Build with patient care in mind, **SymptomSync** is a web application designed t
 > Developed by [David Nguyen](https://sonnguyenhoang.com) and Erica Ocbu at UNC–Chapel Hill. **© SymptomSync Team, 2025**.
 
 ![TypeScript](https://img.shields.io/badge/-TypeScript-05122A?style=flat&logo=typescript) ![JavaScript](https://img.shields.io/badge/-JavaScript-05122A?style=flat&logo=javascript) ![Node.js](https://img.shields.io/badge/-Node.js-05122A?style=flat&logo=nodedotjs) ![React](https://img.shields.io/badge/-React-05122A?style=flat&logo=react) ![Next.js](https://img.shields.io/badge/-Next.js-05122A?style=flat&logo=nextdotjs) ![Shadcn/ui](https://img.shields.io/badge/-Shadcn_UI-05122A?style=flat&logo=shadcnui) ![TailwindCSS](https://img.shields.io/badge/-TailwindCSS-05122A?style=flat&logo=tailwindcss) ![CSS](https://img.shields.io/badge/-CSS-05122A?style=flat&logo=css) ![HTML5](https://img.shields.io/badge/-HTML5-05122A?style=flat&logo=html5) ![Chart.js](https://img.shields.io/badge/-Chart.js-05122A?style=flat&logo=chartdotjs) ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-05122A?style=flat&logo=framer) ![Supabase](https://img.shields.io/badge/-Supabase-05122A?style=flat&logo=supabase) ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-05122A?style=flat&logo=postgresql) ![Google AI](https://img.shields.io/badge/-Google_AI-05122A?style=flat&logo=google) ![Vercel](https://img.shields.io/badge/-Vercel-05122A?style=flat&logo=vercel) ![Docker](https://img.shields.io/badge/-Docker-05122A?style=flat&logo=docker) ![Git](https://img.shields.io/badge/-Git-05122A?style=flat&logo=git) ![GitHub](https://img.shields.io/badge/-GitHub-05122A?style=flat&logo=github) ![npm](https://img.shields.io/badge/-npm-05122A?style=flat&logo=npm) ![Webpack](https://img.shields.io/badge/-Webpack-05122A?style=flat&logo=webpack) ![Babel](https://img.shields.io/badge/-Babel-05122A?style=flat&logo=babel) ![ESLint](https://img.shields.io/badge/-ESLint-05122A?style=flat&logo=eslint) ![Prettier](https://img.shields.io/badge/-Prettier-05122A?style=flat&logo=prettier) ![Postman](https://img.shields.io/badge/-Postman-05122A?style=flat&logo=postman) ![Jest](https://img.shields.io/badge/-Jest-05122A?style=flat&logo=jest) ![Shell](https://img.shields.io/badge/-Shell-05122A?style=flat&logo=gnu-bash) ![Makefile](https://img.shields.io/badge/-Makefile-05122A?style=flat&logo=gnu) ![AWS](https://img.shields.io/badge/-Amazon%20Web%20Services-05122A?style=flat&logo=awesomewm) ![Ansible](https://img.shields.io/badge/-Ansible-05122A?style=flat&logo=ansible) ![GitHub Actions](https://img.shields.io/badge/-GitHub_Actions-05122A?style=flat&logo=githubactions) ![WebSockets](https://img.shields.io/badge/-WebSockets-05122A?style=flat&logo=socket) ![ICS](https://img.shields.io/badge/-ICS-05122A?style=flat&logo=googlecalendar) ![Figma](https://img.shields.io/badge/-Figma-05122A?style=flat&logo=figma) ![Socket.IO](https://img.shields.io/badge/-Socket.IO-05122A?style=flat&logo=socketdotio) 
-![LangGraph](https://img.shields.io/badge/-LangGraph-05122A?style=flat&logo=langgraph) ![LangChain](https://img.shields.io/badge/-LangChain-05122A?style=flat&logo=langchain) ![Model Context Protocol](https://img.shields.io/badge/-Model_Context_Protocol-05122A?style=flat&logo=modelcontextprotocol) ![ChromaDB](https://img.shields.io/badge/-ChromaDB-05122A?style=flat&logo=chromatic) ![FastAPI](https://img.shields.io/badge/-FastAPI-05122A?style=flat&logo=fastapi) ![OpenAPI](https://img.shields.io/badge/-OpenAPI-05122A?style=flat&logo=openapiinitiative)
+![LangGraph](https://img.shields.io/badge/-LangGraph-05122A?style=flat&logo=langgraph) ![LangChain](https://img.shields.io/badge/-LangChain-05122A?style=flat&logo=langchain) ![Model Context Protocol](https://img.shields.io/badge/-Model_Context_Protocol-05122A?style=flat&logo=modelcontextprotocol) ![ChromaDB](https://img.shields.io/badge/-ChromaDB-05122A?style=flat&logo=chromatic) ![FastAPI](https://img.shields.io/badge/-FastAPI-05122A?style=flat&logo=fastapi) ![OpenAPI](https://img.shields.io/badge/-OpenAPI-05122A?style=flat&logo=openapiinitiative) ![Open Telemetry](https://img.shields.io/badge/-Open_Telemetry-05122A?style=flat&logo=opentelemetry)
+![Datadog](https://img.shields.io/badge/-Datadog-05122A?style=flat&logo=datadog) ![Terraform](https://img.shields.io/badge/-Terraform-05122A?style=flat&logo=terraform) ![Jenkins](https://img.shields.io/badge/-Jenkins-05122A?style=flat&logo=jenkins) ![Trivy](https://img.shields.io/badge/-Trivy-05122A?style=flat&logo=aquasecurity) ![Cosign](https://img.shields.io/badge/-Cosign-05122A?style=flat&logo=sigstore) ![Prometheus](https://img.shields.io/badge/-Prometheus-05122A?style=flat&logo=prometheus) ![Grafana](https://img.shields.io/badge/-Grafana-05122A?style=flat&logo=grafana) ![PagerDuty](https://img.shields.io/badge/-PagerDuty-05122A?style=flat&logo=pagerduty)
 
 > [!IMPORTANT] 
 > **Live Web App: [https://symptomsync.vercel.app](https://symptomsync.vercel.app) 🚀**
@@ -143,6 +144,18 @@ SymptomSync offers a range of features to help users manage their health effecti
   - lucide-icons for icons
 - **Back-End / Data**
   - Supabase (Auth, Postgres, Realtime, Storage, Cron)
+- **Observability & Monitoring**
+  - Datadog (APM, Lambda tracing, dashboards, monitors, synthetic tests, CI visibility)
+  - CloudWatch (baseline alarms for 5XX, latency, Lambda errors)
+  - Prometheus + Grafana (optional, for agentic AI service metrics)
+  - PagerDuty / Slack (alert routing via Datadog monitors)
+- **Infrastructure & DevOps**
+  - AWS CDK (Lambda, API Gateway, DynamoDB, S3, Cognito, WAF, CodeDeploy)
+  - Terraform (Datadog monitors, dashboards, synthetic tests as code)
+  - Ansible (blue/green rollout automation with Datadog event tracking)
+  - Docker + Docker Compose (with Datadog Agent sidecar)
+  - Jenkins + GitHub Actions (CI/CD with Datadog deployment visibility)
+  - Trivy (container vulnerability scanning) + Cosign (image signing)
 - **Notifications & Sync**
   - Supabase Postgres Triggers for real-time updates
   - Supabase Cron Jobs for scheduled reminders
@@ -200,7 +213,9 @@ flowchart LR
   Actions -->|"docker build"| GHCR["GitHub Container Registry"]
   Actions -->|"Ansible + CDK"| AWS["AWS Deployment (optional)"]
   Actions -->|"Deploy"| Vercel["Vercel Hosting"]
+  Actions -->|"datadog-ci"| Datadog["Datadog APM & Events"]
   AWS -->|"REST + Cron"| ClientStack["Serverless API & Reminders"]
+  AWS -->|"DD Extension"| Datadog
   SupabaseSvc["Supabase Cloud"] -->|"Auth, DB, Realtime"| ClientStack
   Vercel -->|"serve UI"| Users["End Users"]
 ```
@@ -388,11 +403,13 @@ SymptomSync now fully supports Amazon Web Services (AWS) deployment alongside Ve
    - **Cognito** User Pool & App Client
    - **DynamoDB** tables for profiles, meds, appts, logs, notifications
    - **S3** buckets (`avatars`, `documents`) with encryption, no public access, retained by default
-   - **Lambda** functions: REST API, reminder processor, chatbot, presigned-URL, each fronted by a `live` alias with CodeDeploy `CANARY_10PERCENT_5MINUTES` rollback
+   - **Lambda** functions: REST API, reminder processor, chatbot, presigned-URL, each fronted by a `live` alias with CodeDeploy `CANARY_10PERCENT_5MINUTES` rollback and **Datadog Lambda Extension + Node tracing layers** for APM
    - **API Gateway** (REST) + Cognito authorizer + explicit `blue`/`green` stages exported as stack outputs, `/health` endpoint for smoke checks
    - **WAF + Alarms** managed rules and rate limit on API Gateway; per-stage CloudWatch alarms for 5XX and p95 latency
    - **SSM Parameter** `/symptomsync/active_stage` to flip traffic between blue/green (via DNS/base-path)
+   - **SSM Parameter** `/symptomsync/datadog/api_key` for Datadog Lambda extension configuration
    - **EventBridge** rule to run reminders every minute pinned to the `live` alias
+   - **Datadog tags** `dd_monitoring`, `project`, and `dd_env` applied to all stack resources
 
 > [!CAUTION]
 > `aws/lambda/chatbotHandler.js` contains a placeholder Vertex endpoint (`projects/YOUR_PROJECT/...`). Treat it as a scaffold until project-specific model/endpoint wiring is configured.
@@ -425,6 +442,7 @@ We have set up GitHub Actions for continuous integration and deployment. The wor
 - Builds the application
 - Deploys to Vercel
 - Deploys the AWS stack using the Ansible playbook
+- Sends deployment markers and events to Datadog for APM correlation
 - Notifies the team on success/failure
 
 For more details, check out the `.github/workflows/ci.yml` file in the repository.
@@ -479,6 +497,8 @@ We would like to acknowledge the following resources and libraries that made thi
 - [Framer Motion](https://www.framer.com/motion/) for the animations
 - [Chart.js](https://www.chartjs.org) for the data visualizations
 - [Google AI](https://ai.google) for the AI-powered chatbot
+- [Datadog](https://www.datadoghq.com) for APM, monitoring, and observability
+- [Terraform](https://www.terraform.io) for Datadog infrastructure as code
 - [Docker](https://www.docker.com) for containerization
 - [Ansible](https://www.ansible.com) for deployment automation
 - [AWS CDK](https://aws.amazon.com/cdk/) for infrastructure as code

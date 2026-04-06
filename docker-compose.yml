@@ -6,14 +6,22 @@ services:
       context: ./web
       dockerfile: Dockerfile
     image: ghcr.io/hoangsonww/symptomsync-frontend:0.1.0
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"nextjs","service":"symptomsync-frontend"}]'
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - NEXT_PUBLIC_GOOGLE_AI_API_KEY=${NEXT_PUBLIC_GOOGLE_AI_API_KEY}
+      - DD_SERVICE=symptomsync-frontend
+      - DD_ENV=${DD_ENV:-development}
+      - DD_VERSION=${DD_VERSION:-0.1.0}
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
     depends_on:
       - backend
+      - datadog-agent
 
   # Article Curator Backend
   backend:
@@ -27,6 +35,37 @@ services:
       - MONGO_URI=${MONGO_URI}
       - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
       - PINECONE_API_KEY=${PINECONE_API_KEY}
+
+  # Datadog Agent for local observability
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:7
+    container_name: dd-agent
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+      - DD_SITE=${DD_SITE:-datadoghq.com}
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+      - DD_CONTAINER_LABELS_AS_TAGS={"com.docker.compose.service":"service"}
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+      - DD_PROCESS_AGENT_ENABLED=true
+      - DD_ENV=${DD_ENV:-development}
+      - DD_SERVICE=symptomsync
+      - DD_VERSION=${DD_VERSION:-0.1.0}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /opt/datadog-agent/run:/opt/datadog-agent/run:rw
+    ports:
+      - "8126:8126"       # APM traces
+      - "8125:8125/udp"   # DogStatsD
+    healthcheck:
+      test: ["CMD-SHELL", "agent health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   default:
