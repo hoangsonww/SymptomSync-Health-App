@@ -10,6 +10,8 @@
     active_stage_param: "{{ lookup('env','ACTIVE_STAGE_PARAM') | default('/symptomsync/active_stage', true) }}"
     target_stage: "{{ lookup('env','TARGET_STAGE') | default('', true) }}"
     smoke_path: "{{ lookup('env','SMOKE_PATH') | default('/health', true) }}"
+    dd_api_key: "{{ lookup('env','DD_API_KEY') | default('', true) }}"
+    dd_site: "{{ lookup('env','DD_SITE') | default('datadoghq.com', true) }}"
 
   tasks:
     - name: Read current active stage from SSM
@@ -59,3 +61,27 @@
     - name: Emit rollout summary
       ansible.builtin.debug:
         msg: "Active stage switched from {{ active_stage }} to {{ rollout_stage }} after smoke checks"
+
+    - name: Send Datadog deployment event
+      ansible.builtin.uri:
+        url: "https://api.{{ dd_site }}/api/v1/events"
+        method: POST
+        headers:
+          DD-API-KEY: "{{ dd_api_key }}"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          title: "SymptomSync Blue/Green Promotion"
+          text: "Active stage switched from {{ active_stage }} to {{ rollout_stage }} after smoke checks"
+          priority: "normal"
+          tags:
+            - "project:symptomsync"
+            - "env:production"
+            - "source:ansible"
+            - "from_stage:{{ active_stage }}"
+            - "to_stage:{{ rollout_stage }}"
+          alert_type: "success"
+          source_type_name: "DEPLOYMENT"
+        status_code: [200, 202]
+      when: dd_api_key | length > 0
+      ignore_errors: true

@@ -12,6 +12,8 @@ on:
 
 env:
   NODE_VERSION: 20
+  DD_ENV: production
+  DD_SERVICE: symptomsync
 
 jobs:
   # ────────────────────────────────────────────────────────────────
@@ -112,6 +114,15 @@ jobs:
           echo "$TEST_B64" | base64 --decode > test.sh
           chmod +x test.sh
           ./test.sh
+
+      - name: Upload test results to Datadog
+        if: always()
+        env:
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DATADOG_SITE: ${{ secrets.DD_SITE }}
+        run: |
+          npm install -g @datadog/datadog-ci
+          datadog-ci junit upload --service symptomsync ./test-results/ || true
 
   # ────────────────────────────────────────────────────────────────
   #  🏗 3. Build Next.js (web/)                                    #
@@ -242,12 +253,49 @@ jobs:
           ./deploy.sh
 
   # ────────────────────────────────────────────────────────────────
+  #  📊 8. Datadog Observability                                    #
+  # ────────────────────────────────────────────────────────────────
+  datadog-notify:
+    name: "📊 Datadog Deployment Tracking"
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mark deployment in Datadog
+        env:
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+        run: |
+          npm install -g @datadog/datadog-ci
+          datadog-ci deployment mark \
+            --env production \
+            --service symptomsync \
+            --revision "${{ github.sha }}" \
+            --is-rollback false || true
+      - name: Send Datadog event
+        env:
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+        run: |
+          curl -s -X POST "https://api.datadoghq.com/api/v1/events" \
+            -H "DD-API-KEY: ${DD_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "title": "SymptomSync Deployment",
+              "text": "Deployed commit ${{ github.sha }} to production via GitHub Actions",
+              "priority": "normal",
+              "tags": ["project:symptomsync","env:production","source:github-actions","commit:${{ github.sha }}"],
+              "alert_type": "success",
+              "source_type_name": "CICD"
+            }' || true
+
+  # ────────────────────────────────────────────────────────────────
   #  🎉 Pipeline Complete Step                                     #
   # ────────────────────────────────────────────────────────────────
   complete:
     name: "🎉 Pipeline Complete"
     runs-on: ubuntu-latest
-    needs: [deploy]
+    needs: [deploy, datadog-notify]
+    if: always()
     steps:
       - name: Deployment Summary (log)
         run: |

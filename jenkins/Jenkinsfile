@@ -8,6 +8,10 @@ pipeline {
     NEXT_PUBLIC_SUPABASE_URL = credentials('NEXT_PUBLIC_SUPABASE_URL')
     NEXT_PUBLIC_SUPABASE_ANON_KEY = credentials('NEXT_PUBLIC_SUPABASE_ANON_KEY')
     GOOGLE_AI_API_KEY = credentials('GOOGLE_AI_API_KEY')
+    DD_API_KEY    = credentials('DD_API_KEY')
+    DD_SITE       = 'datadoghq.com'
+    DD_ENV        = 'production'
+    DD_SERVICE    = 'symptomsync'
   }
 
   stages {
@@ -148,6 +152,34 @@ pipeline {
         '''
       }
     }
+
+    stage('Datadog Deployment Event') {
+      steps {
+        sh '''
+          if [ -n "$DD_API_KEY" ]; then
+            npx @datadog/datadog-ci deployment mark \
+              --env "${DD_ENV}" \
+              --service "${DD_SERVICE}" \
+              --revision "${GIT_COMMIT}" \
+              --is-rollback false || true
+
+            curl -sS -X POST "https://api.${DD_SITE}/api/v1/events" \
+              -H "DD-API-KEY: ${DD_API_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \\"title\\": \\"SymptomSync Deployment\\",
+                \\"text\\": \\"Deployed commit ${GIT_COMMIT} to production via Jenkins\\",
+                \\"priority\\": \\"normal\\",
+                \\"tags\\": [\\"project:symptomsync\\",\\"env:${DD_ENV}\\",\\"source:jenkins\\",\\"commit:${GIT_COMMIT}\\"],
+                \\"alert_type\\": \\"success\\",
+                \\"source_type_name\\": \\"CICD\\"
+              }" || true
+          else
+            echo "DD_API_KEY not set; skipping Datadog notification."
+          fi
+        '''
+      }
+    }
   }
 
   post {
@@ -156,6 +188,21 @@ pipeline {
     }
     failure {
       echo 'SymptomSync pipeline failed'
+      sh '''
+        if [ -n "$DD_API_KEY" ]; then
+          curl -sS -X POST "https://api.${DD_SITE}/api/v1/events" \
+            -H "DD-API-KEY: ${DD_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \\"title\\": \\"SymptomSync Pipeline FAILED\\",
+              \\"text\\": \\"Pipeline failed for commit ${GIT_COMMIT}\\",
+              \\"priority\\": \\"normal\\",
+              \\"tags\\": [\\"project:symptomsync\\",\\"env:${DD_ENV}\\",\\"source:jenkins\\"],
+              \\"alert_type\\": \\"error\\",
+              \\"source_type_name\\": \\"CICD\\"
+            }" || true
+        fi
+      '''
     }
   }
 }

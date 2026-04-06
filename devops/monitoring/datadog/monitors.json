@@ -1,0 +1,127 @@
+{
+  "monitors": [
+    {
+      "name": "[SymptomSync] P1: Lambda Error Rate High",
+      "type": "metric alert",
+      "query": "sum(last_5m):sum:aws.lambda.errors{project:symptomsync} by {functionname}.as_count() > 5",
+      "message": "{{#is_alert}}\n🚨 Lambda error rate exceeded threshold on **{{functionname.name}}**.\n\n**Actions:**\n1. Check CloudWatch logs for the function\n2. Verify CodeDeploy canary status — auto-rollback may trigger\n3. Check `/health` endpoint on both blue and green stages\n4. If post-deploy, consider manual rollback via SSM\n\n@slack-prod-alerts @pagerduty-symptomsync\n{{/is_alert}}\n\n{{#is_recovery}}\n✅ Lambda error rate recovered for **{{functionname.name}}**.\n{{/is_recovery}}",
+      "tags": ["project:symptomsync", "team:platform", "severity:p1"],
+      "options": {
+        "thresholds": { "critical": 5, "warning": 2 },
+        "notify_no_data": true,
+        "no_data_timeframe": 10,
+        "renotify_interval": 30,
+        "escalation_message": "Lambda errors still firing after 30m. Escalate to on-call lead.",
+        "include_tags": true
+      },
+      "priority": 1
+    },
+    {
+      "name": "[SymptomSync] P1: API Gateway 5XX Rate High",
+      "type": "metric alert",
+      "query": "sum(last_5m):sum:aws.apigateway.5xx{apiname:symptomsync_service} by {stage}.as_count() > 10",
+      "message": "{{#is_alert}}\n🚨 5XX error rate on API Gateway stage **{{stage.name}}** exceeds threshold.\n\n**Actions:**\n1. Verify active stage: `aws ssm get-parameter --name /symptomsync/active_stage`\n2. Check Lambda errors on `live` aliases\n3. Review API Gateway access logs\n4. If canary in progress, check CodeDeploy status\n\n@slack-prod-alerts @pagerduty-symptomsync\n{{/is_alert}}\n\n{{#is_recovery}}\n✅ 5XX rate recovered on stage **{{stage.name}}**.\n{{/is_recovery}}",
+      "tags": ["project:symptomsync", "team:platform", "severity:p1"],
+      "options": {
+        "thresholds": { "critical": 10, "warning": 5 },
+        "notify_no_data": false,
+        "renotify_interval": 15,
+        "include_tags": true
+      },
+      "priority": 1
+    },
+    {
+      "name": "[SymptomSync] P2: API Gateway P95 Latency High",
+      "type": "metric alert",
+      "query": "avg(last_5m):p95:aws.apigateway.latency{apiname:symptomsync_service} by {stage} > 2000",
+      "message": "{{#is_alert}}\n⚠️ P95 latency on API Gateway stage **{{stage.name}}** exceeds 2s.\n\n**Actions:**\n1. Check Lambda duration metrics for slow functions\n2. Review DynamoDB latency and throttling\n3. Check for cold starts on provisioned concurrency aliases\n\n@slack-prod-alerts\n{{/is_alert}}\n\n{{#is_recovery}}\n✅ Latency recovered on stage **{{stage.name}}**.\n{{/is_recovery}}",
+      "tags": ["project:symptomsync", "team:platform", "severity:p2"],
+      "options": {
+        "thresholds": { "critical": 2000, "warning": 1500 },
+        "renotify_interval": 30,
+        "include_tags": true
+      },
+      "priority": 2
+    },
+    {
+      "name": "[SymptomSync] P2: Lambda Duration High",
+      "type": "metric alert",
+      "query": "avg(last_10m):p95:aws.lambda.duration{project:symptomsync} by {functionname} > 8000",
+      "message": "{{#is_alert}}\n⚠️ Lambda p95 duration for **{{functionname.name}}** exceeds 8s (timeout is 10-15s).\n\n**Actions:**\n1. Review function code for performance issues\n2. Check DynamoDB/S3 downstream latency\n3. Verify provisioned concurrency is warming aliases\n\n@slack-prod-alerts\n{{/is_alert}}",
+      "tags": ["project:symptomsync", "team:platform", "severity:p2"],
+      "options": {
+        "thresholds": { "critical": 8000, "warning": 5000 },
+        "include_tags": true
+      },
+      "priority": 2
+    },
+    {
+      "name": "[SymptomSync] P2: Lambda Throttles Detected",
+      "type": "metric alert",
+      "query": "sum(last_5m):sum:aws.lambda.throttles{project:symptomsync} by {functionname}.as_count() > 0",
+      "message": "{{#is_alert}}\n⚠️ Lambda throttles detected for **{{functionname.name}}**.\n\n**Actions:**\n1. Check concurrent execution limits\n2. Review provisioned concurrency settings\n3. Consider requesting a limit increase\n\n@slack-prod-alerts\n{{/is_alert}}",
+      "tags": ["project:symptomsync", "team:platform", "severity:p2"],
+      "options": {
+        "thresholds": { "critical": 0 },
+        "include_tags": true
+      },
+      "priority": 2
+    },
+    {
+      "name": "[SymptomSync] P2: DynamoDB Throttled Requests",
+      "type": "metric alert",
+      "query": "sum(last_5m):sum:aws.dynamodb.throttled_requests{project:symptomsync} by {tablename}.as_count() > 0",
+      "message": "{{#is_alert}}\n⚠️ DynamoDB table **{{tablename.name}}** is being throttled.\n\n**Actions:**\n1. Verify table is in PAY_PER_REQUEST mode\n2. Check for hot partitions or scan operations\n3. Review recent traffic patterns\n\n@slack-prod-alerts\n{{/is_alert}}",
+      "tags": ["project:symptomsync", "team:platform", "severity:p2"],
+      "options": {
+        "thresholds": { "critical": 0 },
+        "include_tags": true
+      },
+      "priority": 2
+    },
+    {
+      "name": "[SymptomSync] P3: WAF Blocked Requests Spike",
+      "type": "metric alert",
+      "query": "sum(last_15m):sum:aws.wafv2.blocked_requests{webacl:symptomsync-waf}.as_count() > 500",
+      "message": "{{#is_alert}}\nℹ️ WAF blocked request count is unusually high. Possible attack or false-positive rule.\n\n**Actions:**\n1. Check WAF sampled requests in AWS console\n2. Review rate-limit rule hits vs managed rule set\n3. Verify legitimate traffic is not being blocked\n\n@slack-prod-alerts\n{{/is_alert}}",
+      "tags": ["project:symptomsync", "team:security", "severity:p3"],
+      "options": {
+        "thresholds": { "critical": 500, "warning": 200 },
+        "include_tags": true
+      },
+      "priority": 3
+    },
+    {
+      "name": "[SymptomSync] P1: Canary Deployment Failure",
+      "type": "metric alert",
+      "query": "sum(last_5m):sum:aws.codedeploy.deployment_failures{project:symptomsync}.as_count() > 0",
+      "message": "{{#is_alert}}\n🚨 CodeDeploy canary deployment failed. Auto-rollback should trigger.\n\n**Actions:**\n1. Check CodeDeploy console for deployment status\n2. Verify CloudWatch alarm that triggered rollback\n3. Review Lambda logs for the new version\n4. Do NOT retry until root cause is identified\n\n@slack-prod-alerts @pagerduty-symptomsync\n{{/is_alert}}",
+      "tags": ["project:symptomsync", "team:platform", "severity:p1"],
+      "options": {
+        "thresholds": { "critical": 0 },
+        "notify_no_data": false,
+        "include_tags": true
+      },
+      "priority": 1
+    },
+    {
+      "name": "[SymptomSync] P1: Health Endpoint Down",
+      "type": "synthetics alert",
+      "message": "{{#is_alert}}\n🚨 /health endpoint is not responding 200 from synthetic checks.\n\n**Actions:**\n1. Verify API Gateway stage is deployed\n2. Check for WAF blocks on health path\n3. Verify Lambda alias is pointing to valid version\n4. Check SSM active_stage parameter\n\n@slack-prod-alerts @pagerduty-symptomsync\n{{/is_alert}}",
+      "tags": ["project:symptomsync", "team:platform", "severity:p1"],
+      "priority": 1
+    },
+    {
+      "name": "[SymptomSync] P3: Reminder Processor Invocation Failures",
+      "type": "metric alert",
+      "query": "sum(last_15m):sum:aws.lambda.errors{functionname:*reminderprocessor*,project:symptomsync}.as_count() > 3",
+      "message": "{{#is_alert}}\nℹ️ ReminderProcessor Lambda has multiple errors. Medication reminders may not be sending.\n\n**Actions:**\n1. Check EventBridge rule is triggering\n2. Review CloudWatch logs for ReminderProcessor\n3. Verify DynamoDB notifications table access\n\n@slack-prod-alerts\n{{/is_alert}}",
+      "tags": ["project:symptomsync", "team:platform", "severity:p3"],
+      "options": {
+        "thresholds": { "critical": 3, "warning": 1 },
+        "include_tags": true
+      },
+      "priority": 3
+    }
+  ]
+}

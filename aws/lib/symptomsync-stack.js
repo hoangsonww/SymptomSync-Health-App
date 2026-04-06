@@ -82,34 +82,63 @@ class SymptomSyncStack extends Stack {
       GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY || '',
     };
 
+    // Datadog APM configuration (requires DD_API_KEY in environment or SSM)
+    const datadogEnv = {
+      DD_API_KEY: process.env.DD_API_KEY || '',
+      DD_SITE: process.env.DD_SITE || 'datadoghq.com',
+      DD_ENV: process.env.DD_ENV || 'production',
+      DD_SERVICE: 'symptomsync',
+      DD_VERSION: process.env.DD_VERSION || '1.0.0',
+      DD_TRACE_ENABLED: 'true',
+      DD_SERVERLESS_LOGS_ENABLED: 'true',
+      DD_CAPTURE_LAMBDA_PAYLOAD: 'true',
+      DD_FLUSH_TO_LOG: 'false',
+      DD_MERGE_XRAY_TRACES: 'true',
+    };
+
+    // Datadog Lambda Extension layer (region-aware)
+    const datadogLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this, 'DatadogExtension',
+      `arn:aws:lambda:${Stack.of(this).region}:464622532012:layer:Datadog-Extension:65`
+    );
+    // Datadog Node.js tracing layer (must match Lambda runtime – NODEJS_18_X)
+    const datadogNodeLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this, 'DatadogNode',
+      `arn:aws:lambda:${Stack.of(this).region}:464622532012:layer:Datadog-Node18-x:115`
+    );
+
     // Lambda functions
     const apiFn = new nodejsLambda.NodejsFunction(this, 'ApiHandler', {
       entry: 'aws/lambda/apiHandler.js',
       runtime: lambda.Runtime.NODEJS_18_X,
       memorySize: 1024,
       timeout: Duration.seconds(10),
-      environment: commonEnv,
+      layers: [datadogLayer, datadogNodeLayer],
+      environment: { ...commonEnv, ...datadogEnv },
     });
     const reminderFn = new nodejsLambda.NodejsFunction(this, 'ReminderProcessor', {
       entry: 'aws/lambda/reminderProcessor.js',
       runtime: lambda.Runtime.NODEJS_18_X,
       memorySize: 512,
       timeout: Duration.seconds(15),
-      environment: commonEnv,
+      layers: [datadogLayer, datadogNodeLayer],
+      environment: { ...commonEnv, ...datadogEnv },
     });
     const chatbotFn = new nodejsLambda.NodejsFunction(this, 'ChatbotHandler', {
       entry: 'aws/lambda/chatbotHandler.js',
       runtime: lambda.Runtime.NODEJS_18_X,
       memorySize: 512,
       timeout: Duration.seconds(10),
-      environment: commonEnv,
+      layers: [datadogLayer, datadogNodeLayer],
+      environment: { ...commonEnv, ...datadogEnv },
     });
     const storageFn = new nodejsLambda.NodejsFunction(this, 'StorageHandler', {
       entry: 'aws/lambda/storageHandler.js',
       runtime: lambda.Runtime.NODEJS_18_X,
       memorySize: 512,
       timeout: Duration.seconds(10),
-      environment: commonEnv,
+      layers: [datadogLayer, datadogNodeLayer],
+      environment: { ...commonEnv, ...datadogEnv },
     });
 
     // Live aliases for canary + blue/green routing
@@ -290,6 +319,18 @@ class SymptomSyncStack extends Stack {
       webAclArn: webAcl.attrArn,
     });
 
+    // SSM Parameter for Datadog API Key (value set externally via SSM console or CI/CD)
+    const ddApiKeyParam = new ssm.StringParameter(this, 'DatadogApiKeyParam', {
+      parameterName: '/symptomsync/datadog/api_key',
+      stringValue: process.env.DD_API_KEY || 'PLACEHOLDER_SET_VIA_SSM',
+      description: 'Datadog API key for Lambda extension and forwarder.',
+    });
+
+    new cdk.CfnOutput(this, 'DatadogApiKeyParamName', {
+      value: ddApiKeyParam.parameterName,
+      description: 'SSM parameter for Datadog API key',
+    });
+
     // API Gateway alarms (5XX and latency per stage)
     const buildApiAlarms = (stageName, label) => {
       new cloudwatch.Alarm(this, `${label}5xxAlarm`, {
@@ -323,6 +364,11 @@ class SymptomSyncStack extends Stack {
       schedule: events.Schedule.rate(Duration.minutes(1)),
       targets: [new targets.LambdaFunction(reminderAlias)],
     });
+
+    // Datadog tags on all stack resources
+    cdk.Tags.of(this).add('dd_monitoring', 'enabled');
+    cdk.Tags.of(this).add('project', 'symptomsync');
+    cdk.Tags.of(this).add('dd_env', process.env.DD_ENV || 'production');
 
     new cdk.CfnOutput(this, 'BlueStageUrl', {
       value: `${api.urlForPath('/', blueStage.stageName)}`,

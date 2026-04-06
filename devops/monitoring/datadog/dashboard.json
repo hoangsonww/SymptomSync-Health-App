@@ -1,0 +1,486 @@
+{
+  "title": "SymptomSync Production Overview",
+  "description": "Comprehensive production dashboard for SymptomSync – Lambda, API Gateway, DynamoDB, WAF, CodeDeploy, and cost metrics.",
+  "widgets": [
+    {
+      "id": 1,
+      "definition": {
+        "title": "Service Health Summary",
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "API Gateway Availability (%)",
+              "type": "query_value",
+              "requests": [
+                {
+                  "formulas": [{ "formula": "100 * (1 - (a / b))" }],
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.apigateway.5xx{apiname:symptomsync_service,stage:$stage}.as_count()" },
+                    { "data_source": "metrics", "name": "b", "query": "sum:aws.apigateway.count{apiname:symptomsync_service,stage:$stage}.as_count()" }
+                  ]
+                }
+              ],
+              "precision": 2,
+              "autoscale": false,
+              "custom_unit": "%",
+              "conditional_formats": [
+                { "comparator": ">=", "value": 99.9, "palette": "white_on_green" },
+                { "comparator": ">=", "value": 99.0, "palette": "white_on_yellow" },
+                { "comparator": "<", "value": 99.0, "palette": "white_on_red" }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Active Stage",
+              "type": "note",
+              "content": "Check SSM `/symptomsync/active_stage` for the current traffic color (blue/green).",
+              "background_color": "blue",
+              "font_size": "14",
+              "text_align": "center",
+              "show_tick": false
+            }
+          },
+          {
+            "definition": {
+              "title": "Lambda Error Count (last 1h)",
+              "type": "query_value",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.lambda.errors{project:symptomsync}.as_count().rollup(sum, 3600)" }
+                  ],
+                  "formulas": [{ "formula": "a" }]
+                }
+              ],
+              "precision": 0,
+              "conditional_formats": [
+                { "comparator": "==", "value": 0, "palette": "white_on_green" },
+                { "comparator": ">", "value": 0, "palette": "white_on_red" }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Synthetic Health Check Status",
+              "type": "manage_status",
+              "display_format": "countsAndList",
+              "summary_type": "monitors",
+              "query": "tag:project:symptomsync type:synthetics"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "definition": {
+        "title": "Lambda Metrics",
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Lambda Invocations by Function",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.lambda.invocations{project:symptomsync} by {functionname}.as_count()" }
+                  ],
+                  "formulas": [{ "formula": "a" }],
+                  "display_type": "bars"
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Lambda Errors by Function",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.lambda.errors{project:symptomsync} by {functionname}.as_count()" }
+                  ],
+                  "formulas": [{ "formula": "a" }],
+                  "display_type": "bars",
+                  "style": { "palette": "warm" }
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Lambda Duration Percentiles (ms)",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "p50", "query": "avg:aws.lambda.duration{project:symptomsync} by {functionname}" },
+                    { "data_source": "metrics", "name": "p95", "query": "p95:aws.lambda.duration{project:symptomsync} by {functionname}" },
+                    { "data_source": "metrics", "name": "p99", "query": "p99:aws.lambda.duration{project:symptomsync} by {functionname}" }
+                  ],
+                  "formulas": [
+                    { "formula": "p50", "alias": "p50" },
+                    { "formula": "p95", "alias": "p95" },
+                    { "formula": "p99", "alias": "p99" }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Lambda Throttles",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.lambda.throttles{project:symptomsync} by {functionname}.as_count()" }
+                  ],
+                  "formulas": [{ "formula": "a" }],
+                  "display_type": "bars",
+                  "style": { "palette": "orange" }
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Lambda Concurrent Executions",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "max:aws.lambda.concurrent_executions{project:symptomsync} by {functionname}" }
+                  ],
+                  "formulas": [{ "formula": "a" }]
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Lambda Cold Starts",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.lambda.enhanced.init_duration{project:symptomsync} by {functionname}.as_count()" }
+                  ],
+                  "formulas": [{ "formula": "a" }],
+                  "display_type": "bars"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "definition": {
+        "title": "API Gateway",
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Request Count by Stage",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.apigateway.count{apiname:symptomsync_service} by {stage}.as_count()" }
+                  ],
+                  "formulas": [{ "formula": "a" }],
+                  "display_type": "bars"
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "4XX Rate by Stage",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.apigateway.4xx{apiname:symptomsync_service} by {stage}.as_count()" }
+                  ],
+                  "formulas": [{ "formula": "a" }],
+                  "style": { "palette": "orange" }
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "5XX Rate by Stage",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.apigateway.5xx{apiname:symptomsync_service} by {stage}.as_count()" }
+                  ],
+                  "formulas": [{ "formula": "a" }],
+                  "style": { "palette": "warm" }
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Latency Percentiles by Stage (ms)",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "p50", "query": "avg:aws.apigateway.latency{apiname:symptomsync_service,stage:$stage}" },
+                    { "data_source": "metrics", "name": "p95", "query": "p95:aws.apigateway.latency{apiname:symptomsync_service,stage:$stage}" },
+                    { "data_source": "metrics", "name": "p99", "query": "p99:aws.apigateway.latency{apiname:symptomsync_service,stage:$stage}" }
+                  ],
+                  "formulas": [
+                    { "formula": "p50", "alias": "p50" },
+                    { "formula": "p95", "alias": "p95" },
+                    { "formula": "p99", "alias": "p99" }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Integration Latency by Stage (ms)",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "avg:aws.apigateway.integration_latency{apiname:symptomsync_service} by {stage}" }
+                  ],
+                  "formulas": [{ "formula": "a" }]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "definition": {
+        "title": "DynamoDB",
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Read Capacity Consumed by Table",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.dynamodb.consumed_read_capacity_units{project:symptomsync} by {tablename}" }
+                  ],
+                  "formulas": [{ "formula": "a" }]
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Write Capacity Consumed by Table",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.dynamodb.consumed_write_capacity_units{project:symptomsync} by {tablename}" }
+                  ],
+                  "formulas": [{ "formula": "a" }]
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "Throttled Requests by Table",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.dynamodb.throttled_requests{project:symptomsync} by {tablename}.as_count()" }
+                  ],
+                  "formulas": [{ "formula": "a" }],
+                  "style": { "palette": "warm" }
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "DynamoDB Latency (SuccessfulRequestLatency)",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "avg:aws.dynamodb.successful_request_latency{project:symptomsync} by {tablename,operation}" }
+                  ],
+                  "formulas": [{ "formula": "a" }]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "definition": {
+        "title": "WAF & Security",
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "WAF Allowed vs Blocked Requests",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "allowed", "query": "sum:aws.wafv2.allowed_requests{webacl:symptomsync-waf}.as_count()" },
+                    { "data_source": "metrics", "name": "blocked", "query": "sum:aws.wafv2.blocked_requests{webacl:symptomsync-waf}.as_count()" }
+                  ],
+                  "formulas": [
+                    { "formula": "allowed", "alias": "Allowed" },
+                    { "formula": "blocked", "alias": "Blocked" }
+                  ],
+                  "display_type": "bars"
+                }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "title": "WAF Blocked by Rule",
+              "type": "toplist",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.wafv2.blocked_requests{webacl:symptomsync-waf} by {rule}.as_count()" }
+                  ],
+                  "formulas": [{ "formula": "a", "limit": { "count": 10, "order": "desc" } }]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "definition": {
+        "title": "CodeDeploy & Canary",
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Deployment Events",
+              "type": "event_timeline",
+              "query": "tags:project:symptomsync,source:CICD"
+            }
+          },
+          {
+            "definition": {
+              "title": "CodeDeploy Deployment Status",
+              "type": "timeseries",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "success", "query": "sum:aws.codedeploy.deployment_successes{project:symptomsync}.as_count()" },
+                    { "data_source": "metrics", "name": "failures", "query": "sum:aws.codedeploy.deployment_failures{project:symptomsync}.as_count()" }
+                  ],
+                  "formulas": [
+                    { "formula": "success", "alias": "Successes" },
+                    { "formula": "failures", "alias": "Failures" }
+                  ],
+                  "display_type": "bars"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "definition": {
+        "title": "Cost Estimation",
+        "type": "group",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "title": "Estimated Lambda Cost",
+              "type": "note",
+              "content": "Lambda cost ≈ (invocations × avg_duration_ms × memory_mb) / (1000 × 1024 × 3600000) × $0.0000166667/GB-s\n\nUse AWS Cost Explorer or `aws.billing` metrics for actuals.",
+              "background_color": "gray",
+              "font_size": "12",
+              "text_align": "left"
+            }
+          },
+          {
+            "definition": {
+              "title": "Total Lambda Invocations (24h)",
+              "type": "query_value",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.lambda.invocations{project:symptomsync}.as_count().rollup(sum, 86400)" }
+                  ],
+                  "formulas": [{ "formula": "a" }]
+                }
+              ],
+              "precision": 0
+            }
+          },
+          {
+            "definition": {
+              "title": "API Gateway Request Volume (24h)",
+              "type": "query_value",
+              "requests": [
+                {
+                  "queries": [
+                    { "data_source": "metrics", "name": "a", "query": "sum:aws.apigateway.count{apiname:symptomsync_service}.as_count().rollup(sum, 86400)" }
+                  ],
+                  "formulas": [{ "formula": "a" }]
+                }
+              ],
+              "precision": 0
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "template_variables": [
+    {
+      "name": "stage",
+      "prefix": "stage",
+      "default": "blue",
+      "available_values": ["blue", "green"]
+    },
+    {
+      "name": "functionname",
+      "prefix": "functionname",
+      "default": "*"
+    }
+  ],
+  "layout_type": "ordered",
+  "notify_list": [],
+  "reflow_type": "fixed",
+  "tags": ["project:symptomsync", "team:platform"]
+}

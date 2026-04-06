@@ -32,3 +32,6 @@ This playbook documents how we ship safely using two API Gateway stages (blue/gr
 - Watch `Errors` and `Duration` metrics on the `live` aliases in CloudWatch.
 - Validate API Gateway access logs per stage when verifying routing.
 - Confirm scheduled reminder invocations via the `ReminderProcessor` alias metrics.
+- **Datadog**: Check the SymptomSync Production Overview dashboard for end-to-end visibility (Lambda, API GW, DynamoDB, WAF, CodeDeploy).
+- **Datadog deployment events**: Verify that CI/CD deployment markers and Ansible promotion events appear in the Datadog Events stream (tags: `project:symptomsync`, `source:github-actions` or `source:jenkins` or `source:ansible`).
+- **Datadog monitors**: Confirm all P1/P2 monitors are in OK state post-deploy. Check `devops/monitoring/datadog/monitors.json` for the full list.
