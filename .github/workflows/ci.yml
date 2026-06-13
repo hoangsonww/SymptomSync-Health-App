@@ -294,30 +294,90 @@ jobs:
   complete:
     name: "🎉 Pipeline Complete"
     runs-on: ubuntu-latest
-    needs: [deploy, datadog-notify]
+    needs:
+      [
+        formatting,
+        cache-deps,
+        security-scan,
+        testing,
+        build,
+        docker,
+        image-scan,
+        perf-test,
+        deploy,
+        datadog-notify,
+      ]
     if: always()
     steps:
       - name: Deployment Summary (log)
         run: |
           echo "::group::🎉 SymptomSync Deployment Summary"
           echo ""
-          echo "- 🌐 **Web App:** https://symptomsync.vercel.app"
-          echo "- 🐳 **Container Image:** ghcr.io/${{ github.repository_owner }}/symptomsync:${{ github.sha }}"
-          echo "- 🚀 **AWS/CDK + Ansible Deployed:** ✅"
-          echo ""
-          echo "✅ All stages completed successfully!"
+          echo "- 🌐 Web App: https://symptomsync.vercel.app"
+          echo "- 🐳 Container Image: ghcr.io/${{ github.repository_owner }}/symptomsync:${{ github.sha }}"
+          echo "- 🚀 AWS/CDK + Ansible deployment"
           echo "::endgroup::"
 
       - name: Write Summary to GitHub Step Summary
+        env:
+          R_FORMATTING: ${{ needs.formatting.result }}
+          R_CACHE: ${{ needs.cache-deps.result }}
+          R_SECURITY: ${{ needs.security-scan.result }}
+          R_TESTING: ${{ needs.testing.result }}
+          R_BUILD: ${{ needs.build.result }}
+          R_DOCKER: ${{ needs.docker.result }}
+          R_IMAGE_SCAN: ${{ needs.image-scan.result }}
+          R_PERF: ${{ needs.perf-test.result }}
+          R_DEPLOY: ${{ needs.deploy.result }}
+          R_DATADOG: ${{ needs.datadog-notify.result }}
         run: |
+          status() {
+            case "$1" in
+              success)   echo "✅ Passed" ;;
+              failure)   echo "❌ Failed" ;;
+              cancelled) echo "🚫 Cancelled" ;;
+              skipped)   echo "⏭️ Skipped" ;;
+              *)         echo "❔ ${1:-unknown}" ;;
+            esac
+          }
+
+          pass=0; fail=0; skip=0
+          for r in "$R_FORMATTING" "$R_CACHE" "$R_SECURITY" "$R_TESTING" "$R_BUILD" \
+                   "$R_DOCKER" "$R_IMAGE_SCAN" "$R_PERF" "$R_DEPLOY" "$R_DATADOG"; do
+            case "$r" in
+              success) pass=$((pass + 1)) ;;
+              failure | cancelled) fail=$((fail + 1)) ;;
+              skipped) skip=$((skip + 1)) ;;
+            esac
+          done
+
           {
             echo "## 🚀 SymptomSync CI/CD Pipeline Complete"
             echo ""
-            echo "| Item                  | Details                                                |"
-            echo "| --------------------- | ------------------------------------------------------ |"
-            echo "| **Live Web App**      | [https://symptomsync.vercel.app](https://symptomsync.vercel.app) |"
-            echo "| **Container Image**   | `ghcr.io/${{ github.repository_owner }}/symptomsync:${{ github.sha }}` |"
-            echo "| **AWS Deployment**    | Completed via AWS CDK & Ansible                        |"
+            echo "### Deployment"
+            echo ""
+            echo "| Item | Details |"
+            echo "| --- | --- |"
+            echo "| **Live Web App** | [https://symptomsync.vercel.app](https://symptomsync.vercel.app) |"
+            echo "| **Container Image** | \`ghcr.io/${{ github.repository_owner }}/symptomsync:${{ github.sha }}\` |"
+            echo "| **AWS Deployment** | Completed via AWS CDK & Ansible |"
+            echo ""
+            echo "### Job Results"
+            echo ""
+            echo "**Summary:** ✅ ${pass} passed · ❌ ${fail} failed · ⏭️ ${skip} skipped"
+            echo ""
+            echo "| Stage | Status | What it does |"
+            echo "| --- | --- | --- |"
+            echo "| 🔧 Format & Lint | $(status "$R_FORMATTING") | ESLint + Prettier checks on \`web/\` |"
+            echo "| 💾 Cache Dependencies | $(status "$R_CACHE") | Restores/saves npm + Next.js build cache |"
+            echo "| 🔒 Security & License Scan | $(status "$R_SECURITY") | \`npm audit\` (high) + license-checker |"
+            echo "| 🧪 Unit & E2E Tests | $(status "$R_TESTING") | Jest unit + end-to-end suites |"
+            echo "| 🏗 Build Next.js | $(status "$R_BUILD") | \`next build\` (web/), uploads \`next-build\` artifact |"
+            echo "| 🐳 Build & Push Docker | $(status "$R_DOCKER") | Builds image and pushes to GHCR |"
+            echo "| 🔍 Image Vulnerability Scan | $(status "$R_IMAGE_SCAN") | Trivy scan of the container image |"
+            echo "| ⚡ Performance Benchmark | $(status "$R_PERF") | Artillery load test — 20 arrivals × 50 req on \`/health\` |"
+            echo "| 🚀 Deploy | $(status "$R_DEPLOY") | AWS CDK + Ansible provisioning & release |"
+            echo "| 📊 Datadog Tracking | $(status "$R_DATADOG") | Posts deployment event + metrics to Datadog |"
             echo ""
             echo "**Completed at** $(date -u +"%Y-%m-%dT%H:%M:%SZ") UTC"
-          } >> $GITHUB_STEP_SUMMARY
+          } >> "$GITHUB_STEP_SUMMARY"
