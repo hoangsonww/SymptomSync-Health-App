@@ -122,6 +122,11 @@ flowchart LR
 
 The frontend is a pages-router Next.js app. High-traffic surfaces include:
 
+- `components/*`: shared UI primitives, form components, and hooks.
+- `pages/_app.tsx`: global context providers for auth, notifications, and Gemini chat state.
+- `pages/_document.tsx`: custom document for font loading and meta tags.
+- `pages/api/*`: API routes for file uploads, profile updates, and optional MCP proxying.
+- `pages/index.tsx`: marketing landing page with auth gate, enhanced with 3D visuals and animations (Three.js + React Three Fiber + WebGL).
 - `pages/home.tsx`: reminders/log dashboards, realtime subscriptions, CRUD workflows.
 - `pages/calendar.tsx`: calendar rendering, recurrence expansion, ICS import/export.
 - `pages/chat.tsx`: chat UX, user-context hydration, action payload parsing and apply flow.

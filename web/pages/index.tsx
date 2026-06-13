@@ -44,6 +44,12 @@ import {
 // it is for client side interactions only
 const Slider = dynamic(() => import("react-slick"), { ssr: false });
 
+// Interactive 3D hero backdrop (procedural geometry only, no binary assets).
+// Client-only: WebGL + pointer/scroll listeners cannot run during SSR.
+const HeroScene3D = dynamic(() => import("@/components/landing/HeroScene3D"), {
+  ssr: false,
+});
+
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-display",
@@ -427,68 +433,8 @@ export default function Home() {
             color: #f8fafc;
           }
 
-          .landing-hero::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-              120deg,
-              rgba(255, 255, 255, 0.08),
-              transparent 40%,
-              rgba(255, 255, 255, 0.06)
-            );
-            opacity: 0.7;
-            animation: heroShimmer 14s ease-in-out infinite;
-          }
-
-          .landing-grid {
-            position: absolute;
-            inset: 0;
-            background-image:
-              linear-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px),
-              linear-gradient(
-                90deg,
-                rgba(148, 163, 184, 0.2) 1px,
-                transparent 1px
-              );
-            background-size: 48px 48px;
-            opacity: 0.2;
-            animation: gridDrift 22s linear infinite;
-          }
-
-          .landing-orb {
-            position: absolute;
-            border-radius: 999px;
-            filter: blur(40px);
-            opacity: 0.6;
-            animation: floatOrb 12s ease-in-out infinite;
-          }
-
-          .landing-orb.orb-one {
-            width: 320px;
-            height: 320px;
-            background: rgba(14, 165, 233, 0.55);
-            top: -120px;
-            left: -120px;
-          }
-
-          .landing-orb.orb-two {
-            width: 280px;
-            height: 280px;
-            background: rgba(20, 184, 166, 0.55);
-            top: 140px;
-            right: -80px;
-            animation-delay: -3s;
-          }
-
-          .landing-orb.orb-three {
-            width: 240px;
-            height: 240px;
-            background: rgba(125, 211, 252, 0.4);
-            bottom: -120px;
-            left: 30%;
-            animation-delay: -6s;
-          }
+          /* Old animated grid/orb/shimmer hero background removed — the
+             interactive 3D scene (HeroScene3D) is the hero backdrop now. */
 
           .landing-panel {
             background: rgba(15, 23, 42, 0.6);
@@ -558,42 +504,6 @@ export default function Home() {
             pointer-events: none;
           }
 
-          @keyframes heroShimmer {
-            0% {
-              transform: translateX(-20%);
-              opacity: 0.5;
-            }
-            50% {
-              transform: translateX(0%);
-              opacity: 0.8;
-            }
-            100% {
-              transform: translateX(20%);
-              opacity: 0.5;
-            }
-          }
-
-          @keyframes gridDrift {
-            0% {
-              transform: translate3d(0, 0, 0);
-            }
-            100% {
-              transform: translate3d(-48px, -48px, 0);
-            }
-          }
-
-          @keyframes floatOrb {
-            0% {
-              transform: translate3d(0, 0, 0);
-            }
-            50% {
-              transform: translate3d(10px, -20px, 0);
-            }
-            100% {
-              transform: translate3d(0, 0, 0);
-            }
-          }
-
           @keyframes floatCard {
             0% {
               transform: translate3d(0, 0, 0);
@@ -615,10 +525,7 @@ export default function Home() {
         `}</style>
 
         <section className="landing-hero min-h-screen overflow-hidden px-6 pb-20 pt-8">
-          <div className="landing-grid" />
-          <div className="landing-orb orb-one" />
-          <div className="landing-orb orb-two" />
-          <div className="landing-orb orb-three" />
+          <HeroScene3D />
 
           <div className="relative z-10 mx-auto flex max-w-6xl flex-col">
             <div className="flex items-center justify-between text-white/80">
@@ -1152,8 +1059,9 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="landing-dark px-6 py-20 text-center">
-          <div className="relative mx-auto max-w-4xl">
+        <section className="landing-dark overflow-hidden px-6 py-20 text-center">
+          <HeroScene3D cameraZ={11} offsetX={7.5} />
+          <div className="relative z-10 mx-auto max-w-4xl">
             <AnimatedInView>
               <h2 className="font-display text-3xl md:text-4xl">
                 Ready to deliver smarter, safer care?
